@@ -15,60 +15,6 @@
             padding: 0;
             background: linear-gradient(to bottom right, #e0f2fe, #e9d5ff); /* bg-gradient-to-br from-blue-100 to-purple-200 */
         }
-        /* Custom styles that were for Markdown prose are largely unnecessary now but kept for general text readability */
-        .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-            font-weight: bold;
-            margin-top: 1.25em;
-            margin-bottom: 0.5em;
-        }
-        .prose h1 { font-size: 2.25em; } /* text-4xl */
-        .prose h2 { font-size: 1.875em; } /* text-3xl */
-        .prose h3 { font-size: 1.5em; }  /* text-2xl */
-        .prose h4 { font-size: 1.25em; } /* text-xl */
-        .prose strong {
-            font-weight: bold;
-        }
-        .prose em {
-            font-style: italic;
-        }
-        .prose ul {
-            list-style-type: disc;
-            margin-left: 1.5em;
-            padding-left: 0;
-        }
-        .prose ol {
-            list-style-type: decimal;
-            margin-left: 1.5em;
-            padding-left: 0;
-        }
-        .prose li {
-            margin-bottom: 0.5em;
-        }
-        .prose a {
-            color: #3b82f6; /* blue-500 */
-            text-decoration: underline;
-        }
-        .prose blockquote {
-            border-left: 4px solid #6b7280; /* gray-500 */
-            padding-left: 1em;
-            margin-left: 0;
-            font-style: italic;
-            color: #4b5563; /* gray-600 */
-        }
-        .prose code {
-            background-color: #e5e7eb; /* gray-200 */
-            padding: 0.2em 0.4em;
-            border-radius: 0.25rem;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            font-size: 0.875em;
-        }
-        .prose pre {
-            background-color: #1f2937; /* gray-800 */
-            color: #f9fafb; /* gray-50 */
-            padding: 1em;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-        }
     </style>
 </head>
 <body class="p-4">
@@ -187,15 +133,6 @@
         let allEntries = []; // Store all fetched entries
         let editingEntryId = null; // Track which entry is being edited
 
-        // Removed marked.setOptions as Markdown rendering is disabled
-        /*
-        marked.setOptions({
-            gfm: true, // Enable GitHub Flavored Markdown
-            breaks: true, // Convert line breaks to <br>
-            sanitize: true // Sanitize the output HTML to prevent XSS attacks
-        });
-        */
-
         // --- DOM Elements ---
         const journalEntryInput = document.getElementById('journalEntryInput');
         const saveEntryBtn = document.getElementById('saveEntryBtn');
@@ -211,7 +148,7 @@
         const errorModal = document.getElementById('errorModal');
         const errorMessageDiv = document.getElementById('errorMessage');
         const errorModalCloseBtn = document.getElementById('errorModalCloseBtn');
-        const confirmModal = document.getElementById('confirmModal');
+        const confirmModal = document.getElementById('confirmModal'); // Re-added confirmation modal
         const confirmMessageDiv = document.getElementById('confirmMessage');
         const confirmModalCancelBtn = document.getElementById('confirmModalCancelBtn');
         const confirmModalConfirmBtn = document.getElementById('confirmModalConfirmBtn');
@@ -285,7 +222,7 @@
         }
 
         async function handleSaveEntry() {
-            const entryText = journalEntryInput.value.trim();
+            const entryText = journalEntryInput.value.trim(); // Trim whitespace from both ends
             if (!entryText) {
                 showModal(errorModal, errorMessageDiv, "Journal entry cannot be empty.");
                 return;
@@ -340,8 +277,7 @@
                 entryDiv.className = 'bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition duration-200 ease-in-out';
 
                 if (editingEntryId === entry.id) {
-                    // Edit mode
-                    // No need to set global editingId here, it's already set by handleEditClick
+                    // Edit mode: textarea with Save/Cancel buttons
                     entryDiv.innerHTML = `
                         <div class="space-y-4">
                             <textarea
@@ -370,12 +306,10 @@
                     }
 
                 } else {
-                    // View mode: Plain text rendering
+                    // View mode: Plain text rendering with Edit/Delete buttons
                     entryDiv.innerHTML = `
                         <div>
-                            <p class="text-gray-800 text-base mb-2 whitespace-pre-wrap">
-                                ${entry.text.trimStart()}
-                            </p>
+                            <p class="text-gray-800 text-base mb-2 whitespace-pre-wrap">${entry.text.trim()}</p>
                             <div class="flex justify-between items-center mt-3">
                                 <p class="text-gray-500 text-sm font-medium">
                                     ${formatTimestamp(entry.timestamp)}
@@ -401,7 +335,6 @@
         function updateEmptyMessages() {
             const hasEntries = allEntries.length > 0;
             const hasSearchQuery = searchEntryInput.value.trim() !== '';
-            // Determine if filtered entries are empty based on the current search
             const filteredCount = hasSearchQuery
                 ? allEntries.filter(entry => entry.text.toLowerCase().includes(searchEntryInput.value.toLowerCase())).length
                 : allEntries.length;
@@ -409,9 +342,9 @@
             noEntriesMessage.classList.add('hidden');
             noSearchResultsMessage.classList.add('hidden');
 
-            if (!hasEntries && !hasSearchQuery) { // No entries at all
+            if (!hasEntries && !hasSearchQuery) {
                 noEntriesMessage.classList.remove('hidden');
-            } else if (hasSearchQuery && filteredCount === 0) { // No search results for a query
+            } else if (hasSearchQuery && filteredCount === 0) {
                 noSearchResultsMessage.classList.remove('hidden');
             }
         }
