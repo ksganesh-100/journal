@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bullet Journal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap)" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #e0f2fe, #e9d5ff); /* bg-gradient-to-br from-blue-100 to-purple-200 */
+        }
+        /* Hide content until authenticated */
+        #appContent {
+            display: none;
+        }
+        /* Style for the auth section visibility */
+        #authSection {
+            display: block;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                Bullet Journal
+            </span>
+        </h1>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="bg-gray-50 p-6 rounded-xl shadow-md space-y-6">
+            <div id="loginForm">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-3">
+                <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-4">
+                <button id="loginBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">Login</button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Don't have an account? <a href="#" id="showRegisterLink" class="text-blue-600 hover:underline font-semibold">Register</a>
+                </p>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Register</h2>
+                <input type="email" id="registerEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-3">
+                <input type="password" id="registerPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-4">
+                <button id="registerBtn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">Register</button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Already have an account? <a href="#" id="showLoginLink" class="text-blue-600 hover:underline font-semibold">Login</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Journal App Content (initially hidden) -->
+        <div id="appContent">
+            <!-- User ID Display -->
+            <div id="userIdDisplay" class="text-center text-sm text-gray-600 mb-6 p-3 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
+                <p class="font-semibold">Your User ID:</p>
+                <p id="currentUserId" class="font-mono break-all text-blue-800 text-xs sm:text-sm"></p>
+                <button id="logoutBtn" class="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-lg transition duration-200">Logout</button>
+            </div>
+
+            <!-- New Entry Section -->
+            <div class="space-y-4">
+                <label for="entryType" class="block text-gray-700 text-sm font-semibold">Entry Type:</label>
+                <select id="entryType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm mb-2">
+                    <option value="Note">Note</option>
+                    <option value="Event">Event</option>
+                    <option value="Feelings">Feelings</option>
+                </select>
+
+                <textarea
+                    id="journalEntryInput"
+                    class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[120px] text-gray-800 text-base shadow-sm"
+                    placeholder="Capture your notes, meeting minutes, or thoughts here."
+                    rows="5"
+                ></textarea>
+                <button
+                    id="saveEntryBtn"
+                    class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                >
+                    Save Entry
+                </button>
+                <button
+                    id="exportCsvBtn"
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2"
+                >
+                    Export to CSV
+                </button>
+            </div>
+
+            <!-- Search Section -->
+            <div class="space-y-4 mt-8">
+                <input
+                    type="text"
+                    id="searchEntryInput"
+                    class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
+                    placeholder="Search entries..."
+                />
+            </div>
+
+            <!-- Journal Entries List -->
+            <div class="mt-8 space-y-4">
+                <h2 class="text-2xl font-bold text-gray-800 text-center">Your Entries</h2>
+                <div id="entriesList" class="space-y-4">
+                    <!-- Entries will be dynamically loaded here -->
+                </div>
+                <p id="noEntriesMessage" class="text-center text-gray-500 italic hidden">Start by adding your first journal entry!</p>
+                <p id="noSearchResultsMessage" class="text-center text-gray-500 italic hidden">No entries found matching your search.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2 border-red-500">
+            <h3 class="text-xl font-bold text-red-600 mb-4">Error!</h3>
+            <p id="errorMessage" class="text-gray-700 mb-6"></p>
+            <button id="errorModalCloseBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition duration-200">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2 border-blue-500">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">Confirm Action</h3>
+            <p id="confirmMessage" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirmModalCancelBtn" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200">
+                    Cancel
+                </button>
+                <button id="confirmModalConfirmBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs from CDN -->
+    <script type="module">
+        import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js)";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js)";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc } from "[https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js)";
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+              apiKey: "AIzaSyA9zXA5vFC67BE-ijLWxbyk6OyZGLavD1c",
+              authDomain: "journal-e3a71.firebaseapp.com",
+              projectId: "journal-e3a71",
+              storageBucket: "journal-e3a71.firebasestorage.app",
+              messagingSenderId: "414736594452",
+              appId: "1:414736594452:web:285ae539d35022713e1901",
+              measurementId: "G-Q4HM4ZYW2X"
+            };
+
+        // Use the projectId from your config as the app ID for the Firestore path
+        const APP_ID_FOR_FIRESTORE = firebaseConfig.projectId;
+
+        // --- Initialize Firebase ---
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let allEntries = []; // Store all fetched entries
+        let editingEntryId = null; // Track which entry is being edited
+
+        // --- DOM Elements ---
+        const journalEntryInput = document.getElementById('journalEntryInput');
+        const entryTypeSelect = document.getElementById('entryType');
+        
+        const saveEntryBtn = document.getElementById('saveEntryBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const searchEntryInput = document.getElementById('searchEntryInput');
+        const entriesList = document.getElementById('entriesList');
+
+        // Auth DOM Elements
+        const authSection = document.getElementById('authSection');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginEmailInput = document.getElementById('loginEmail');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerEmailInput = document.getElementById('registerEmail');
+        const registerPasswordInput = document.getElementById('registerPassword');
+        const registerBtn = document.getElementById('registerBtn');
+        const showRegisterLink = document.getElementById('showRegisterLink');
+        const showLoginLink = document.getElementById('showLoginLink');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Main app content wrapper
+        const appContent = document.getElementById('appContent');
+        const currentUserIdDisplay = document.getElementById('currentUserId');
+
+        // Modal Elements
+        const errorModal = document.getElementById('errorModal');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const errorModalCloseBtn = document.getElementById('errorModalCloseBtn');
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessageDiv = document.getElementById('confirmMessage');
+        const confirmModalCancelBtn = document.getElementById('confirmModalCancelBtn');
+        const confirmModalConfirmBtn = document.getElementById('confirmModalConfirmBtn');
+        let pendingConfirmAction = null; // Function to call on confirm
+
+        // --- Utility Functions ---
+
+        function showModal(modalElement, messageElement, message) {
+            messageElement.textContent = message;
+            modalElement.classList.remove('hidden');
+        }
+
+        function hideModal(modalElement) {
+            modalElement.classList.add('hidden');
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Loading...';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Helper to format date for display (e.g., "July 1, 2025")
+        function formatDateForSeparator(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function showAppContent() {
+            authSection.style.display = 'none';
+            appContent.style.display = 'block';
+            journalEntryInput.focus();
+        }
+
+        function showAuthSection() {
+            authSection.style.display = 'block';
+            appContent.style.display = 'none';
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginEmailInput.value = '';
+            loginPasswordInput.value = '';
+            registerEmailInput.value = '';
+            registerPasswordInput.value = '';
+        }
+
+        // --- Core Application Logic ---
+
+        async function initializeAppAndAuth() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        currentUserIdDisplay.textContent = userId;
+                        showAppContent(); // Show main app content
+                        setupFirestoreListener(); // Start listening for entries
+                    } else {
+                        userId = null; // Clear userId if logged out
+                        showAuthSection(); // Show auth section
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showModal(errorModal, errorMessageDiv, `Firebase initialization error: ${error.message}`);
+            }
+        }
+
+        function setupFirestoreListener() {
+            if (!db || !userId) return;
+
+            // Note: orderBy is used here only for initial fetching order.
+            // Sorting for display, especially when grouping by date, happens client-side.
+            const q = query(
+                collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`),
+                orderBy('timestamp', 'desc')
+            );
+
+            onSnapshot(q, (snapshot) => {
+                allEntries = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Sort entries again to ensure correct date grouping, especially if timestamps are inconsistent
+                allEntries.sort((a, b) => {
+                    const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : new Date(0).getTime();
+                    const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : new Date(0).getTime();
+                    return dateB - dateA; // Descending order
+                });
+
+                renderEntries(allEntries, searchEntryInput.value); // Re-render with current search query
+                updateEmptyMessages();
+            }, (error) => {
+                console.error("Error fetching entries:", error);
+                showModal(errorModal, errorMessageDiv, `Error fetching entries: ${error.message}`);
+            });
+        }
+
+        async function handleSaveEntry() {
+            const entryText = journalEntryInput.value.trim();
+            const entryType = entryTypeSelect.value;
+
+            if (!entryText) {
+                showModal(errorModal, errorMessageDiv, "Journal entry cannot be empty.");
+                return;
+            }
+            if (!db || !userId) {
+                showModal(errorModal, errorMessageDiv, "Database not ready or user not authenticated. Please log in.");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`), {
+                    text: entryText,
+                    type: entryType,
+                    timestamp: serverTimestamp(),
+                });
+                journalEntryInput.value = ''; // Clear input
+                entryTypeSelect.value = 'Note'; // Reset type dropdown
+                journalEntryInput.focus();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showModal(errorModal, errorMessageDiv, `Error saving entry: ${error.message}`);
+            }
+        }
+
+        function handleSearchChange() {
+            renderEntries(allEntries, searchEntryInput.value);
+            updateEmptyMessages();
+        }
+
+        function renderEntries(entriesToRender, currentSearchQuery) {
+            entriesList.innerHTML = ''; // Clear current list
+
+            const lowerCaseQuery = currentSearchQuery.toLowerCase();
+            const keywords = lowerCaseQuery.split(' ').filter(word => word.length > 0); // Split query into keywords
+
+            const filtered = lowerCaseQuery
+                ? entriesToRender.filter(entry => {
+                    const entryTextLower = entry.text.toLowerCase();
+                    const entryTypeLower = (entry.type || '').toLowerCase(); // Ensure type is a string
+
+                    // Check if ALL keywords are present in either text or type
+                    return keywords.every(keyword => 
+                        entryTextLower.includes(keyword) || entryTypeLower.includes(keyword)
+                    );
+                  })
+                : entriesToRender;
+
+            if (filtered.length === 0) {
+                if (lowerCaseQuery) {
+                    noSearchResultsMessage.classList.remove('hidden');
+                    noEntriesMessage.classList.add('hidden');
+                } else {
+                    noEntriesMessage.classList.remove('hidden');
+                    noSearchResultsMessage.classList.add('hidden');
+                }
+            } else {
+                noEntriesMessage.classList.add('hidden');
+                noSearchResultsMessage.classList.add('hidden');
+            }
+
+            let lastRenderedDate = null;
+
+            filtered.forEach(entry => {
+                const entryDate = entry.timestamp ? new Date(entry.timestamp.toDate().setHours(0, 0, 0, 0)) : null; // Get date part only
+                const formattedEntryDate = entryDate ? formatDateForSeparator(entry.timestamp) : 'Unknown Date';
+
+                // Add a date separator if the date changes
+                if (entryDate && (lastRenderedDate === null || entryDate.getTime() !== lastRenderedDate.getTime())) {
+                    const dateSeparatorDiv = document.createElement('div');
+                    dateSeparatorDiv.className = 'flex items-center space-x-2 my-6'; // Added margin for separation
+                    dateSeparatorDiv.innerHTML = `
+                        <div class="flex-grow border-t border-blue-300"></div>
+                        <span class="text-blue-700 font-semibold text-sm px-3 py-1 bg-blue-100 rounded-full shadow-md">${formattedEntryDate}</span>
+                        <div class="flex-grow border-t border-blue-300"></div>
+                    `;
+                    entriesList.appendChild(dateSeparatorDiv);
+                    lastRenderedDate = entryDate;
+                }
+
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition duration-200 ease-in-out';
+
+                const entryType = entry.type || 'Note'; // Default to 'Note' if type is missing
+                
+                if (editingEntryId === entry.id) {
+                    // Edit mode: textarea with Save/Cancel buttons and type dropdown
+                    entryDiv.innerHTML = `
+                        <div class="space-y-4">
+                            <label for="editEntryType_${entry.id}" class="block text-gray-700 text-sm font-semibold">Entry Type:</label>
+                            <select id="editEntryType_${entry.id}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm mb-2">
+                                <option value="Note" ${entryType === 'Note' ? 'selected' : ''}>Note</option>
+                                <option value="Event" ${entryType === 'Event' ? 'selected' : ''}>Event</option>
+                                <option value="Feelings" ${entryType === 'Feelings' ? 'selected' : ''}>Feelings</option>
+                            </select>
+
+                            <textarea
+                                id="editInput_${entry.id}"
+                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[120px] text-gray-800 text-sm shadow-sm"
+                                rows="5"
+                            >${entry.text}</textarea>
+                            <div class="flex justify-end space-x-2">
+                                <button data-action="cancel-edit" data-entry-id="${entry.id}"
+                                    class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200">
+                                    Cancel
+                                </button>
+                                <button data-action="save-edit" data-entry-id="${entry.id}"
+                                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    entriesList.appendChild(entryDiv);
+                    
+                    // Focus and set cursor at end of text
+                    const editInput = document.getElementById(`editInput_${entry.id}`);
+                    if (editInput) {
+                        editInput.focus();
+                        editInput.setSelectionRange(editInput.value.length, editInput.value.length);
+                    }
+
+                } else {
+                    // View mode: Plain text rendering with Edit/Delete buttons and Type badge
+                    entryDiv.innerHTML = `
+                        <div>
+                            <p class="text-gray-800 text-sm mb-2 whitespace-pre-wrap">${entry.text.trim()}</p>
+                            <div class="flex justify-between items-center mt-3">
+                                <p class="text-gray-500 text-xs font-medium flex flex-wrap items-baseline">
+                                    ${formatTimestamp(entry.timestamp)}
+                                    <span class="ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                                        entryType === 'Note' ? 'bg-green-100 text-green-700' :
+                                        entryType === 'Event' ? 'bg-purple-100 text-purple-700' :
+                                        entryType === 'Feelings' ? 'bg-orange-100 text-orange-700' :
+                                        'bg-gray-100 text-gray-700'
+                                    }">
+                                        ${entryType}
+                                    </span>
+                                </p>
+                                <div class="flex space-x-2">
+                                    <button data-action="edit" data-entry-id="${entry.id}" data-entry-text="${encodeURIComponent(entry.text)}"
+                                        class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-md transition duration-200">
+                                        Edit
+                                    </button>
+                                    <button data-action="delete" data-entry-id="${entry.id}"
+                                        class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-md transition duration-200">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    entriesList.appendChild(entryDiv);
+                }
+            });
+        }
+
+        function updateEmptyMessages() {
+            const hasEntries = allEntries.length > 0;
+            const hasSearchQuery = searchEntryInput.value.trim() !== '';
+            
+            const lowerCaseQuery = searchEntryInput.value.toLowerCase();
+            const keywords = lowerCaseQuery.split(' ').filter(word => word.length > 0);
+
+            const filteredCount = hasSearchQuery
+                ? allEntries.filter(entry => {
+                    const entryTextLower = entry.text.toLowerCase();
+                    const entryTypeLower = (entry.type || '').toLowerCase(); // Ensure type is a string
+
+                    // Check if ALL keywords are present in either text or type
+                    return keywords.every(keyword => 
+                        entryTextLower.includes(keyword) || entryTypeLower.includes(keyword)
+                    );
+                  }).length
+                : allEntries.length;
+
+            noEntriesMessage.classList.add('hidden');
+            noSearchResultsMessage.classList.add('hidden');
+
+            if (!hasEntries && !hasSearchQuery) {
+                noEntriesMessage.classList.remove('hidden');
+            } else if (hasSearchQuery && filteredCount === 0) {
+                noSearchResultsMessage.classList.remove('hidden');
+            }
+        }
+
+        async function handleUpdateEntry(entryId, newText) {
+            const editEntryTypeSelect = document.getElementById(`editEntryType_${entryId}`);
+            const newType = editEntryTypeSelect ? editEntryTypeSelect.value : 'Note'; // Get type from edit dropdown
+
+            if (!newText.trim()) {
+                showModal(errorModal, errorMessageDiv, "Entry cannot be empty.");
+                return;
+            }
+            if (!db || !userId) {
+                showModal(errorModal, errorMessageDiv, "Database not ready or user not authenticated. Please log in.");
+                return;
+            }
+
+            try {
+                const entryRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`, entryId);
+                await updateDoc(entryRef, {
+                    text: newText,
+                    type: newType,
+                });
+                editingEntryId = null; // Exit edit mode
+                // The onSnapshot listener will automatically re-render entries
+            } catch (error) {
+                console.error("Error updating document: ", error);
+                showModal(errorModal, errorMessageDiv, `Error updating entry: ${error.message}`);
+            }
+        }
+
+        async function handleDeleteEntry(entryId) {
+            if (!db || !userId) {
+                showModal(errorModal, errorMessageDiv, "Database not ready or user not authenticated. Please log in.");
+                return;
+            }
+            try {
+                const entryRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`, entryId);
+                await deleteDoc(entryRef);
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                showModal(errorModal, errorMessageDiv, `Error deleting entry: ${error.message}`);
+            }
+        }
+
+        function handleExportCsv() {
+            if (allEntries.length === 0) {
+                showModal(errorModal, errorMessageDiv, "No entries to export.");
+                return;
+            }
+            if (!userId) {
+                showModal(errorModal, errorMessageDiv, "Please log in to export entries.");
+                return;
+            }
+
+            const csvRows = [];
+            csvRows.push(['"Timestamp"', '"Type"', '"Entry Text"'].join(',')); // CSV Header (removed 'Tags')
+
+            allEntries.forEach(entry => {
+                const timestamp = formatTimestamp(entry.timestamp);
+                const entryType = entry.type || 'Note';
+                const entryText = `"${entry.text.replace(/"/g, '""').replace(/\n/g, ' ')}"`; // Escape quotes, flatten newlines
+                csvRows.push([`"${timestamp}"`, `"${entryType}"`, entryText].join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'journal_entries.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        // Handle clicking the Edit button for an entry
+        function handleEditClick(entryData) {
+            editingEntryId = entryData.id;
+            renderEntries(allEntries, searchEntryInput.value);
+        }
+
+        // Handle cancelling an edit operation
+        function handleCancelEdit() {
+            editingEntryId = null;
+            renderEntries(allEntries, searchEntryInput.value); // Re-render to show view mode
+        }
+
+        // --- Authentication Functions ---
+        async function handleRegister() {
+            const email = registerEmailInput.value;
+            const password = registerPasswordInput.value;
+            if (!email || !password) {
+                showModal(errorModal, errorMessageDiv, "Please enter both email and password to register.");
+                return;
+            }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                console.log("User registered and logged in:", userCredential.user.uid);
+                // onAuthStateChanged will handle UI update
+            } catch (error) {
+                console.error("Error registering:", error.code, error.message);
+                showModal(errorModal, errorMessageDiv, `Registration error: ${error.message}`);
+            }
+        }
+
+        async function handleLogin() {
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+            if (!email || !password) {
+                showModal(errorModal, errorMessageDiv, "Please enter both email and password to login.");
+                return;
+            }
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log("User logged in:", userCredential.user.uid);
+                // onAuthStateChanged will handle UI update
+            } catch (error) {
+                console.error("Error logging in:", error.code, error.message);
+                showModal(errorModal, errorMessageDiv, `Login error: ${error.message}`);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                console.log("User logged out.");
+                // onAuthStateChanged will handle UI update (showAuthSection)
+            } catch (error) {
+                console.error("Error logging out:", error.message);
+                showModal(errorModal, errorMessageDiv, `Logout error: ${error.message}`);
+            }
+        }
+
+        // --- Event Listeners ---
+        window.onload = initializeAppAndAuth;
+
+        // Auth related event listeners
+        loginBtn.addEventListener('click', handleLogin);
+        registerBtn.addEventListener('click', handleRegister);
+        logoutBtn.addEventListener('click', handleLogout);
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerEmailInput.focus();
+        });
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            loginEmailInput.focus();
+        });
+
+        // Journal related event listeners
+        saveEntryBtn.addEventListener('click', handleSaveEntry);
+        exportCsvBtn.addEventListener('click', handleExportCsv);
+        searchEntryInput.addEventListener('input', handleSearchChange);
+
+        errorModalCloseBtn.addEventListener('click', () => hideModal(errorModal));
+
+        confirmModalCancelBtn.addEventListener('click', () => {
+            hideModal(confirmModal);
+            pendingConfirmAction = null;
+        });
+
+        confirmModalConfirmBtn.addEventListener('click', () => {
+            if (pendingConfirmAction) {
+                pendingConfirmAction();
+            }
+            hideModal(confirmModal); // Hide after action is performed
+        });
+
+        // Event delegation for dynamically added Edit/Delete/Save/Cancel buttons
+        entriesList.addEventListener('click', (event) => {
+            const target = event.target;
+            const action = target.dataset.action;
+            const entryId = target.dataset.entryId;
+            const entryText = target.dataset.entryText ? decodeURIComponent(target.dataset.entryText) : '';
+
+            if (action === 'edit') {
+                handleEditClick({ id: entryId, text: entryText });
+            } else if (action === 'delete') {
+                showModal(confirmModal, confirmMessageDiv, "Are you sure you want to delete this entry? This action cannot be undone.");
+                pendingConfirmAction = () => handleDeleteEntry(entryId);
+            } else if (action === 'cancel-edit') {
+                handleCancelEdit();
+            } else if (action === 'save-edit') {
+                const editInput = document.getElementById(`editInput_${entryId}`);
+                if (editInput) {
+                    handleUpdateEntry(entryId, editInput.value);
+                }
+            }
+        });
+
+        // Initial call to update empty messages (before entries are loaded)
+        updateEmptyMessages();
+
+    </script>
+</body>
+</html>
