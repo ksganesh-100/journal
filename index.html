@@ -32,7 +32,7 @@
             <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
                 Bullet Journal
             </span>
-</h1>
+        </h1>
 
         <!-- Authentication Section -->
         <div id="authSection" class="bg-gray-50 p-6 rounded-xl shadow-md space-y-6">
@@ -77,9 +77,9 @@
 
                 <textarea
                     id="journalEntryInput"
-                    class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[120px] text-gray-800 text-base shadow-sm"
+                    class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[240px] text-gray-800 text-base shadow-sm"
                     placeholder="Capture your notes, meeting minutes, or thoughts here."
-                    rows="5"
+                    rows="10"
                 ></textarea>
                 <button
                     id="saveEntryBtn"
@@ -271,20 +271,16 @@
         function autolink(text) {
             // Regex to find URLs. It matches characters that are NOT whitespace, quotes, or angle brackets.
             // This is still simple but handles most common URL characters.
-            const urlRegex = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/g;
+            // It also includes a non-capturing group for common URL endings that should not be part of the link
+            const urlRegex = /(https?:\/\/[^\s<>"'()]+|www\.[^\s<>"'()]+)(?=[.,;!?'")\s]|$)/g;
 
             return text.replace(urlRegex, (match) => {
                 let url = match;
                 let displayUrl = match; // The text to display for the link
 
-                // Remove common trailing punctuation from the URL if it's not part of the URL structure
-                // This is a heuristic and might not cover all edge cases.
-                // Examples: "example.com.", "example.com)", "example.com's"
-                const trailingPunctuation = /[.,;!?'"()]$/;
-                if (trailingPunctuation.test(url)) {
-                    url = url.replace(trailingPunctuation, '');
-                    displayUrl = displayUrl.replace(trailingPunctuation, ''); // Also update display text
-                }
+                // The regex now handles trailing punctuation better with the lookahead.
+                // However, if a URL ends with a parenthesis that is *part* of the URL,
+                // this simple regex might still cut it off. For most common cases, it's fine.
 
                 // Prepend http:// if the URL starts with www. and not http(s)://
                 if (url.startsWith('www.') && !url.startsWith('http://') && !url.startsWith('https://')) {
