@@ -338,18 +338,21 @@
 
                     if (newIndent !== existingIndent) {
                         const newLine = newIndent + bulletPrefix + currentLine.substring(existingIndent.length + bulletPrefix.length);
-                        textarea.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd === -1 ? value.length : lineEnd);
+                        // Use setRangeText for efficient update
+                        textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
                         textarea.selectionStart = textarea.selectionEnd = start + cursorShift;
                     } else if (!match && currentLine.startsWith('  ')) { // If not a bullet, but starts with spaces
                          const newLine = currentLine.substring(2);
-                         textarea.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd === -1 ? value.length : lineEnd);
+                         // Use setRangeText for efficient update
+                         textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
                          textarea.selectionStart = textarea.selectionEnd = start - 2;
                     }
                 } else {
                     // Tab (Indent)
                     const indentToAdd = '\t'; // Or '  ' for 2 spaces
                     const newLine = indentToAdd + currentLine;
-                    textarea.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd === -1 ? value.length : lineEnd);
+                    // Use setRangeText for efficient update
+                    textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
                     textarea.selectionStart = textarea.selectionEnd = start + indentToAdd.length;
                 }
             }
@@ -369,7 +372,8 @@
                     }
                 }
 
-                textarea.value = value.substring(0, start) + '\n' + newPrefix + value.substring(end);
+                // Use setRangeText for efficient update
+                textarea.setRangeText('\n' + newPrefix, start, end, 'end');
                 textarea.selectionStart = textarea.selectionEnd = start + newPrefix.length + 1; // +1 for the newline
             }
         }
