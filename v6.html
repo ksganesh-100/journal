@@ -156,7 +156,7 @@
             <!-- To-Do List Section (initially hidden) -->
             <div id="todoSection" class="space-y-8 hidden">
                 <!-- New To-Do Entry Section -->
-                <div class="space-y-4">
+                <div class="space-y-8">
                     <input
                         type="text"
                         id="todoInput"
@@ -995,7 +995,7 @@
                 }
                 try {
                     // Use a batch write for efficiency when updating multiple documents
-                    const batch = writeBatch(db));
+                    const batch = writeBatch(db);
                     const now = serverTimestamp();
 
                     for (const todo of completedActiveTodos) {
