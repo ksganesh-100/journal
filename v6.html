@@ -909,6 +909,7 @@
             todosToRender.forEach(todo => {
                 const todoDiv = document.createElement('div');
                 todoDiv.className = `todo-item bg-white py-2 px-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between ${todo.isCompleted ? 'completed' : ''}`; // Reduced padding on todo-item                todoDiv.dataset.todoId = todo.id;
+                todoDiv.dataset.todoId = todo.id;
 
                 // For archived items, disable checkbox and hide delete button
                 const checkboxDisabled = type === 'archived' ? 'disabled' : '';
