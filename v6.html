@@ -154,42 +154,42 @@
             </div>
 
             <!-- To-Do List Section (initially hidden) -->
-            <div id="todoSection" class="space-y-8 hidden">
+            <div id="todoSection" class="space-y-4 hidden"> <!-- Changed from space-y-8 to space-y-4 -->
                 <!-- New To-Do Entry Section -->
-                <div class="space-y-8">
+                <div class="space-y-3"> <!-- Changed from space-y-4 to space-y-3 -->
                     <input
                         type="text"
                         id="todoInput"
-                        class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
+                        class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm" <!-- Changed p-4 to py-2 px-3 -->
                         placeholder="Add a new To-Do..."
                     />
                     <button
                         id="addTodoBtn"
-                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75" <!-- Changed py-3 px-6 to py-2 px-4 -->
                     >
                         Add To-Do
                     </button>
                     <button
                         id="archiveCompletedBtn"
-                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2"
+                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2" <!-- Changed py-3 px-6 to py-2 px-4 -->
                     >
                         Archive Completed
                     </button>
                 </div>
 
                 <!-- To-Do List -->
-                <div class="mt-8 space-y-4">
-                    <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
-                    <div id="todoList" class="space-y-3">
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
+                        <div id="todoList" class="space-y-2"> <!-- Changed space-y-3 to space-y-2 -->
                         <!-- To-Do items will be dynamically loaded here -->
                     </div>
                     <p id="noTodosMessage" class="text-center text-gray-500 italic hidden">You're all caught up! Add a new To-Do above.</p>
                 </div>
 
                 <!-- Archived To-Dos -->
-                <div class="mt-8 space-y-4">
-                    <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
-                    <div id="archivedTodoList" class="space-y-3">
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
+                        <div id="archivedTodoList" class="space-y-2"> <!-- Changed space-y-3 to space-y-2 -->
                         <!-- Archived To-Do items will be dynamically loaded here -->
                     </div>
                     <p id="noArchivedTodosMessage" class="text-center text-gray-500 italic hidden">No tasks have been archived yet.</p>
@@ -908,8 +908,7 @@
 
             todosToRender.forEach(todo => {
                 const todoDiv = document.createElement('div');
-                todoDiv.className = `todo-item bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between ${todo.isCompleted ? 'completed' : ''}`;
-                todoDiv.dataset.todoId = todo.id;
+                todoDiv.className = `todo-item bg-white py-2 px-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between ${todo.isCompleted ? 'completed' : ''}`; // Reduced padding on todo-item                todoDiv.dataset.todoId = todo.id;
 
                 // For archived items, disable checkbox and hide delete button
                 const checkboxDisabled = type === 'archived' ? 'disabled' : '';
@@ -920,10 +919,10 @@
 
                 todoDiv.innerHTML = `
                     <div class="flex items-center flex-grow">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-3 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete">
-                        <span class="todo-text text-gray-800 text-base flex-grow break-words">${todo.text}</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-2 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete"> <!-- Changed mr-3 to mr-2 -->
+                        <span class="todo-text text-gray-800 text-sm flex-grow break-words">${todo.text}</span> <!-- Changed text-base to text-sm -->
                     </div>
-                    <div class="flex space-x-2 ml-4">
+                   <div class="flex space-x-2 ml-2"> <!-- Changed ml-4 to ml-2 -->
                         ${deleteButtonHtml}
                     </div>
                 `;
