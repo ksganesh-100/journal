@@ -989,7 +989,7 @@
             showModal(confirmModal, confirmMessageDiv, `Are you sure you want to archive ${completedActiveTodos.length} completed To-Dos?`);
             pendingConfirmAction = async () => {
                 if (!db || !userId) {
-                    showModal(errorModal, errorMessageDiv, "Database not ready or user not authenticated. Please log in.");
+                    showModal(errorModal, errorMessageDiv, `Error archiving To-Dos: ${error && error.message ? error.message : 'An unknown error occurred.'}`);
                     return;
                 }
                 try {
@@ -1024,7 +1024,7 @@
                 console.log("To-Do deleted successfully.");
             } catch (error) {
                 console.error("Error deleting todo: ", error);
-                showModal(errorModal, errorMessageDiv, `Error deleting To-Do: ${error.message}`);
+                showModal(errorModal, errorMessageDiv, `Error deleting To-Do: ${error && error.message ? error.message : 'An unknown error occurred.'}`);
             }
         }
 
