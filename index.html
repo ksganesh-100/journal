@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Notebook</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -37,6 +40,15 @@
             color: #4338ca; /* Indigo 700 */
             font-weight: 600;
         }
+        /* Star icon styling */
+        .star-icon {
+            cursor: pointer;
+            color: #cbd5e1; /* gray-400 for unstarred */
+            transition: color 0.2s ease-in-out;
+        }
+        .star-icon.starred {
+            color: #fbbf24; /* amber-400 for starred */
+        }
     </style>
 </head>
 <body class="p-4">
@@ -44,10 +56,11 @@
     <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
         <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">
             <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                My Notebook
+                My Journal & To-Do
             </span>
         </h1>
 
+        <!-- Authentication Section -->
         <div id="authSection" class="bg-gray-50 p-6 rounded-xl shadow-md space-y-6">
             <div id="loginForm">
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Login</h2>
@@ -70,13 +83,16 @@
             </div>
         </div>
 
+        <!-- Main App Content (initially hidden) -->
         <div id="appContent">
+            <!-- User ID Display -->
             <div id="userIdDisplay" class="text-center text-sm text-gray-600 mb-6 p-3 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
                 <p class="font-semibold">Your User ID:</p>
                 <p id="currentUserId" class="font-mono break-all text-blue-800 text-xs sm:text-sm"></p>
                 <button id="logoutBtn" class="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-lg transition duration-200"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
             </div>
 
+            <!-- Navigation Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
                 <button id="journalTabBtn" class="tab-button flex-1 py-3 text-center text-lg text-gray-600 hover:text-indigo-700 transition duration-200 active">
                     <i class="fas fa-book-open mr-2"></i> Journal
@@ -86,7 +102,9 @@
                 </button>
             </div>
 
+            <!-- Journal Section -->
             <div id="journalSection" class="space-y-8">
+                <!-- New Entry Section -->
                 <div class="space-y-4">
                     <label for="entryType" class="block text-gray-700 text-sm font-semibold">Entry Type:</label>
                     <select id="entryType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm mb-2">
@@ -115,6 +133,7 @@
                     </button>
                 </div>
 
+                <!-- Search Section -->
                 <div class="space-y-4 mt-8">
                     <input
                         type="text"
@@ -134,16 +153,22 @@
                     </div>
                 </div>
 
+                <!-- Journal Entries List -->
                 <div class="mt-8 space-y-4">
                     <h2 class="text-2xl font-bold text-gray-800 text-center">Your Entries</h2>
                     <div id="entriesList" class="space-y-4">
-                        </div>
+                        <!-- Entries will be dynamically loaded here -->
+                    </div>
                     <p id="noEntriesMessage" class="text-center text-gray-500 italic hidden">Start by adding your first journal entry!</p>
                     <p id="noSearchResultsMessage" class="text-center text-gray-500 italic hidden">No entries found matching your search.</p>
                 </div>
             </div>
 
-            <div id="todoSection" class="space-y-4 hidden"> <div class="space-y-3"> <input
+            <!-- To-Do List Section (initially hidden) -->
+            <div id="todoSection" class="space-y-4 hidden"> <!-- Changed from space-y-8 to space-y-4 -->
+                <!-- New To-Do Entry Section -->
+                <div class="space-y-3"> <!-- Changed from space-y-4 to space-y-3 -->
+                    <input
                         type="text"
                         id="todoInput"
                         class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
@@ -151,29 +176,40 @@
                     />
                     <button
                         id="addTodoBtn"
-                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75" >
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75" <!-- Changed py-3 px-6 to py-2 px-4 -->
+                    >
                         <i class="fas fa-plus-circle mr-2"></i>Add To-Do
                     </button>
                     <button
                         id="archiveCompletedBtn"
-                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2" >
+                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2" <!-- Changed py-3 px-6 to py-2 px-4 -->
+                    >
                         <i class="fas fa-archive mr-2"></i>Archive Completed
                     </button>
                 </div>
 
-                <div class="mt-6 space-y-3"> <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
-                        <div id="todoList" class="space-y-2"> </div>
+                <!-- To-Do List -->
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
+                        <div id="todoList" class="space-y-2"> <!-- Changed space-y-3 to space-y-2 -->
+                        <!-- To-Do items will be dynamically loaded here -->
+                    </div>
                     <p id="noTodosMessage" class="text-center text-gray-500 italic hidden">You're all caught up! Add a new To-Do above.</p>
                 </div>
 
-                <div class="mt-6 space-y-3"> <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
-                        <div id="archivedTodoList" class="space-y-2"> </div>
+                <!-- Archived To-Dos -->
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
+                        <div id="archivedTodoList" class="space-y-2"> <!-- Changed space-y-3 to space-y-2 -->
+                        <!-- Archived To-Do items will be dynamically loaded here -->
+                    </div>
                     <p id="noArchivedTodosMessage" class="text-center text-gray-500 italic hidden">No tasks have been archived yet.</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Error Modal -->
     <div id="errorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2 border-red-500">
             <h3 class="text-xl font-bold text-red-600 mb-4">Error!</h3>
@@ -184,6 +220,7 @@
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2 border-blue-500">
             <h3 class="text-xl font-bold text-blue-600 mb-4">Confirm Action</h3>
@@ -199,6 +236,7 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs from CDN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -210,7 +248,7 @@
             apiKey: "AIzaSyA9zXA5vFC67BE-ijLWxbyk6OyZGLavD1c",
             authDomain: "journal-e3a71.firebaseapp.com",
             projectId: "journal-e3a71",
-            storageBucket: "journal-e3a71.firebasestorage.app",
+            storageBucket: "journal-e3a71.firebaseapp.com",
             messagingSenderId: "414736594452",
             appId: "1:414736594452:web:285ae539d35022713e1901",
             measurementId: "G-Q4HM4ZYW2X"
@@ -502,6 +540,10 @@
                     ...doc.data()
                 }));
                 activeTodos.sort((a, b) => {
+                    // Primary sort: starred items first
+                    if (a.isStarred && !b.isStarred) return -1;
+                    if (!a.isStarred && b.isStarred) return 1;
+                    // Secondary sort: by timestamp for non-starred or equally starred items
                     const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
                     const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
                     return dateA - dateB; // Ascending order for active tasks
@@ -920,13 +962,17 @@
                     const editButtonHtml = isArchived ? '' :
                         `<button data-action="edit-todo" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-md transition duration-200"><i class="fas fa-edit"></i></button>`;
 
+                    // Star icon for priority
+                    const starIconHtml = isArchived ? '' :
+                        `<i class="fas fa-star text-lg star-icon ${todo.isStarred ? 'starred' : ''}" data-action="toggle-star" data-todo-id="${todo.id}"></i>`;
 
                     todoDiv.innerHTML = `
                         <div class="flex items-center flex-grow">
                             <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-2 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete">
                             <span class="todo-text text-gray-800 text-sm flex-grow break-words">${todo.text}</span>
                         </div>
-                        <div class="flex space-x-2 ml-2">
+                        <div class="flex items-center space-x-2 ml-2">
+                            ${starIconHtml}
                             ${editButtonHtml}
                             ${deleteButtonHtml}
                         </div>
@@ -966,6 +1012,7 @@
                     text: todoText,
                     isCompleted: false,
                     isArchived: false,
+                    isStarred: false, // New field for priority star
                     timestamp: serverTimestamp(),
                     archivedAt: null // Will be set when archived
                 });
@@ -993,6 +1040,22 @@
             }
         }
 
+        async function handleToggleStar(todoId, isStarred) {
+            if (!db || !userId) {
+                showModal(errorModal, errorMessageDiv, "Database not ready or user not authenticated. Please log in.");
+                return;
+            }
+            try {
+                const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                await updateDoc(todoRef, {
+                    isStarred: isStarred,
+                });
+            } catch (error) {
+                console.error("Error toggling todo star status: ", error);
+                showModal(errorModal, errorMessageDiv, `Error updating To-Do priority: ${error.message}`);
+            }
+        }
+
         async function handleArchiveCompleted() {
             const completedActiveTodos = activeTodos.filter(todo => todo.isCompleted);
 
@@ -1016,7 +1079,8 @@
                         const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todo.id);
                         batch.update(todoRef, {
                             isArchived: true,
-                            archivedAt: now
+                            archivedAt: now,
+                            isStarred: false // Unstar when archived
                         });
                     }
                     await batch.commit();
@@ -1162,7 +1226,7 @@
         });
         archiveCompletedBtn.addEventListener('click', handleArchiveCompleted);
 
-        // Event delegation for dynamically added To-Do checkboxes and delete buttons
+        // Event delegation for dynamically added To-Do checkboxes, delete, edit, save, cancel, and star buttons
         todoList.addEventListener('change', (event) => {
             const target = event.target;
             if (target.matches('input[type="checkbox"][data-action="toggle-complete"]')) {
@@ -1189,6 +1253,12 @@
                 }
             } else if (action === 'cancel-edit-todo') {
                 handleCancelEditTodo();
+            } else if (action === 'toggle-star') {
+                // Find the current starred status from the activeTodos array
+                const todoItem = activeTodos.find(todo => todo.id === todoId);
+                if (todoItem) {
+                    handleToggleStar(todoId, !todoItem.isStarred);
+                }
             }
         });
 
@@ -1232,7 +1302,7 @@
                 return;
             }
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await createUserWithWithEmailAndPassword(auth, email, password);
                 console.log("User registered and logged in:", userCredential.user.uid);
                 // onAuthStateChanged will handle UI update
             } catch (error) {
