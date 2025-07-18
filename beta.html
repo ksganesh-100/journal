@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notebook</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #e0f2fe, #e9d5ff); /* bg-gradient-to-br from-blue-100 to-purple-200 */
+        }
+        /* Hide content until authenticated */
+        #appContent {
+            display: none;
+        }
+        /* Style for the auth section visibility */
+        #authSection {
+            display: block;
+        }
+        /* Custom style for monospace font in textareas */
+        textarea.font-mono-custom {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        }
+        /* Styles for To-Do completed items */
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #9ca3af; /* gray-400 */
+        }
+        /* Active tab styling */
+        .tab-button.active {
+            border-bottom: 3px solid #6366f1; /* Indigo 500 */
+            color: #4338ca; /* Indigo 700 */
+            font-weight: 600;
+        }
+        /* Star icon styling */
+        .star-icon {
+            cursor: pointer;
+            color: #cbd5e1; /* gray-400 for unstarred */
+            transition: color 0.2s ease-in-out;
+        }
+        .star-icon.starred {
+            color: #fbbf24; /* amber-400 for starred */
+        }
+
+        /* Loading Spinner Styling */
+        #loadingSpinner {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+        }
+        .spinner {
+            border: 6px solid #f3f3f3; /* Light grey */
+            border-top: 6px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification Styling */
+        #toastNotification {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        #toastNotification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #toastNotification.success {
+            background-color: #22c55e; /* Green 500 */
+        }
+        #toastNotification.error {
+            background-color: #ef4444; /* Red 500 */
+        }
+
+        /* --- Animations for Items --- */
+        /* Fade-in/Slide-down for new items */
+        .item-enter {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        .item-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        /* Fade-out/Slide-up for deleted items */
+        .item-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .item-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        /* Bounce/Scale for Toggles (Checkbox/Star) */
+        .toggle-bounce {
+            animation: bounce 0.3s ease-in-out;
+        }
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Tab Transition (Optional: if we want a more complex tab animation beyond border-bottom) */
+        .tab-content {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .tab-content.hidden {
+            opacity: 0;
+        }
+
+        /* Read More/Less styling */
+        .read-more-btn {
+            color: #4f46e5; /* Indigo 600 */
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .read-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Tag specific styling */
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e0e7ff; /* Indigo 100 */
+            color: #4f46e5; /* Indigo 600 */
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px; /* Full rounded */
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-semibold */
+            margin-right: 0.5rem;
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+        }
+        .tag-pill-remove {
+            margin-left: 0.4rem;
+            color: #6366f1; /* Indigo 500 */
+            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 0.1rem;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+        .tag-pill-remove:hover {
+            background-color: #c7d2fe; /* Indigo 200 */
+        }
+
+        /* Autocomplete styles */
+        .autocomplete-container {
+            position: relative;
+        }
+        .autocomplete-suggestions {
+            position: absolute;
+            z-index: 10;
+            background-color: white;
+            border: 1px solid #e2e8f0; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-top: 0.25rem;
+        }
+        .autocomplete-suggestion-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem; /* text-sm */
+            color: #4a5568; /* gray-700 */
+            transition: background-color 0.15s ease;
+        }
+        .autocomplete-suggestion-item:hover, .autocomplete-suggestion-item.selected {
+            background-color: #edf2f7; /* gray-100 */
+        }
+
+        /* Proposed Task Item in Modal */
+        .proposed-task-item {
+            display: flex;
+            align-items: center;
+            background-color: #f8fafc; /* gray-50 */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0; /* gray-200 */
+        }
+        .proposed-task-item input[type="text"] {
+            flex-grow: 1;
+            border: 1px solid #cbd5e1; /* gray-300 */
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .proposed-task-item input[type="text"]:focus {
+            border-color: #6366f1; /* indigo-500 */
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        .proposed-task-item .delete-task-btn {
+            background: none;
+            border: none;
+            color: #ef4444; /* red-500 */
+            margin-left: 0.75rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: color 0.2s ease;
+        }
+        .proposed-task-item .delete-task-btn:hover {
+            color: #dc2626; /* red-600 */
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                My Notebook
+            </span>
+        </h1>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="bg-gray-50 p-6 rounded-xl shadow-md space-y-6">
+            <div id="loginForm">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-3">
+                <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-4">
+                <button id="loginBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200"><i class="fas fa-sign-in-alt mr-2"></i>Login</button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Don't have an account? <a href="#" id="showRegisterLink" class="text-blue-600 hover:underline font-semibold">Register</a>
+                </p>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Register</h2>
+                <input type="email" id="registerEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-3">
+                <input type="password" id="registerPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none mb-4">
+                <button id="registerBtn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200"><i class="fas fa-user-plus mr-2"></i>Register</button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Already have an account? <a href="#" id="showLoginLink" class="text-blue-600 hover:underline font-semibold">Login</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Main App Content (initially hidden) -->
+        <div id="appContent">
+            <!-- User ID Display -->
+            <div id="userIdDisplay" class="text-center text-sm text-gray-600 mb-6 p-3 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
+                <p class="font-semibold">Your User ID:</p>
+                <p id="currentUserId" class="font-mono break-all text-blue-800 text-xs sm:text-sm"></p>
+                <button id="logoutBtn" class="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-lg transition duration-200"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="journalTabBtn" class="tab-button flex-1 py-3 text-center text-lg text-gray-600 hover:text-indigo-700 transition duration-200 active">
+                    <i class="fas fa-book-open mr-2"></i> Journal
+                </button>
+                <button id="todoTabBtn" class="tab-button flex-1 py-3 text-center text-lg text-gray-600 hover:text-indigo-700 transition duration-200">
+                    <i class="fas fa-list-check mr-2"></i> To-Do List
+                </button>
+            </div>
+
+            <!-- Journal Section -->
+            <div id="journalSection" class="space-y-8 tab-content">
+                <!-- New Entry Section -->
+                <div class="space-y-4">
+                    <label for="entryType" class="block text-gray-700 text-sm font-semibold">Entry Type:</label>
+                    <select id="entryType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm mb-2">
+                        <option value="Note">Note</option>
+                        <option value="Event">Event</option>
+                        <option value="Feelings">Feelings</option>
+                    </select>
+
+                    <textarea
+                        id="journalEntryInput"
+                        class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[240px] text-gray-800 text-base shadow-sm font-mono-custom"
+                        placeholder="Capture your notes, meeting minutes, or thoughts here."
+                        rows="10"
+                    ></textarea>
+
+                    <!-- Tags Input and Display -->
+                    <div class="relative">
+                        <label for="tagInput" class="block text-gray-700 text-sm font-semibold mb-1">Tags:</label>
+                        <div id="selectedTagsContainer" class="flex flex-wrap items-center gap-2 mb-2 p-2 border border-gray-300 rounded-lg">
+                            <!-- Tags will be rendered here -->
+                            <input
+                                type="text"
+                                id="tagInput"
+                                class="flex-grow min-w-[100px] p-2 border-none outline-none focus:ring-0 text-gray-800 text-sm"
+                                placeholder="Add tags (e.g., #work, #idea)"
+                            />
+                        </div>
+                        <div id="autocompleteSuggestions" class="autocomplete-suggestions hidden">
+                            <!-- Autocomplete suggestions will appear here -->
+                        </div>
+                    </div>
+
+
+                    <button
+                        id="saveEntryBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                    >
+                        <i class="fas fa-save mr-2"></i>Save Entry
+                    </button>
+                    <button
+                        id="extractTasksBtn"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 mt-2"
+                    >
+                        <i class="fas fa-tasks mr-2"></i>Extract Tasks from Entry
+                    </button>
+                    <button
+                        id="exportCsvBtn"
+                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2"
+                    >
+                        <i class="fas fa-file-csv mr-2"></i>Export to CSV
+                    </button>
+                </div>
+
+                <!-- Search Section -->
+                <div class="space-y-4 mt-8">
+                    <input
+                        type="text"
+                        id="searchEntryInput"
+                        class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
+                        placeholder="Search entries by keywords..."
+                    />
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="w-full sm:w-1/2">
+                            <label for="startDateInput" class="block text-gray-700 text-sm font-semibold mb-1">From Date:</label>
+                            <input type="date" id="startDateInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-base shadow-sm">
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <label for="endDateInput" class="block text-gray-700 text-sm font-semibold mb-1">To Date:</label>
+                            <input type="date" id="endDateInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-base shadow-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Journal Entries List -->
+                <div class="mt-8 space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-800 text-center">Your Entries</h2>
+                    <div id="entriesList" class="space-y-4">
+                        <!-- Entries will be dynamically loaded here -->
+                    </div>
+                    <!-- Engaging Empty States for Journal -->
+                    <div id="noEntriesMessage" class="hidden text-center p-6 bg-blue-50 rounded-xl border border-blue-200 text-blue-700">
+                        <i class="fas fa-pencil-alt text-4xl mb-3"></i>
+                        <p class="font-semibold text-lg">Your journal is empty!</p>
+                        <p class="text-sm">Start by writing your first entry above to capture your thoughts and ideas.</p>
+                    </div>
+                    <div id="noSearchResultsMessage" class="hidden text-center p-6 bg-orange-50 rounded-xl border border-orange-200 text-orange-700">
+                        <i class="fas fa-search-minus text-4xl mb-3"></i>
+                        <p class="font-semibold text-lg">No entries found matching your search.</p>
+                        <p class="text-sm">Try adjusting your keywords or date range.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- To-Do List Section (initially hidden) -->
+            <div id="todoSection" class="space-y-4 hidden tab-content"> <!-- Changed from space-y-8 to space-y-4 -->
+                <!-- New To-Do Entry Section -->
+                <div class="space-y-3"> <!-- Changed from space-y-4 to space-y-3 -->
+                    <input
+                        type="text"
+                        id="todoInput"
+                        class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
+                        placeholder="Add a new To-Do..."
+                    />
+                    <button
+                        id="addTodoBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                    >
+                        <i class="fas fa-plus-circle mr-2"></i>Add To-Do
+                    </button>
+                    <button
+                        id="archiveCompletedBtn"
+                        class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 mt-2"
+                    >
+                        <i class="fas fa-archive mr-2"></i>Archive Completed
+                    </button>
+                </div>
+
+                <!-- To-Do List -->
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
+                        <div id="todoList" class="space-y-2">
+                        <!-- To-Do items will be dynamically loaded here -->
+                    </div>
+                    <!-- Engaging Empty States for To-Do -->
+                    <div id="noTodosMessage" class="hidden text-center p-6 bg-green-50 rounded-xl border border-green-200 text-green-700">
+                        <i class="fas fa-clipboard-check text-4xl mb-3"></i>
+                        <p class="font-semibold text-lg">You're all caught up!</p>
+                        <p class="text-sm">Time to relax, or add a new To-Do above.</p>
+                    </div>
+                </div>
+
+                <!-- Archived To-Dos -->
+                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                        <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
+                        <div id="archivedTodoList" class="space-y-2">
+                        <!-- Archived To-Do items will be dynamically loaded here -->
+                    </div>
+                    <!-- Engaging Empty States for Archived To-Do -->
+                    <div id="noArchivedTodosMessage" class="hidden text-center p-6 bg-gray-50 rounded-xl border border-gray-200 text-gray-700">
+                        <i class="fas fa-box-open text-4xl mb-3"></i>
+                        <p class="font-semibold text-lg">No tasks have been archived yet.</p>
+                        <p class="text-sm">Completed tasks will appear here after archiving.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Modal (for errors) -->
+    <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2" id="messageModalContent">
+            <h3 class="text-xl font-bold mb-4" id="messageModalTitle"></h3>
+            <p id="messageContent" class="text-gray-700 mb-6"></p>
+            <button id="messageModalCloseBtn" class="w-full font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition duration-200">
+                <i class="fas fa-times-circle mr-2"></i>Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-2 border-blue-500">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">Confirm Action</h3>
+            <p id="confirmMessage" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirmModalCancelBtn" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200">
+                    <i class="fas fa-ban mr-1"></i>Cancel
+                </button>
+                <button id="confirmModalConfirmBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200">
+                    <i class="fas fa-check-circle mr-1"></i>Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extract Tasks Modal -->
+    <div id="extractTasksModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full mx-4 border-2 border-green-500">
+            <h3 class="text-xl font-bold text-green-600 mb-4">Proposed Tasks</h3>
+            <div id="proposedTasksList" class="max-h-80 overflow-y-auto mb-6">
+                <!-- Proposed tasks will be dynamically loaded here -->
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button id="extractTasksCancelBtn" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200">
+                    <i class="fas fa-times mr-1"></i>Cancel
+                </button>
+                <button id="extractTasksConfirmBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-200">
+                    <i class="fas fa-check mr-1"></i>Add Tasks to To-Do
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white hidden z-50">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Firebase SDKs from CDN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- Firebase Configuration ---
+        // This configuration is directly from your provided index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9zXA5vFC67BE-ijLWxbyk6OyZGLavD1c",
+            authDomain: "journal-e3a71.firebaseapp.com",
+            projectId: "journal-e3a71",
+            storageBucket: "journal-e3a71.firebaseapp.com",
+            messagingSenderId: "414736594452",
+            appId: "1:414736594452:web:285ae539d35022713e1901",
+            measurementId: "G-Q4HM4ZYW2X"
+        };
+
+        // Use the projectId from your config as the app ID for the Firestore path
+        // This ensures data is stored under /artifacts/{appId}/users/{userId}/...
+        const APP_ID_FOR_FIRESTORE = firebaseConfig.projectId;
+
+        // --- Initialize Firebase ---
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+
+        // --- Data Storage ---
+        let allJournalEntries = []; // Store all fetched journal entries
+        let editingEntryId = null; // Track which journal entry is being edited
+        let activeTodos = []; // Store all fetched active todos
+        let archivedTodos = []; // Store all fetched archived todos
+        let editingTodoId = null; // Track which todo entry is being edited
+        let availableTags = new Set(); // Store all unique tags used by the user for autocomplete
+        let currentSelectedTags = new Set(); // Tags for the new/edited entry
+        let proposedTasks = []; // Store tasks extracted by LLM for editing
+
+        // --- DOM Elements (Journal) ---
+        const journalEntryInput = document.getElementById('journalEntryInput');
+        const entryTypeSelect = document.getElementById('entryType');
+        const saveEntryBtn = document.getElementById('saveEntryBtn');
+        const extractTasksBtn = document.getElementById('extractTasksBtn'); // New button
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const searchEntryInput = document.getElementById('searchEntryInput');
+        const startDateInput = document.getElementById('startDateInput');
+        const endDateInput = document.getElementById('endDateInput');
+        const entriesList = document.getElementById('entriesList');
+        const noEntriesMessage = document.getElementById('noEntriesMessage');
+        const noSearchResultsMessage = document.getElementById('noSearchResultsMessage');
+
+        // --- DOM Elements (Tags) ---
+        const tagInput = document.getElementById('tagInput');
+        const selectedTagsContainer = document.getElementById('selectedTagsContainer');
+        const autocompleteSuggestions = document.getElementById('autocompleteSuggestions');
+
+        // --- DOM Elements (To-Do) ---
+        const todoInput = document.getElementById('todoInput');
+        const addTodoBtn = document.getElementById('addTodoBtn');
+        const archiveCompletedBtn = document.getElementById('archiveCompletedBtn');
+        const todoList = document.getElementById('todoList');
+        const archivedTodoList = document.getElementById('archivedTodoList');
+        const noTodosMessage = document.getElementById('noTodosMessage');
+        const noArchivedTodosMessage = document.getElementById('noArchivedTodosMessage');
+
+        // --- DOM Elements (Auth & General App) ---
+        const authSection = document.getElementById('authSection');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginEmailInput = document.getElementById('loginEmail');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerEmailInput = document.getElementById('registerEmail');
+        const registerPasswordInput = document.getElementById('registerPassword');
+        const registerBtn = document.getElementById('registerBtn');
+        const showRegisterLink = document.getElementById('showRegisterLink');
+        const showLoginLink = document.getElementById('showLoginLink');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const appContent = document.getElementById('appContent');
+        const currentUserIdDisplay = document.getElementById('currentUserId');
+
+        // Modal Elements (Error only)
+        const messageModal = document.getElementById('messageModal');
+        const messageModalContent = document.getElementById('messageModalContent');
+        const messageModalTitle = document.getElementById('messageModalTitle');
+        const messageContentDiv = document.getElementById('messageContent');
+        const messageModalCloseBtn = document.getElementById('messageModalCloseBtn');
+
+        // Confirmation Modal
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessageDiv = document.getElementById('confirmMessage');
+        const confirmModalCancelBtn = document.getElementById('confirmModalCancelBtn');
+        const confirmModalConfirmBtn = document.getElementById('confirmModalConfirmBtn');
+        let pendingConfirmAction = null; // Function to call on confirm
+
+        // Extract Tasks Modal
+        const extractTasksModal = document.getElementById('extractTasksModal');
+        const proposedTasksList = document.getElementById('proposedTasksList');
+        const extractTasksCancelBtn = document.getElementById('extractTasksCancelBtn');
+        const extractTasksConfirmBtn = document.getElementById('extractTasksConfirmBtn');
+
+        // Loading Spinner
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Toast Notification
+        const toastNotification = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        let toastTimeout; // To clear previous timeouts
+
+        // --- Utility Functions ---
+
+        /**
+         * Shows the global loading spinner.
+         */
+        function showLoading() {
+            loadingSpinner.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the global loading spinner.
+         */
+        function hideLoading() {
+            loadingSpinner.classList.add('hidden');
+        }
+
+        /**
+         * Displays a modal with a custom message, title, and styling for errors.
+         * @param {HTMLElement} modalElement The modal container element (messageModal).
+         * @param {HTMLElement} titleElement The element to display the modal title (messageModalTitle).
+         * @param {HTMLElement} messageElement The element to display the modal message (messageContentDiv).
+         * @param {string} message The message content.
+         * @param {string} type The type of message ('error').
+         */
+        function showMessageModal(modalElement, titleElement, messageElement, message, type) {
+            messageElement.textContent = message;
+            titleElement.textContent = 'Error!'; // Always 'Error!' for this modal
+
+            // Reset classes
+            messageModalContent.classList.remove('border-green-500'); // Ensure no success border
+            messageModalTitle.classList.remove('text-green-600'); // Ensure no success text color
+            messageModalCloseBtn.classList.remove('bg-green-500', 'hover:bg-green-600', 'focus:ring-green-400');
+
+            // Apply error-specific classes
+            messageModalContent.classList.add('border-red-500');
+            messageModalTitle.classList.add('text-red-600');
+            messageModalCloseBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'focus:ring-red-400');
+
+            modalElement.classList.remove('hidden');
+        }
+
+        /**
+         * Displays the confirmation modal.
+         * @param {HTMLElement} modalElement The modal container element (confirmModal).
+         * @param {HTMLElement} messageElement The element to display the confirmation message (confirmMessageDiv).
+         * @param {string} message The confirmation message content.
+         */
+        function showConfirmModal(modalElement, messageElement, message) {
+            messageElement.textContent = message;
+            modalElement.classList.remove('hidden');
+        }
+
+        /**
+         * Displays a toast notification.
+         * @param {string} message The message to display.
+         * @param {'success'|'error'} type The type of toast (determines color).
+         * @param {number} duration The duration in milliseconds before the toast hides (default 3000).
+         */
+        function showToast(message, type, duration = 3000) {
+            clearTimeout(toastTimeout); // Clear any existing toast timeout
+
+            toastMessage.textContent = message;
+            toastNotification.classList.remove('hidden', 'success', 'error', 'show'); // Reset classes
+            toastNotification.classList.add(type); // Add type-specific class for styling
+
+            // Force reflow to restart animation
+            void toastNotification.offsetWidth;
+            toastNotification.classList.add('show');
+
+            toastTimeout = setTimeout(() => {
+                toastNotification.classList.remove('show');
+                // Hide completely after transition
+                setTimeout(() => toastNotification.classList.add('hidden'), 300); // Match CSS transition duration
+            }, duration);
+        }
+
+        function hideModal(modalElement) {
+            modalElement.classList.add('hidden');
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Loading...';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Helper to format date for display (e.g., "July 1, 2025")
+        function formatDateForSeparator(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function showAppContent() {
+            authSection.style.display = 'none';
+            appContent.style.display = 'block';
+            journalEntryInput.focus();
+        }
+
+        function showAuthSection() {
+            authSection.style.display = 'block';
+            appContent.style.display = 'none';
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginEmailInput.value = '';
+            loginPasswordInput.value = '';
+            registerEmailInput.value = '';
+            registerPasswordInput.value = '';
+        }
+
+        /**
+         * Detects URLs in text and converts them into clickable hyperlinks.
+         * It also attempts to remove common trailing punctuation from the URL.
+         * @param {string} text The input text potentially containing URLs.
+         * @returns {string} The text with URLs converted to hyperlinks.
+         */
+        function autolink(text) {
+            // Regex to find URLs. It matches characters that are NOT whitespace, quotes, or angle brackets.
+            // This is still simple but handles most common URL characters.
+            // It also includes a non-capturing group for common URL endings that should not be part of the link
+            const urlRegex = /(https?:\/\/[^\s<>"'()]+|www\.[^\s<>"'()]+)(?=[.,;!?'")\s]|$)/g;
+
+            return text.replace(urlRegex, (match) => {
+                let url = match;
+                let displayUrl = match; // The text to display for the link
+
+                // Prepend http:// if the URL starts with www. and not http(s)://
+                if (url.startsWith('www.') && !url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'http://' + url;
+                }
+
+                // Return the matched URL wrapped in an anchor tag with Tailwind styling
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${displayUrl}</a>`;
+            });
+        }
+
+        /**
+         * Handles Tab and Shift+Tab for indentation in textareas.
+         * Also handles auto-bullet/checkbox on Enter.
+         * @param {Event} event The keyboard event.
+         */
+        function handleTextareaKeydown(event) {
+            const textarea = event.target;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const value = textarea.value;
+
+            // Get the current line and its start/end indices
+            const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+            const lineEnd = value.indexOf('\n', start);
+            const currentLine = value.substring(lineStart, lineEnd === -1 ? value.length : lineEnd);
+
+            // Regex to find existing indentation and the bullet/checkbox prefix
+            const bulletOrCheckboxRegex = /^(\s*)([-*] |\[\] )/;
+            const match = currentLine.match(bulletOrCheckboxRegex);
+            const existingIndent = match ? match[1] : '';
+            const bulletPrefix = match ? match[2] : '';
+
+            // --- Tab Indentation ---
+            if (event.key === 'Tab') {
+                event.preventDefault(); // Prevent default tab behavior (focusing next element)
+
+                if (event.shiftKey) {
+                    // Shift + Tab (Outdent)
+                    let newIndent = existingIndent;
+                    let cursorShift = 0;
+
+                    if (existingIndent.startsWith('\t')) {
+                        newIndent = existingIndent.substring(1);
+                        cursorShift = -1;
+                    } else if (existingIndent.startsWith('  ')) {
+                        newIndent = existingIndent.substring(2);
+                        cursorShift = -2;
+                    }
+
+                    if (newIndent !== existingIndent) {
+                        const newLine = newIndent + bulletPrefix + currentLine.substring(existingIndent.length + bulletPrefix.length);
+                        // Use setRangeText for efficient update
+                        textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
+                        textarea.selectionStart = textarea.selectionEnd = start + cursorShift;
+                    } else if (!match && currentLine.startsWith('  ')) { // If not a bullet, but starts with spaces
+                         const newLine = currentLine.substring(2);
+                         // Use setRangeText for efficient update
+                         textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
+                         textarea.selectionStart = textarea.selectionEnd = start - 2;
+                    }
+                } else {
+                    // Tab (Indent)
+                    const indentToAdd = '\t'; // Or '  ' for 2 spaces
+                    const newLine = indentToAdd + currentLine;
+                    // Use setRangeText for efficient update
+                    textarea.setRangeText(newLine, lineStart, lineEnd === -1 ? value.length : lineEnd, 'end');
+                    textarea.selectionStart = textarea.selectionEnd = start + indentToAdd.length;
+                }
+            }
+
+            // --- Auto-Bullet/Checkbox on Enter ---
+            if (event.key === 'Enter' && !event.shiftKey) { // Only on Enter, not Shift+Enter
+                event.preventDefault(); // Prevent default new line behavior
+
+                let newPrefix = '';
+                if (match) { // If current line has a bullet/checkbox
+                    newPrefix = existingIndent + bulletPrefix;
+                } else {
+                    // If it's not a bullet/checkbox, but is indented, carry over just the indentation
+                    const indentMatch = currentLine.match(/^(\s*)/);
+                    if (indentMatch && indentMatch[1].length > 0) {
+                        newPrefix = indentMatch[1];
+                    }
+                }
+
+                // Use setRangeText for efficient update
+                textarea.setRangeText('\n' + newPrefix, start, end, 'end');
+                textarea.selectionStart = textarea.selectionEnd = start + newPrefix.length + 1; // +1 for the newline
+            }
+        }
+
+
+        // --- Core Application Logic ---
+
+        async function initializeAppAndAuth() {
+            showLoading();
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        currentUserIdDisplay.textContent = userId;
+                        showAppContent(); // Show main app content
+                        setupFirestoreListeners(); // Start listening for entries and todos
+                        fetchAndListenForTags(); // Start listening for tags
+                        showSection('journal'); // Default to journal view
+                    } else {
+                        userId = null; // Clear userId if logged out
+                        availableTags.clear(); // Clear tags on logout
+                        showAuthSection(); // Show auth section
+                    }
+                    hideLoading(); // Hide loading spinner once auth state is determined
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Firebase initialization error: ${error.message}`, 'error');
+                hideLoading();
+            }
+        }
+
+        function setupFirestoreListeners() {
+            if (!db || !userId) return;
+
+            // --- Journal Entries Listener ---
+            const journalQuery = query(
+                collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`),
+                orderBy('timestamp', 'desc')
+            );
+
+            onSnapshot(journalQuery, (snapshot) => {
+                // Capture current IDs for animation purposes
+                const oldEntryIds = new Set(allJournalEntries.map(entry => entry.id));
+
+                allJournalEntries = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Sort entries again to ensure correct date grouping, especially if timestamps are inconsistent
+                allJournalEntries.sort((a, b) => {
+                    const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : new Date(0).getTime();
+                    const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : new Date(0).getTime();
+                    return dateB - dateA; // Descending order
+                });
+
+                renderJournalEntries(allJournalEntries, searchEntryInput.value, oldEntryIds); // Pass old IDs for animation
+                updateJournalEmptyMessages();
+                // Extract all tags from journal entries to populate availableTags for autocomplete
+                allJournalEntries.forEach(entry => {
+                    if (entry.tags && Array.isArray(entry.tags)) {
+                        entry.tags.forEach(tag => availableTags.add(tag));
+                    }
+                });
+            }, (error) => {
+                console.error("Error fetching journal entries:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error fetching journal entries: ${error.message}`, 'error');
+            });
+
+            // --- To-Do Items Listeners ---
+            // Listener for Active To-Dos (not archived)
+            const activeTodosQuery = query(
+                collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`),
+                where('isArchived', '==', false)
+            );
+
+            onSnapshot(activeTodosQuery, (snapshot) => {
+                // Capture current IDs for animation purposes
+                const oldTodoIds = new Set(activeTodos.map(todo => todo.id));
+
+                activeTodos = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                activeTodos.sort((a, b) => {
+                    // Primary sort: starred items first
+                    if (a.isStarred && !b.isStarred) return -1;
+                    if (!a.isStarred && b.isStarred) return 1;
+                    // Secondary sort: by timestamp for non-starred or equally starred items
+                    const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
+                    const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
+                    return dateA - dateB; // Ascending order for active tasks
+                });
+                renderTodos(activeTodos, todoList, 'active', oldTodoIds); // Pass old IDs for animation
+                updateTodoEmptyMessages();
+            }, (error) => {
+                console.error("Error fetching active todos:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error fetching active todos: ${error.message}`, 'error');
+            });
+
+            // Listener for Archived To-Dos
+            const archivedTodosQuery = query(
+                collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`),
+                where('isArchived', '==', true)
+            );
+
+            onSnapshot(archivedTodosQuery, (snapshot) => {
+                // Capture current IDs for animation purposes
+                const oldArchivedTodoIds = new Set(archivedTodos.map(todo => todo.id));
+
+                archivedTodos = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                archivedTodos.sort((a, b) => {
+                    const dateA = a.archivedAt && a.archivedAt.toDate ? a.archivedAt.toDate().getTime() : 0;
+                    const dateB = b.archivedAt && b.archivedAt.toDate ? b.archivedAt.toDate().getTime() : 0;
+                    return dateB - dateA; // Descending order for archived tasks
+                });
+                renderTodos(archivedTodos, archivedTodoList, 'archived', oldArchivedTodoIds); // Pass old IDs for animation
+                updateTodoEmptyMessages();
+            }, (error) => {
+                console.error("Error fetching archived todos:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error fetching archived todos: ${error.message}`, 'error');
+            });
+        }
+
+        // --- Tag Management Functions ---
+        async function fetchAndListenForTags() {
+            if (!db || !userId) return;
+
+            // Optional: If you want to store a dedicated list of all unique tags
+            // for more robust autocomplete, you might have a collection like:
+            // `artifacts/{APP_ID_FOR_FIRESTORE}/users/{userId}/userTags`
+            // For now, we'll populate `availableTags` from journal entries directly.
+            // If you had a dedicated collection, the listener would go here:
+            /*
+            const tagsQuery = query(collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/userTags`));
+            onSnapshot(tagsQuery, (snapshot) => {
+                availableTags.clear();
+                snapshot.docs.forEach(doc => {
+                    availableTags.add(doc.id); // Assuming doc.id is the tag name
+                });
+            }, (error) => {
+                console.error("Error fetching available tags:", error);
+            });
+            */
+        }
+
+        function renderSelectedTags(tags) {
+            // Clear existing tags but keep the input field
+            const inputElement = tagInput;
+            selectedTagsContainer.innerHTML = ''; // Clear everything
+            selectedTagsContainer.appendChild(inputElement); // Re-add input
+
+            tags.forEach(tag => {
+                const tagPill = document.createElement('span');
+                tagPill.className = 'tag-pill';
+                tagPill.innerHTML = `
+                    #${tag}
+                    <i class="fas fa-times-circle tag-pill-remove" data-tag="${tag}"></i>
+                `;
+                selectedTagsContainer.insertBefore(tagPill, inputElement);
+            });
+            tagInput.focus(); // Keep focus on input after rendering tags
+        }
+
+        function addTag(tag) {
+            const normalizedTag = tag.toLowerCase().replace(/^#/, ''); // Remove leading '#' if present
+            if (normalizedTag && !currentSelectedTags.has(normalizedTag)) {
+                currentSelectedTags.add(normalizedTag);
+                renderSelectedTags(Array.from(currentSelectedTags));
+                tagInput.value = ''; // Clear input after adding tag
+                autocompleteSuggestions.classList.add('hidden'); // Hide suggestions
+            }
+        }
+
+        function removeTag(tagToRemove) {
+            currentSelectedTags.delete(tagToRemove);
+            renderSelectedTags(Array.from(currentSelectedTags));
+        }
+
+        function handleTagInput(event) {
+            const query = tagInput.value.trim().toLowerCase();
+            if (query.length > 0) {
+                showAutocompleteSuggestions(query);
+            } else {
+                autocompleteSuggestions.classList.add('hidden');
+            }
+        }
+
+        function showAutocompleteSuggestions(query) {
+            autocompleteSuggestions.innerHTML = '';
+            autocompleteSuggestions.classList.remove('hidden');
+
+            const filteredTags = Array.from(availableTags).filter(tag =>
+                tag.toLowerCase().includes(query) && !currentSelectedTags.has(tag)
+            ).sort(); // Sort alphabetically
+
+            if (filteredTags.length === 0 && !query.startsWith('#')) {
+                autocompleteSuggestions.classList.add('hidden');
+                return;
+            }
+
+            // Add the currently typed text as a suggestion if it's not already a tag or selected
+            const typedTag = query.startsWith('#') ? query.substring(1) : query;
+            if (typedTag && !availableTags.has(typedTag) && !currentSelectedTags.has(typedTag)) {
+                 const typedSuggestion = document.createElement('div');
+                 typedSuggestion.className = 'autocomplete-suggestion-item';
+                 typedSuggestion.textContent = `#${typedTag}`;
+                 typedSuggestion.dataset.tag = typedTag;
+                 autocompleteSuggestions.appendChild(typedSuggestion);
+            }
+
+
+            filteredTags.forEach(tag => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'autocomplete-suggestion-item';
+                suggestionItem.textContent = `#${tag}`;
+                suggestionItem.dataset.tag = tag;
+                autocompleteSuggestions.appendChild(suggestionItem);
+            });
+
+            if (autocompleteSuggestions.children.length === 0) {
+                autocompleteSuggestions.classList.add('hidden');
+            } else {
+                // Highlight the first suggestion by default
+                if (autocompleteSuggestions.children.length > 0) {
+                    autocompleteSuggestions.children[0].classList.add('selected');
+                }
+            }
+        }
+
+        function handleAutocompleteClick(event) {
+            const target = event.target;
+            if (target.classList.contains('autocomplete-suggestion-item')) {
+                addTag(target.dataset.tag);
+            }
+        }
+
+        function handleTagKeydown(event) {
+            const suggestions = Array.from(autocompleteSuggestions.children);
+            let selectedIndex = suggestions.findIndex(s => s.classList.contains('selected'));
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (selectedIndex < suggestions.length - 1) {
+                    if (selectedIndex !== -1) suggestions[selectedIndex].classList.remove('selected');
+                    suggestions[++selectedIndex].classList.add('selected');
+                    suggestions[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (selectedIndex > 0) {
+                    if (selectedIndex !== -1) suggestions[selectedIndex].classList.remove('selected');
+                    suggestions[--selectedIndex].classList.add('selected');
+                    suggestions[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent new line in input
+                if (autocompleteSuggestions.classList.contains('hidden') && tagInput.value.trim() !== '') {
+                    // If no suggestions visible, add the typed tag if it's not empty
+                    addTag(tagInput.value.trim());
+                } else if (selectedIndex !== -1) {
+                    addTag(suggestions[selectedIndex].dataset.tag);
+                }
+            } else if (event.key === 'Escape') {
+                autocompleteSuggestions.classList.add('hidden');
+                tagInput.value = '';
+            } else if (event.key === 'Backspace' && tagInput.selectionStart === 0 && tagInput.selectionEnd === 0) {
+                // If backspace at the very beginning of input, remove the last selected tag
+                event.preventDefault();
+                const lastTag = Array.from(currentSelectedTags).pop();
+                if (lastTag) {
+                    removeTag(lastTag);
+                }
+            }
+        }
+
+        // --- Journal Specific Functions ---
+
+        async function handleSaveEntry() {
+            const entryText = journalEntryInput.value.trim();
+            const entryType = entryTypeSelect.value;
+            const tags = Array.from(currentSelectedTags); // Get tags from the set
+
+            if (!entryText) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Journal entry cannot be empty.", 'error');
+                return;
+            }
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                await addDoc(collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`), {
+                    text: entryText,
+                    type: entryType,
+                    tags: tags, // Save tags
+                    timestamp: serverTimestamp(),
+                });
+                journalEntryInput.value = ''; // Clear input
+                entryTypeSelect.value = 'Note'; // Reset type dropdown
+                currentSelectedTags.clear(); // Clear selected tags
+                renderSelectedTags(Array.from(currentSelectedTags)); // Update tag display
+                journalEntryInput.focus();
+                showToast("Journal entry saved successfully!", 'success');
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error saving entry: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function handleSearchChange() {
+            renderJournalEntries(allJournalEntries, searchEntryInput.value);
+            updateJournalEmptyMessages();
+        }
+
+        const SNIPPET_LENGTH = 250; // Max characters for journal entry snippet
+
+        function renderJournalEntries(entriesToRender, currentSearchQuery, oldEntryIds = new Set()) {
+            // Identify entries to remove (present in old, not in new)
+            const newEntryIds = new Set(entriesToRender.map(entry => entry.id));
+            const entriesToRemove = Array.from(oldEntryIds).filter(id => !newEntryIds.has(id));
+
+            // Apply exit animation to elements being removed
+            entriesToRemove.forEach(id => {
+                const element = entriesList.querySelector(`[data-entry-id="${id}"]`);
+                if (element) {
+                    element.classList.add('item-exit-active');
+                    // Remove element after animation completes
+                    element.addEventListener('transitionend', () => element.remove(), { once: true });
+                }
+            });
+
+            // Clear the list only after old elements have started animating out, or if no old elements
+            if (entriesToRemove.length === 0) {
+                entriesList.innerHTML = '';
+            }
+
+
+            const lowerCaseQuery = currentSearchQuery.toLowerCase();
+            const keywords = lowerCaseQuery.split(' ').filter(word => word.length > 0); // Split query into keywords
+
+            // Get date range values
+            const startDateStr = startDateInput.value;
+            const endDateStr = endDateInput.value;
+
+            // Convert date strings to Date objects for comparison
+            // Set time to start/end of day for inclusive range
+            const startDate = startDateStr ? new Date(startDateStr + 'T00:00:00') : null;
+            const endDate = endDateStr ? new Date(endDateStr + 'T23:59:59') : null;
+
+            const filtered = entriesToRender.filter(entry => {
+                const entryTextLower = entry.text.toLowerCase();
+                const entryTypeLower = (entry.type || '').toLowerCase(); // Ensure type is a string
+                const entryTagsLower = (entry.tags || []).map(tag => tag.toLowerCase()); // Get tags and convert to lowercase
+                const entryTimestamp = entry.timestamp && entry.timestamp.toDate ? entry.timestamp.toDate() : null;
+
+                // Keyword match condition: Check text, type, and tags
+                const keywordMatch = keywords.length === 0 || keywords.every(keyword =>
+                    entryTextLower.includes(keyword) ||
+                    entryTypeLower.includes(keyword) ||
+                    entryTagsLower.some(tag => tag.includes(keyword)) // Check if any tag includes the keyword
+                );
+
+                // Date range match condition
+                let dateMatch = true;
+                if (entryTimestamp) {
+                    if (startDate && entryTimestamp < startDate) {
+                        dateMatch = false;
+                    }
+                    if (endDate && entryTimestamp > endDate) {
+                        dateMatch = false;
+                    }
+                } else {
+                    // If entry has no timestamp, it won't match any date range
+                    dateMatch = false;
+                }
+
+                return keywordMatch && dateMatch;
+            });
+
+            if (filtered.length === 0) {
+                if (lowerCaseQuery || startDateStr || endDateStr) { // Check if any search/filter is active
+                    noSearchResultsMessage.classList.remove('hidden');
+                    noEntriesMessage.classList.add('hidden');
+                } else {
+                    noEntriesMessage.classList.add('hidden');
+                    noSearchResultsMessage.classList.add('hidden');
+                }
+            } else {
+                noEntriesMessage.classList.add('hidden');
+                noSearchResultsMessage.classList.add('hidden');
+            }
+
+            let lastRenderedDate = null;
+
+            filtered.forEach(entry => {
+                const entryDate = entry.timestamp ? new Date(entry.timestamp.toDate().setHours(0, 0, 0, 0)) : null; // Get date part only
+                const formattedEntryDate = entryDate ? formatDateForSeparator(entry.timestamp) : 'Unknown Date';
+
+                // Add a date separator if the date changes
+                if (entryDate && (lastRenderedDate === null || entryDate.getTime() !== lastRenderedDate.getTime())) {
+                    const dateSeparatorDiv = document.createElement('div');
+                    dateSeparatorDiv.className = 'flex items-center space-x-2 my-6'; // Added margin for separation
+                    dateSeparatorDiv.innerHTML = `
+                        <div class="flex-grow border-t border-blue-300"></div>
+                        <span class="text-blue-700 font-semibold text-sm px-3 py-1 bg-blue-100 rounded-full shadow-md">${formattedEntryDate}</span>
+                        <div class="flex-grow border-t border-blue-300"></div>
+                    `;
+                    entriesList.appendChild(dateSeparatorDiv);
+                    lastRenderedDate = entryDate;
+                }
+
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition duration-200 ease-in-out';
+                entryDiv.dataset.entryId = entry.id; // Add data-entry-id for animations
+
+                // Apply enter animation for new elements
+                if (!oldEntryIds.has(entry.id)) {
+                    entryDiv.classList.add('item-enter');
+                    requestAnimationFrame(() => {
+                        entryDiv.classList.add('item-enter-active');
+                    });
+                }
+
+                const entryType = entry.type || 'Note'; // Default to 'Note' if type is missing
+                const entryTags = entry.tags || []; // Get tags, default to empty array
+
+                if (editingEntryId === entry.id) {
+                    // Edit mode: textarea with Save/Cancel buttons and type dropdown
+                    entryDiv.innerHTML = `
+                        <div class="space-y-4">
+                            <label for="editEntryType_${entry.id}" class="block text-gray-700 text-sm font-semibold">Entry Type:</label>
+                            <select id="editEntryType_${entry.id}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm mb-2">
+                                <option value="Note" ${entryType === 'Note' ? 'selected' : ''}>Note</option>
+                                <option value="Event" ${entryType === 'Event' ? 'selected' : ''}>Event</option>
+                                <option value="Feelings" ${entryType === 'Feelings' ? 'selected' : ''}>Feelings</option>
+                            </select>
+
+                            <textarea
+                                id="editInput_${entry.id}"
+                                class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 resize-y min-h-[120px] text-gray-800 text-sm shadow-sm font-mono-custom"
+                                rows="5"
+                            >${entry.text}</textarea>
+
+                            <!-- Tags Edit Input -->
+                            <div class="relative">
+                                <label for="editTagInput_${entry.id}" class="block text-gray-700 text-sm font-semibold mb-1">Tags:</label>
+                                <div id="editSelectedTagsContainer_${entry.id}" class="flex flex-wrap items-center gap-2 mb-2 p-2 border border-gray-300 rounded-lg">
+                                    <!-- Existing tags will be rendered here -->
+                                    <input
+                                        type="text"
+                                        id="editTagInput_${entry.id}"
+                                        class="flex-grow min-w-[100px] p-2 border-none outline-none focus:ring-0 text-gray-800 text-sm"
+                                        placeholder="Add tags (e.g., #work, #idea)"
+                                    />
+                                </div>
+                                <div id="editAutocompleteSuggestions_${entry.id}" class="autocomplete-suggestions hidden">
+                                    <!-- Autocomplete suggestions will appear here -->
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-2">
+                                <button data-action="cancel-edit" data-entry-id="${entry.id}"
+                                    class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button data-action="save-edit" data-entry-id="${entry.id}"
+                                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200">
+                                    <i class="fas fa-check"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    entriesList.appendChild(entryDiv);
+
+                    // Initialize tags for editing
+                    currentSelectedTags = new Set(entryTags); // Load existing tags into the set
+                    renderEditSelectedTags(entry.id, Array.from(currentSelectedTags));
+
+                    // Focus and set cursor at end of text
+                    const editInput = document.getElementById(`editInput_${entry.id}`);
+                    if (editInput) {
+                        editInput.focus();
+                        editInput.setSelectionRange(editInput.value.length, editInput.value.length);
+                        // Attach keydown listener for edit input
+                        editInput.addEventListener('keydown', handleTextareaKeydown);
+                    }
+
+                    // Attach event listeners for edit tags input
+                    const editTagInput = document.getElementById(`editTagInput_${entry.id}`);
+                    editTagInput.addEventListener('input', (e) => handleEditTagInput(e, entry.id));
+                    editTagInput.addEventListener('keydown', (e) => handleEditTagKeydown(e, entry.id));
+                    document.getElementById(`editSelectedTagsContainer_${entry.id}`).addEventListener('click', (e) => {
+                        if (e.target.classList.contains('tag-pill-remove')) {
+                            removeEditTag(entry.id, e.target.dataset.tag);
+                        }
+                    });
+                    document.getElementById(`editAutocompleteSuggestions_${entry.id}`).addEventListener('click', (e) => handleEditAutocompleteClick(e, entry.id));
+
+
+                } else {
+                    // View mode: Plain text rendering with Edit/Delete buttons and Type badge
+                    // Apply autolink function here
+                    const fullText = entry.text.trim();
+                    let displayedText = fullText;
+                    let isSnippet = false;
+
+                    if (fullText.length > SNIPPET_LENGTH) {
+                        displayedText = fullText.substring(0, SNIPPET_LENGTH) + '...';
+                        isSnippet = true;
+                    }
+
+                    // Generate tags HTML
+                    const tagsHtml = entryTags.map(tag => `<span class="tag-pill">#${tag}</span>`).join('');
+
+
+                    entryDiv.innerHTML = `
+                        <div>
+                            <p class="text-gray-800 text-sm mb-2 whitespace-pre-wrap entry-text-content" data-full-text="${encodeURIComponent(fullText)}">${autolink(displayedText)}</p>
+                            ${isSnippet ? `<span class="read-more-btn" data-action="toggle-read-more" data-entry-id="${entry.id}">Read More</span>` : ''}
+                            <div class="flex flex-wrap gap-y-1 mt-2 mb-3">
+                                ${tagsHtml}
+                            </div>
+                            <div class="flex justify-between items-center mt-3">
+                                <p class="text-gray-500 text-xs font-medium flex flex-wrap items-baseline">
+                                    ${formatTimestamp(entry.timestamp)}
+                                    <span class="ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                                        entryType === 'Note' ? 'bg-green-100 text-green-700' :
+                                        entryType === 'Event' ? 'bg-purple-100 text-purple-700' :
+                                        entryType === 'Feelings' ? 'bg-orange-100 text-orange-700' :
+                                        'bg-gray-100 text-gray-700'
+                                    }">
+                                        ${entryType}
+                                    </span>
+                                </p>
+                                <div class="flex space-x-2">
+                                    <button data-action="edit" data-entry-id="${entry.id}" data-entry-text="${encodeURIComponent(entry.text)}"
+                                        class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-md transition duration-200">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button data-action="delete" data-entry-id="${entry.id}"
+                                        class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-md transition duration-200">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    entriesList.appendChild(entryDiv);
+                }
+            });
+        }
+
+        function renderEditSelectedTags(entryId, tags) {
+            const editSelectedTagsContainer = document.getElementById(`editSelectedTagsContainer_${entryId}`);
+            if (!editSelectedTagsContainer) return;
+
+            const editTagInput = document.getElementById(`editTagInput_${entryId}`);
+            editSelectedTagsContainer.innerHTML = ''; // Clear existing tags
+            editSelectedTagsContainer.appendChild(editTagInput); // Re-add input
+
+            tags.forEach(tag => {
+                const tagPill = document.createElement('span');
+                tagPill.className = 'tag-pill';
+                tagPill.innerHTML = `
+                    #${tag}
+                    <i class="fas fa-times-circle tag-pill-remove" data-tag="${tag}"></i>
+                `;
+                editSelectedTagsContainer.insertBefore(tagPill, editTagInput);
+            });
+            editTagInput.focus();
+        }
+
+        function addEditTag(entryId, tag) {
+            const normalizedTag = tag.toLowerCase().replace(/^#/, '');
+            if (normalizedTag && !currentSelectedTags.has(normalizedTag)) {
+                currentSelectedTags.add(normalizedTag);
+                renderEditSelectedTags(entryId, Array.from(currentSelectedTags));
+                const editTagInput = document.getElementById(`editTagInput_${entryId}`);
+                if (editTagInput) editTagInput.value = '';
+                const editAutocompleteSuggestions = document.getElementById(`editAutocompleteSuggestions_${entryId}`);
+                if (editAutocompleteSuggestions) editAutocompleteSuggestions.classList.add('hidden');
+            }
+        }
+
+        function removeEditTag(entryId, tagToRemove) {
+            currentSelectedTags.delete(tagToRemove);
+            renderEditSelectedTags(entryId, Array.from(currentSelectedTags));
+        }
+
+        function handleEditTagInput(event, entryId) {
+            const query = event.target.value.trim().toLowerCase();
+            if (query.length > 0) {
+                showEditAutocompleteSuggestions(entryId, query);
+            } else {
+                document.getElementById(`editAutocompleteSuggestions_${entryId}`).classList.add('hidden');
+            }
+        }
+
+        function showEditAutocompleteSuggestions(entryId, query) {
+            const editAutocompleteSuggestions = document.getElementById(`editAutocompleteSuggestions_${entryId}`);
+            editAutocompleteSuggestions.innerHTML = '';
+            editAutocompleteSuggestions.classList.remove('hidden');
+
+            const filteredTags = Array.from(availableTags).filter(tag =>
+                tag.toLowerCase().includes(query) && !currentSelectedTags.has(tag)
+            ).sort();
+
+            // Add the currently typed text as a suggestion if it's not already a tag or selected
+            const typedTag = query.startsWith('#') ? query.substring(1) : query;
+            if (typedTag && !availableTags.has(typedTag) && !currentSelectedTags.has(typedTag)) {
+                const typedSuggestion = document.createElement('div');
+                typedSuggestion.className = 'autocomplete-suggestion-item';
+                typedSuggestion.textContent = `#${typedTag}`;
+                typedSuggestion.dataset.tag = typedTag;
+                editAutocompleteSuggestions.appendChild(typedSuggestion);
+            }
+
+            filteredTags.forEach(tag => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'autocomplete-suggestion-item';
+                suggestionItem.textContent = `#${tag}`;
+                suggestionItem.dataset.tag = tag;
+                editAutocompleteSuggestions.appendChild(suggestionItem);
+            });
+
+            if (editAutocompleteSuggestions.children.length === 0) {
+                editAutocompleteSuggestions.classList.add('hidden');
+            } else {
+                if (editAutocompleteSuggestions.children.length > 0) {
+                    editAutocompleteSuggestions.children[0].classList.add('selected');
+                }
+            }
+        }
+
+        function handleEditAutocompleteClick(event, entryId) {
+            const target = event.target;
+            if (target.classList.contains('autocomplete-suggestion-item')) {
+                addEditTag(entryId, target.dataset.tag);
+            }
+        }
+
+        function handleEditTagKeydown(event, entryId) {
+            const editAutocompleteSuggestions = document.getElementById(`editAutocompleteSuggestions_${entryId}`);
+            const suggestions = Array.from(editAutocompleteSuggestions.children);
+            let selectedIndex = suggestions.findIndex(s => s.classList.contains('selected'));
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (selectedIndex < suggestions.length - 1) {
+                    if (selectedIndex !== -1) suggestions[selectedIndex].classList.remove('selected');
+                    suggestions[++selectedIndex].classList.add('selected');
+                    suggestions[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (selectedIndex > 0) {
+                    if (selectedIndex !== -1) suggestions[selectedIndex].classList.remove('selected');
+                    suggestions[--selectedIndex].classList.add('selected');
+                    suggestions[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                const editTagInput = document.getElementById(`editTagInput_${entryId}`);
+                if (editAutocompleteSuggestions.classList.contains('hidden') && editTagInput.value.trim() !== '') {
+                    addEditTag(entryId, editTagInput.value.trim());
+                } else if (selectedIndex !== -1) {
+                    addEditTag(entryId, suggestions[selectedIndex].dataset.tag);
+                }
+            } else if (event.key === 'Escape') {
+                editAutocompleteSuggestions.classList.add('hidden');
+                document.getElementById(`editTagInput_${entryId}`).value = '';
+            } else if (event.key === 'Backspace' && event.target.selectionStart === 0 && event.target.selectionEnd === 0) {
+                event.preventDefault();
+                const lastTag = Array.from(currentSelectedTags).pop();
+                if (lastTag) {
+                    removeEditTag(entryId, lastTag);
+                }
+            }
+        }
+
+        function updateJournalEmptyMessages() {
+            const hasEntries = allJournalEntries.length > 0;
+            const hasSearchQuery = searchEntryInput.value.trim() !== '';
+            const hasStartDate = startDateInput.value.trim() !== '';
+            const hasEndDate = endDateInput.value.trim() !== '';
+
+            const lowerCaseQuery = searchEntryInput.value.toLowerCase();
+            const keywords = lowerCaseQuery.split(' ').filter(word => word.length > 0);
+
+            const startDateStr = startDateInput.value;
+            const endDateStr = endDateInput.value;
+            const startDate = startDateStr ? new Date(startDateStr + 'T00:00:00') : null;
+            const endDate = endDateStr ? new Date(endDateStr + 'T23:59:59') : null;
+
+            const filteredCount = allJournalEntries.filter(entry => {
+                const entryTextLower = entry.text.toLowerCase();
+                const entryTypeLower = (entry.type || '').toLowerCase();
+                const entryTagsLower = (entry.tags || []).map(tag => tag.toLowerCase());
+                const entryTimestamp = entry.timestamp && entry.timestamp.toDate ? entry.timestamp.toDate() : null;
+
+                const keywordMatch = keywords.length === 0 || keywords.every(keyword =>
+                    entryTextLower.includes(keyword) ||
+                    entryTypeLower.includes(keyword) ||
+                    entryTagsLower.some(tag => tag.includes(keyword))
+                );
+
+                let dateMatch = true;
+                if (entryTimestamp) {
+                    if (startDate && entryTimestamp < startDate) {
+                        dateMatch = false;
+                    }
+                    if (endDate && entryTimestamp > endDate) {
+                        dateMatch = false;
+                    }
+                } else {
+                    dateMatch = false;
+                }
+
+                return keywordMatch && dateMatch;
+            }).length;
+
+            // Hide all empty messages initially
+            noEntriesMessage.classList.add('hidden');
+            noSearchResultsMessage.classList.add('hidden');
+
+            if (!hasEntries && (!hasSearchQuery && !hasStartDate && !hasEndDate)) {
+                // Show "Your journal is empty!" if no entries and no active filters/search
+                noEntriesMessage.classList.remove('hidden');
+            } else if ((hasSearchQuery || hasStartDate || hasEndDate) && filteredCount === 0) {
+                // Show "No entries found matching your search." if filters/search are active but no results
+                noSearchResultsMessage.classList.remove('hidden');
+            }
+        }
+
+        async function handleUpdateEntry(entryId, newText) {
+            const editEntryTypeSelect = document.getElementById(`editEntryType_${entryId}`);
+            const newType = editEntryTypeSelect ? editEntryTypeSelect.value : 'Note'; // Get type from edit dropdown
+            const newTags = Array.from(currentSelectedTags); // Get updated tags from the set
+
+            if (!newText.trim()) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Entry cannot be empty.", 'error');
+                return;
+            }
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const entryRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`, entryId);
+                await updateDoc(entryRef, {
+                    text: newText,
+                    type: newType,
+                    tags: newTags, // Update tags
+                });
+                editingEntryId = null; // Exit edit mode
+                currentSelectedTags.clear(); // Clear selected tags after saving
+                renderSelectedTags(Array.from(currentSelectedTags)); // Reset tag input area
+                // The onSnapshot listener will handle re-rendering, so no need to force render here.
+                showToast("Journal entry updated successfully!", 'success');
+            } catch (error) {
+                console.error("Error updating document: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating entry: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleDeleteEntry(entryId) {
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                // Apply exit animation before deleting from Firestore
+                const elementToDelete = entriesList.querySelector(`[data-entry-id="${entryId}"]`);
+                if (elementToDelete) {
+                    element.classList.add('item-exit-active');
+                    element.addEventListener('transitionend', async () => {
+                        const entryRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`, entryId);
+                        await deleteDoc(entryRef);
+                        showToast("Journal entry deleted.", 'success');
+                        hideLoading(); // Hide loading after deletion and toast
+                    }, { once: true });
+                } else {
+                    // If element not found (e.g., already removed or not rendered), proceed with direct delete
+                    const entryRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/journalEntries`, entryId);
+                    await deleteDoc(entryRef);
+                    showToast("Journal entry deleted.", 'success');
+                    hideLoading();
+                }
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error deleting entry: ${error.message}`, 'error');
+                hideLoading();
+            }
+        }
+
+        function handleExportCsv() {
+            if (allJournalEntries.length === 0) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "No entries to export.", 'error');
+                return;
+            }
+            if (!userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Please log in to export entries.", 'error');
+                return;
+            }
+
+            const csvRows = [];
+            // Updated header to include "Tags"
+            csvRows.push(['"Timestamp"', '"Type"', '"Entry Text"', '"Tags"'].join(','));
+
+            allJournalEntries.forEach(entry => {
+                const timestamp = formatTimestamp(entry.timestamp);
+                const entryType = entry.type || 'Note';
+                const entryText = `"${entry.text.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+                const entryTags = (entry.tags || []).map(tag => `#${tag}`).join('; '); // Format tags
+                const tagsCsv = `"${entryTags.replace(/"/g, '""')}"`; // Escape tags for CSV
+
+                csvRows.push([`"${timestamp}"`, `"${entryType}"`, entryText, tagsCsv].join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'journal_entries.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showToast("Journal entries exported to CSV!", 'success');
+        }
+
+        // Handle clicking the Edit button for an entry
+        function handleEditClick(entryData) {
+            editingEntryId = entryData.id;
+            // Find the full entry object to get its tags
+            const entryToEdit = allJournalEntries.find(entry => entry.id === entryData.id);
+            currentSelectedTags = new Set(entryToEdit.tags || []); // Populate currentSelectedTags with entry's tags
+            renderJournalEntries(allJournalEntries, searchEntryInput.value);
+        }
+
+        // Handle cancelling an edit operation
+        function handleCancelEdit() {
+            editingEntryId = null;
+            currentSelectedTags.clear(); // Clear selected tags on cancel
+            renderSelectedTags(Array.from(currentSelectedTags)); // Reset tag input area
+            renderJournalEntries(allJournalEntries, searchEntryInput.value); // Re-render to show view mode
+        }
+
+        // Toggle Read More/Show Less for Journal Entries
+        function toggleReadMore(entryId) {
+            const entryDiv = entriesList.querySelector(`[data-entry-id="${entryId}"]`);
+            if (!entryDiv) return;
+
+            const contentElement = entryDiv.querySelector('.entry-text-content');
+            const readMoreBtn = entryDiv.querySelector('.read-more-btn');
+
+            if (!contentElement || !readMoreBtn) return;
+
+            const fullText = decodeURIComponent(contentElement.dataset.fullText);
+
+            if (contentElement.textContent.endsWith('...')) {
+                // Currently a snippet, expand to full text
+                contentElement.innerHTML = autolink(fullText);
+                readMoreBtn.textContent = 'Show Less';
+            } else {
+                // Currently full text, collapse to snippet
+                contentElement.innerHTML = autolink(fullText.substring(0, SNIPPET_LENGTH) + '...');
+                readMoreBtn.textContent = 'Read More';
+            }
+        }
+
+        // --- Task Extraction Functions ---
+
+        async function handleExtractTasks() {
+            const journalText = journalEntryInput.value.trim();
+            if (!journalText) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Journal entry is empty. Nothing to extract tasks from.", 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const prompt = `Extract a list of distinct, actionable tasks from the following text. Each task should be a concise string. Return the output as a JSON array of strings. If no tasks are found, return an empty array. \n\nText: ${journalText}`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: { "type": "STRING" }
+                        }
+                    }
+                };
+                const apiKey = "AIzaSyBUHFr6rqFvPN6oqN25a_vfIXuORlDqnME"; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    try {
+                        const extractedTasks = JSON.parse(jsonString);
+                        if (Array.isArray(extractedTasks) && extractedTasks.every(item => typeof item === 'string')) {
+                            proposedTasks = extractedTasks.filter(task => task.trim() !== ''); // Filter out empty strings
+                            if (proposedTasks.length > 0) {
+                                showExtractTasksModal(proposedTasks);
+                            } else {
+                                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "No actionable tasks were extracted from the entry.", 'error');
+                            }
+                        } else {
+                            throw new Error("Invalid JSON format: Expected an array of strings.");
+                        }
+                    } catch (parseError) {
+                        console.error("Error parsing LLM response:", parseError);
+                        showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Failed to parse tasks from AI response. Please try again.`, 'error');
+                    }
+                } else {
+                    showMessageModal(messageModal, messageModalTitle, messageContentDiv, "AI could not extract tasks. Please try again or refine your entry.", 'error');
+                }
+            } catch (error) {
+                console.error("Error calling LLM for task extraction:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error extracting tasks: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showExtractTasksModal(tasks) {
+            proposedTasks = [...tasks]; // Copy to allow local edits
+            renderProposedTasks();
+            extractTasksModal.classList.remove('hidden');
+        }
+
+        function renderProposedTasks() {
+            proposedTasksList.innerHTML = '';
+            if (proposedTasks.length === 0) {
+                proposedTasksList.innerHTML = '<p class="text-center text-gray-500 italic">No tasks proposed.</p>';
+                extractTasksConfirmBtn.disabled = true; // Disable add button if no tasks
+            } else {
+                extractTasksConfirmBtn.disabled = false;
+                proposedTasks.forEach((task, index) => {
+                    const taskItemDiv = document.createElement('div');
+                    taskItemDiv.className = 'proposed-task-item';
+                    taskItemDiv.dataset.index = index; // Use index to reference in proposedTasks array
+
+                    taskItemDiv.innerHTML = `
+                        <input type="text" value="${task}" class="flex-grow mr-2" data-index="${index}">
+                        <button class="delete-task-btn" data-index="${index}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                    proposedTasksList.appendChild(taskItemDiv);
+                });
+            }
+        }
+
+        function handleProposedTaskEdit(event) {
+            const index = parseInt(event.target.dataset.index);
+            proposedTasks[index] = event.target.value;
+        }
+
+        function handleProposedTaskDelete(event) {
+            const index = parseInt(event.target.dataset.index);
+            proposedTasks.splice(index, 1); // Remove from array
+            renderProposedTasks(); // Re-render the list
+        }
+
+        async function addProposedTasksToFirestore() {
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+
+            const tasksToAdd = proposedTasks.filter(task => task.trim() !== ''); // Only add non-empty tasks
+
+            if (tasksToAdd.length === 0) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "No valid tasks to add.", 'error');
+                return;
+            }
+
+            hideModal(extractTasksModal); // Hide the modal immediately
+            showLoading();
+            try {
+                const batch = writeBatch(db);
+                tasksToAdd.forEach(taskText => {
+                    const newTodoRef = doc(collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`));
+                    batch.set(newTodoRef, {
+                        text: taskText,
+                        isCompleted: false,
+                        isArchived: false,
+                        isStarred: false,
+                        timestamp: serverTimestamp(),
+                        archivedAt: null
+                    });
+                });
+                await batch.commit();
+                showToast(`${tasksToAdd.length} task(s) added to To-Do list!`, 'success');
+                proposedTasks = []; // Clear proposed tasks after adding
+            } catch (error) {
+                console.error("Error adding proposed tasks to Firestore:", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error adding tasks: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+
+        // --- To-Do Specific Functions ---
+
+        function renderTodos(todosToRender, listElement, type, oldTodoIds = new Set()) {
+            const newTodoIds = new Set(todosToRender.map(todo => todo.id));
+            const existingElements = Array.from(listElement.children); // Get current DOM elements
+
+            // Step 1: Remove elements that are no longer in todosToRender
+            existingElements.forEach(element => {
+                const todoId = element.dataset.todoId;
+                if (todoId && !newTodoIds.has(todoId)) {
+                    // This element should be removed
+                    if (!element.classList.contains('item-exit-active')) { // Avoid re-adding if already animating out
+                        element.classList.add('item-exit-active');
+                        element.addEventListener('transitionend', () => element.remove(), { once: true });
+                    }
+                }
+            });
+
+            // Step 2: Add or update elements that should be present
+            todosToRender.forEach(todo => {
+                let todoDiv = listElement.querySelector(`[data-todo-id="${todo.id}"]`);
+
+                if (!todoDiv) {
+                    // Item is new, create and add
+                    todoDiv = document.createElement('div');
+                    todoDiv.className = `todo-item bg-white py-2 px-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between ${todo.isCompleted ? 'completed' : ''}`;
+                    todoDiv.dataset.todoId = todo.id;
+                    listElement.appendChild(todoDiv); // Append first to allow animation
+                    todoDiv.classList.add('item-enter');
+                    requestAnimationFrame(() => {
+                        todoDiv.classList.add('item-enter-active');
+                    });
+                } else {
+                    // Item exists, ensure its classes are correct (e.g., completed status)
+                    todoDiv.classList.toggle('completed', todo.isCompleted);
+                }
+
+                // For archived items, disable checkbox and hide edit/delete button logic
+                const checkboxDisabled = type === 'archived' ? 'disabled' : '';
+                const isArchived = type === 'archived';
+
+                if (editingTodoId === todo.id && !isArchived) {
+                    // Edit mode for active todos
+                    todoDiv.innerHTML = `
+                        <div class="flex-grow space-y-2">
+                            <input
+                                type="text"
+                                id="editTodoInput_${todo.id}"
+                                class="w-full py-1 px-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-sm"
+                                value="${todo.text}"
+                            />
+                            <div class="flex justify-end space-x-2">
+                                <button data-action="cancel-edit-todo" data-todo-id="${todo.id}"
+                                    class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200 text-xs">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button data-action="save-edit-todo" data-todo-id="${todo.id}"
+                                    class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200 text-xs">
+                                    <i class="fas fa-check"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    // Re-focus and set cursor for edit input if it was just created/updated
+                    const editInput = document.getElementById(`editTodoInput_${todo.id}`);
+                    if (editInput) {
+                        editInput.focus();
+                        editInput.setSelectionRange(editInput.value.length, editInput.value.length);
+                    }
+                } else {
+                    // View mode
+                    const deleteButtonHtml = isArchived ?
+                        `<button data-action="delete" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-md transition duration-200"><i class="fas fa-trash-alt"></i></button>` :
+                        `<button data-action="delete" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-md transition duration-200"><i class="fas fa-trash-alt"></i></button>`;
+
+                    const editButtonHtml = isArchived ? '' :
+                        `<button data-action="edit-todo" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-md transition duration-200"><i class="fas fa-edit"></i></button>`;
+
+                    // Star icon for priority
+                    const starIconHtml = isArchived ? '' :
+                        `<i class="fas fa-star text-lg star-icon ${todo.isStarred ? 'starred' : ''}" data-action="toggle-star" data-todo-id="${todo.id}"></i>`;
+
+                    // Only update innerHTML if it's different to avoid re-rendering and losing focus/state
+                    const newInnerHTML = `
+                        <div class="flex items-center flex-grow">
+                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-2 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete">
+                            <span class="todo-text text-gray-800 text-sm flex-grow break-words">${todo.text}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-2">
+                            ${starIconHtml}
+                            ${editButtonHtml}
+                            ${deleteButtonHtml}
+                        </div>
+                    `;
+                    if (todoDiv.innerHTML.trim() !== newInnerHTML.trim()) {
+                        todoDiv.innerHTML = newInnerHTML;
+                    }
+                }
+            });
+
+            // Finally, ensure any remaining elements that were not in todosToRender (and weren't removed by animation) are gone.
+            // This is a fallback to catch any elements that might have slipped through.
+            Array.from(listElement.children).forEach(element => {
+                const todoId = element.dataset.todoId;
+                if (todoId && !newTodoIds.has(todoId) && !element.classList.contains('item-exit-active')) {
+                    element.remove();
+                }
+            });
+        }
+
+        function updateTodoEmptyMessages() {
+            // Hide all empty messages initially
+            noTodosMessage.classList.add('hidden');
+            noArchivedTodosMessage.classList.add('hidden');
+
+            if (activeTodos.length === 0) {
+                noTodosMessage.classList.remove('hidden');
+            }
+            if (archivedTodos.length === 0) {
+                noArchivedTodosMessage.classList.remove('hidden');
+            }
+        }
+
+        async function handleAddTodo() {
+            const todoText = todoInput.value.trim();
+            if (!todoText) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "To-Do cannot be empty.", 'error');
+                return;
+            }
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                await addDoc(collection(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`), {
+                    text: todoText,
+                    isCompleted: false,
+                    isArchived: false,
+                    isStarred: false, // New field for priority star
+                    timestamp: serverTimestamp(),
+                    archivedAt: null // Will be set when archived
+                });
+                todoInput.value = ''; // Clear input
+                todoInput.focus();
+                showToast("To-Do added successfully!", 'success');
+            } catch (error) {
+                console.error("Error adding todo: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error adding To-Do: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleToggleComplete(todoId, isCompleted, eventTarget) {
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                await updateDoc(todoRef, {
+                    isCompleted: isCompleted,
+                });
+                // Apply bounce animation
+                if (eventTarget) {
+                    eventTarget.classList.add('toggle-bounce');
+                    eventTarget.addEventListener('animationend', () => {
+                        eventTarget.classList.remove('toggle-bounce');
+                    }, { once: true });
+                }
+                showToast(`To-Do marked as ${isCompleted ? 'completed' : 'incomplete'}.`, 'success');
+            } catch (error) {
+                console.error("Error toggling todo complete status: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating To-Do: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleToggleStar(todoId, isStarred, eventTarget) {
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                await updateDoc(todoRef, {
+                    isStarred: isStarred,
+                });
+                // Apply bounce animation
+                if (eventTarget) {
+                    eventTarget.classList.add('toggle-bounce');
+                    eventTarget.addEventListener('animationend', () => {
+                        eventTarget.classList.remove('toggle-bounce');
+                    }, { once: true });
+                }
+                showToast(`To-Do marked as ${isStarred ? 'starred' : 'unstarred'}.`, 'success');
+            } catch (error) {
+                console.error("Error toggling todo star status: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating To-Do priority: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleArchiveCompleted() {
+            console.log("Archive Completed button clicked.");
+            const completedActiveTodos = activeTodos.filter(todo => todo.isCompleted);
+            console.log("Completed active todos found:", completedActiveTodos.length, completedActiveTodos);
+
+            if (completedActiveTodos.length === 0) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "No completed To-Dos to archive.", 'error');
+                console.log("No completed todos to archive.");
+                return;
+            }
+
+            showConfirmModal(confirmModal, confirmMessageDiv, `Are you sure you want to archive ${completedActiveTodos.length} completed To-Dos?`);
+            pendingConfirmAction = async () => {
+                console.log("Confirmation received. Attempting to archive todos.");
+                if (!db || !userId) {
+                    const errorMessage = `Database not ready or user not authenticated. DB: ${!!db}, UserID: ${!!userId}`;
+                    showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error archiving To-Dos: ${errorMessage}`, 'error');
+                    console.error("Archive failed:", errorMessage);
+                    return;
+                }
+                showLoading();
+                try {
+                    const batch = writeBatch(db);
+                    const now = serverTimestamp();
+                    console.log("Starting batch write for archiving.");
+
+                    for (const todo of completedActiveTodos) {
+                        const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todo.id);
+                        batch.update(todoRef, {
+                            isArchived: true,
+                            archivedAt: now,
+                            isStarred: false // Unstar when archived
+                        });
+                        console.log(`Adding todo ${todo.id} to batch for archiving.`);
+                    }
+                    await batch.commit();
+                    console.log("Batch commit successful. Completed todos archived successfully.");
+                    showToast("Completed To-Dos archived successfully!", 'success');
+                } catch (error) {
+                    console.error("Error archiving completed todos during batch commit: ", error);
+                    showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error archiving To-Dos: ${error.message}`, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+        }
+
+        async function handleDeleteTodo(todoId) {
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                // Apply exit animation before deleting from Firestore
+                const elementToDelete = todoList.querySelector(`[data-todo-id="${todoId}"]`) || archivedTodoList.querySelector(`[data-todo-id="${todoId}"]`);
+                if (elementToDelete) {
+                    elementToDelete.classList.add('item-exit-active');
+                    elementToDelete.addEventListener('transitionend', async () => {
+                        const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                        await deleteDoc(todoRef);
+                        console.log("To-Do deleted successfully.");
+                        showToast("To-Do deleted successfully.", 'success');
+                        hideLoading(); // Hide loading after deletion and toast
+                    }, { once: true });
+                } else {
+                    // If element not found (e.g., already removed or not rendered), proceed with direct delete
+                    const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                    await deleteDoc(todoRef);
+                    console.log("To-Do deleted successfully.");
+                    showToast("To-Do deleted successfully.", 'success');
+                    hideLoading();
+                }
+            } catch (error) {
+                console.error("Error deleting todo: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error deleting To-Do: ${error && error.message ? error.message : 'An unknown error occurred.'}`, 'error');
+                hideLoading();
+            }
+        }
+
+        async function handleUpdateTodo(todoId, newText) {
+            if (!newText.trim()) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "To-Do cannot be empty.", 'error');
+                return;
+            }
+            if (!db || !userId) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                await updateDoc(todoRef, {
+                    text: newText,
+                });
+                editingTodoId = null; // Exit edit mode
+                // The onSnapshot listener will handle re-rendering, so no need to force render here.
+                showToast("To-Do updated successfully!", 'success');
+            } catch (error) {
+                console.error("Error updating todo: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating To-Do: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function handleEditTodoClick(todoData) {
+            editingTodoId = todoData.id;
+            renderTodos(activeTodos, todoList, 'active'); // Re-render active todos
+        }
+
+        function handleCancelEditTodo() {
+            editingTodoId = null;
+            renderTodos(activeTodos, todoList, 'active'); // Re-render to show view mode
+        }
+
+        // --- Navigation Logic ---
+        function showSection(sectionName) {
+            // Hide all sections with a fade-out effect
+            journalSection.classList.add('hidden');
+            todoSection.classList.add('hidden');
+
+            // Deactivate all tab buttons
+            journalTabBtn.classList.remove('active');
+            todoTabBtn.classList.remove('active');
+
+            // Show the requested section and activate its tab with a fade-in effect
+            if (sectionName === 'journal') {
+                journalSection.classList.remove('hidden');
+                journalTabBtn.classList.add('active');
+                journalEntryInput.focus(); // Focus on journal input
+            } else if (sectionName === 'todo') {
+                todoSection.classList.remove('hidden');
+                todoTabBtn.classList.add('active');
+                todoInput.focus(); // Focus on todo input
+            }
+        }
+
+
+        // --- Event Listeners ---
+        window.onload = initializeAppAndAuth;
+
+        // Auth related event listeners
+        loginBtn.addEventListener('click', async () => {
+            showLoading();
+            try {
+                await handleLogin();
+            } finally {
+                hideLoading();
+            }
+        });
+        registerBtn.addEventListener('click', async () => {
+            showLoading();
+            try {
+                await handleRegister();
+            } finally {
+                hideLoading();
+            }
+        });
+        logoutBtn.addEventListener('click', async () => {
+            showLoading();
+            try {
+                await handleLogout();
+            } finally {
+                hideLoading();
+            }
+        });
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerEmailInput.focus();
+        });
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            loginEmailInput.focus();
+        });
+
+        // Journal related event listeners
+        saveEntryBtn.addEventListener('click', handleSaveEntry);
+        extractTasksBtn.addEventListener('click', handleExtractTasks); // New event listener for task extraction
+        exportCsvBtn.addEventListener('click', handleExportCsv);
+
+        // Listen for changes on both keyword search and date inputs
+        searchEntryInput.addEventListener('input', handleSearchChange);
+        startDateInput.addEventListener('change', handleSearchChange); // 'change' for date inputs
+        endDateInput.addEventListener('change', handleSearchChange);   // 'change' for date inputs
+
+        // Event delegation for dynamically added Journal Edit/Delete/Save/Cancel/Read More buttons
+        entriesList.addEventListener('click', (event) => {
+            const target = event.target;
+            const action = target.dataset.action;
+            const entryId = target.dataset.entryId;
+            const entryText = target.dataset.entryText ? decodeURIComponent(target.dataset.entryText) : '';
+
+            if (action === 'edit') {
+                handleEditClick({ id: entryId, text: entryText });
+            } else if (action === 'delete') {
+                showConfirmModal(confirmModal, confirmMessageDiv, "Are you sure you want to delete this entry? This action cannot be undone.");
+                pendingConfirmAction = () => handleDeleteEntry(entryId);
+            } else if (action === 'cancel-edit') {
+                handleCancelEdit();
+            } else if (action === 'save-edit') {
+                const editInput = document.getElementById(`editInput_${entryId}`);
+                if (editInput) {
+                    handleUpdateEntry(entryId, editInput.value);
+                }
+            } else if (action === 'toggle-read-more') {
+                toggleReadMore(entryId);
+            }
+        });
+
+        // Attach keydown listener to the main journal input
+        journalEntryInput.addEventListener('keydown', handleTextareaKeydown);
+
+        // Tag input event listeners for new entry
+        tagInput.addEventListener('input', handleTagInput);
+        tagInput.addEventListener('keydown', handleTagKeydown);
+        autocompleteSuggestions.addEventListener('click', handleAutocompleteClick);
+        selectedTagsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('tag-pill-remove')) {
+                removeTag(event.target.dataset.tag);
+            }
+        });
+        // Hide autocomplete suggestions when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!autocompleteSuggestions.contains(event.target) && event.target !== tagInput) {
+                autocompleteSuggestions.classList.add('hidden');
+            }
+        });
+
+        // Extract Tasks Modal event listeners
+        extractTasksCancelBtn.addEventListener('click', () => hideModal(extractTasksModal));
+        extractTasksConfirmBtn.addEventListener('click', addProposedTasksToFirestore);
+        proposedTasksList.addEventListener('input', handleProposedTaskEdit);
+        proposedTasksList.addEventListener('click', (event) => {
+            if (event.target.classList.contains('fa-trash-alt')) { // Check for the icon
+                handleProposedTaskDelete(event);
+            }
+        });
+
+
+        // To-Do related event listeners
+        addTodoBtn.addEventListener('click', handleAddTodo);
+        todoInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleAddTodo();
+            }
+        });
+        archiveCompletedBtn.addEventListener('click', handleArchiveCompleted);
+
+        // Event delegation for dynamically added To-Do checkboxes, delete, edit, save, cancel, and star buttons
+        todoList.addEventListener('change', (event) => {
+            const target = event.target;
+            if (target.matches('input[type="checkbox"][data-action="toggle-complete"]')) {
+                const todoId = target.closest('.todo-item').dataset.todoId;
+                handleToggleComplete(todoId, target.checked, target); // Pass target for animation
+            }
+        });
+
+        todoList.addEventListener('click', (event) => {
+            const target = event.target;
+            const action = target.dataset.action;
+            const todoId = target.closest('.todo-item').dataset.todoId;
+
+            if (action === 'delete') {
+                showConfirmModal(confirmModal, confirmMessageDiv, "Are you sure you want to delete this To-Do? This action cannot be undone.");
+                pendingConfirmAction = () => handleDeleteTodo(todoId);
+            } else if (action === 'edit-todo') {
+                const todoTextElement = target.closest('.todo-item').querySelector('.todo-text');
+                handleEditTodoClick({ id: todoId, text: todoTextElement.textContent });
+            } else if (action === 'save-edit-todo') {
+                const editInput = document.getElementById(`editTodoInput_${todoId}`);
+                if (editInput) {
+                    handleUpdateTodo(todoId, editInput.value);
+                }
+            } else if (action === 'cancel-edit-todo') {
+                handleCancelEditTodo();
+            } else if (action === 'toggle-star') {
+                // Find the current starred status from the activeTodos array
+                const todoItem = activeTodos.find(todo => todo.id === todoId);
+                if (todoItem) {
+                    handleToggleStar(todoId, !todoItem.isStarred, target); // Pass target for animation
+                }
+            }
+        });
+
+        archivedTodoList.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target.dataset.action === 'delete') {
+                showConfirmModal(confirmModal, confirmMessageDiv, "Are you sure you want to delete this archived To-Do? This action cannot be undone.");
+                pendingConfirmAction = () => handleDeleteTodo(todoId);
+            }
+        });
+
+        // Modal close buttons
+        messageModalCloseBtn.addEventListener('click', () => hideModal(messageModal)); // Updated element reference
+        confirmModalCancelBtn.addEventListener('click', () => {
+            hideModal(confirmModal);
+            pendingConfirmAction = null;
+        });
+        confirmModalConfirmBtn.addEventListener('click', () => {
+            if (pendingConfirmAction) {
+                pendingConfirmAction();
+            }
+            hideModal(confirmModal); // Hide after action is performed
+        });
+
+        // Navigation tab listeners
+        journalTabBtn.addEventListener('click', () => showSection('journal'));
+        todoTabBtn.addEventListener('click', () => showSection('todo'));
+
+        // Initial calls to update empty messages (before entries are loaded)
+        // These will be called again by the onSnapshot listeners
+        updateJournalEmptyMessages();
+        updateTodoEmptyMessages();
+
+        // --- Authentication Functions (from your original index.html) ---
+        async function handleRegister() {
+            const email = registerEmailInput.value;
+            const password = registerPasswordInput.value;
+            if (!email || !password) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Please enter both email and password to register.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                console.log("User registered and logged in:", userCredential.user.uid);
+                showToast("Registration successful!", 'success');
+                // onAuthStateChanged will handle UI update
+            } catch (error) {
+                console.error("Error registering:", error.code, error.message);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Registration error: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleLogin() {
+            const email = loginEmailInput.value;
+            const password = loginPasswordInput.value;
+            if (!email || !password) {
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Please enter both email and password to login.", 'error');
+                return;
+            }
+            showLoading();
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log("User logged in:", userCredential.user.uid);
+                showToast("Logged in successfully!", 'success');
+                // onAuthStateChanged will handle UI update
+            } catch (error) {
+                console.error("Error logging in:", error.code, error.message);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Login error: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleLogout() {
+            showLoading();
+            try {
+                await signOut(auth);
+                console.log("User logged out.");
+                showToast("Logged out successfully!", 'success');
+                // onAuthStateChanged will handle UI update (showAuthSection)
+            } catch (error) {
+                console.error("Error logging out:", error.message);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Logout error: ${error.message}`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+    </script>
+</body>
+</html>
