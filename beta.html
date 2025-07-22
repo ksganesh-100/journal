@@ -40,15 +40,6 @@
             color: #4338ca; /* Indigo 700 */
             font-weight: 600;
         }
-        /* Star icon styling */
-        .star-icon {
-            cursor: pointer;
-            color: #cbd5e1; /* gray-400 for unstarred */
-            transition: color 0.2s ease-in-out;
-        }
-        .star-icon.starred {
-            color: #fbbf24; /* amber-400 for starred */
-        }
 
         /* Loading Spinner Styling */
         #loadingSpinner {
@@ -104,15 +95,8 @@
         }
         .item-exit-active {
             opacity: 0;
-            /* Use height: 0 and margin: 0 to collapse the space */
-            max-height: 0;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            border-width: 0 !important;
-            overflow: hidden;
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out, margin 0.3s ease-out, padding 0.3s ease-out, border-width 0.3s ease-out;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
 
         /* Bounce/Scale for Toggles (Checkbox/Star) */
@@ -234,6 +218,45 @@
         .proposed-task-item .delete-task-btn:hover {
             color: #dc2626; /* red-600 */
         }
+
+        /* Status Dropdown Styling */
+        .status-select {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500;
+            border: 1px solid #d1d5db; /* gray-300 */
+            background-color: #f9fafb; /* gray-50 */
+            color: #374151; /* gray-700 */
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .status-select:hover {
+            border-color: #9ca3af; /* gray-400 */
+        }
+        .status-select:focus {
+            border-color: #6366f1; /* indigo-500 */
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        .status-select.not-started { background-color: #fef3c7; color: #b45309; } /* Amber 100 / Amber 700 */
+        .status-select.wip { background-color: #bfdbfe; color: #1e40af; } /* Blue 200 / Blue 800 */
+        .status-select.waiting-blocked { background-color: #fecaca; color: #b91c1c; } /* Red 200 / Red 800 */
+        .status-select.completed-status { background-color: #d1fae5; color: #065f46; } /* Green 100 / Green 800 */
+
+        /* Due Date Styling */
+        .due-date-display {
+            font-size: 0.75rem; /* text-xs */
+            color: #6b7280; /* gray-500 */
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .due-date-display.overdue {
+            color: #dc2626; /* Red 600 */
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="p-4">
@@ -331,7 +354,7 @@
                     </button>
                     <button
                         id="extractTasksBtn"
-                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity75 mt-2"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 mt-2"
                     >
                         <i class="fas fa-tasks mr-2"></i>Extract Tasks from Entry
                     </button>
@@ -393,6 +416,10 @@
                         class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
                         placeholder="Add a new To-Do..."
                     />
+                    <div class="w-full">
+                        <label for="todoDueDateInput" class="block text-gray-700 text-sm font-semibold mb-1">Due Date (Optional):</label>
+                        <input type="date" id="todoDueDateInput" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-base shadow-sm">
+                    </div>
                     <button
                         id="addTodoBtn"
                         class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
@@ -551,6 +578,7 @@
 
         // --- DOM Elements (To-Do) ---
         const todoInput = document.getElementById('todoInput');
+        const todoDueDateInput = document.getElementById('todoDueDateInput'); // New: Due Date Input
         const addTodoBtn = document.getElementById('addTodoBtn');
         const archiveCompletedBtn = document.getElementById('archiveCompletedBtn');
         const todoList = document.getElementById('todoList');
@@ -693,6 +721,31 @@
             if (!timestamp) return '';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
             return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // Helper to format a date string (YYYY-MM-DD) for display
+        function formatDueDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString + 'T00:00:00'); // Add T00:00:00 to ensure local date interpretation
+                if (isNaN(date.getTime())) return ''; // Invalid date
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dueDateOnly = new Date(date);
+                dueDateOnly.setHours(0, 0, 0, 0);
+
+                let formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                if (dueDateOnly < today) {
+                    return { text: formatted, isOverdue: true };
+                }
+                return { text: formatted, isOverdue: false };
+
+            } catch (e) {
+                console.error("Error formatting due date:", e);
+                return '';
+            }
         }
 
         function showAppContent() {
@@ -903,11 +956,23 @@
                     id: doc.id,
                     ...doc.data()
                 }));
-                // Sort by timestamp only, to prevent reordering on star toggle
                 activeTodos.sort((a, b) => {
+                    // Sort by status: Not Started, WIP, Waiting/Blocked, then by due date, then by timestamp
+                    const statusOrder = { 'Not Started': 1, 'WIP': 2, 'Waiting / Blocked': 3 };
+                    const statusA = statusOrder[a.status] || 99; // Default to high if status missing
+                    const statusB = statusOrder[b.status] || 99;
+
+                    if (statusA !== statusB) return statusA - statusB;
+
+                    // Then by due date (earliest first, nulls last)
+                    const dueDateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+                    const dueDateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+                    if (dueDateA !== dueDateB) return dueDateA - dueDateB;
+
+                    // Finally by timestamp (oldest first)
                     const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
                     const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
-                    return dateA - dateB; // Ascending order for active tasks
+                    return dateA - dateB;
                 });
                 renderTodos(activeTodos, todoList, 'active', oldTodoIds); // Pass old IDs for animation
                 updateTodoEmptyMessages();
@@ -1830,7 +1895,8 @@
                         text: taskText,
                         isCompleted: false,
                         isArchived: false,
-                        isStarred: false,
+                        status: 'Not Started', // Default status for new tasks
+                        dueDate: null, // Default no due date
                         timestamp: serverTimestamp(),
                         archivedAt: null
                     });
@@ -1860,11 +1926,6 @@
                     // This element should be removed
                     if (!element.classList.contains('item-exit-active')) { // Avoid re-adding if already animating out
                         element.classList.add('item-exit-active');
-                        // Set max-height to its current scrollHeight before setting to 0 to enable smooth transition
-                        element.style.maxHeight = element.scrollHeight + 'px';
-                        requestAnimationFrame(() => {
-                            element.classList.add('item-exit-active');
-                        });
                         element.addEventListener('transitionend', () => element.remove(), { once: true });
                     }
                 }
@@ -1893,6 +1954,14 @@
                 const checkboxDisabled = type === 'archived' ? 'disabled' : '';
                 const isArchived = type === 'archived';
 
+                // Determine status class for styling
+                const statusClass = todo.status ? todo.status.toLowerCase().replace(/\s|\//g, '-') : 'not-started';
+                const dueDateInfo = formatDueDate(todo.dueDate);
+                const dueDateText = dueDateInfo.text;
+                const isOverdue = dueDateInfo.isOverdue;
+                const dueDateClass = isOverdue ? 'overdue' : '';
+
+
                 if (editingTodoId === todo.id && !isArchived) {
                     // Edit mode for active todos
                     todoDiv.innerHTML = `
@@ -1903,6 +1972,18 @@
                                 class="w-full py-1 px-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-sm"
                                 value="${todo.text}"
                             />
+                            <div class="flex items-center gap-2">
+                                <label for="editTodoStatus_${todo.id}" class="text-gray-700 text-xs font-semibold">Status:</label>
+                                <select id="editTodoStatus_${todo.id}" class="status-select flex-grow">
+                                    <option value="Not Started" ${todo.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+                                    <option value="WIP" ${todo.status === 'WIP' ? 'selected' : ''}>WIP</option>
+                                    <option value="Waiting / Blocked" ${todo.status === 'Waiting / Blocked' ? 'selected' : ''}>Waiting / Blocked</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label for="editTodoDueDate_${todo.id}" class="text-gray-700 text-xs font-semibold">Due Date:</label>
+                                <input type="date" id="editTodoDueDate_${todo.id}" class="w-full py-1 px-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-sm" value="${todo.dueDate || ''}">
+                            </div>
                             <div class="flex justify-end space-x-2">
                                 <button data-action="cancel-edit-todo" data-todo-id="${todo.id}"
                                     class="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition duration-200 text-xs">
@@ -1930,23 +2011,39 @@
                     const editButtonHtml = isArchived ? '' :
                         `<button data-action="edit-todo" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-md transition duration-200"><i class="fas fa-edit"></i></button>`;
 
-                    // Star icon for priority
-                    const starIconHtml = isArchived ? '' :
-                        `<i class="fas fa-star text-lg star-icon ${todo.isStarred ? 'starred' : ''}" data-action="toggle-star" data-todo-id="${todo.id}"></i>`;
+                    const statusDropdownHtml = isArchived ? '' : `
+                        <select class="status-select ${statusClass}" data-action="update-status" data-todo-id="${todo.id}">
+                            <option value="Not Started" ${todo.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+                            <option value="WIP" ${todo.status === 'WIP' ? 'selected' : ''}>WIP</option>
+                            <option value="Waiting / Blocked" ${todo.status === 'Waiting / Blocked' ? 'selected' : ''}>Waiting / Blocked</option>
+                            ${todo.isCompleted ? '<option value="Completed" selected>Completed</option>' : ''}
+                        </select>
+                    `;
+
+                    const dueDateHtml = dueDateText ? `
+                        <span class="due-date-display ${dueDateClass}">
+                            <i class="far fa-calendar-alt"></i> ${dueDateText}
+                        </span>
+                    ` : '';
+
 
                     // Only update innerHTML if it's different to avoid re-rendering and losing focus/state
                     const newInnerHTML = `
-                        <div class="flex items-center flex-grow">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-2 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete">
-                            <span class="todo-text text-gray-800 text-sm flex-grow break-words">${todo.text}</span>
+                        <div class="flex items-start flex-grow flex-col">
+                            <div class="flex items-center w-full">
+                                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded-md mr-2 cursor-pointer" ${todo.isCompleted ? 'checked' : ''} ${checkboxDisabled} data-action="toggle-complete">
+                                <span class="todo-text text-gray-800 text-sm flex-grow break-words">${todo.text}</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1 ml-7"> <!-- Aligned with checkbox -->
+                                ${statusDropdownHtml}
+                                ${dueDateHtml}
+                            </div>
                         </div>
                         <div class="flex items-center space-x-2 ml-2">
-                            ${starIconHtml}
                             ${editButtonHtml}
                             ${deleteButtonHtml}
                         </div>
                     `;
-                    // Check if the innerHTML is actually different before updating to prevent unnecessary re-renders
                     if (todoDiv.innerHTML.trim() !== newInnerHTML.trim()) {
                         todoDiv.innerHTML = newInnerHTML;
                     }
@@ -1978,6 +2075,7 @@
 
         async function handleAddTodo() {
             const todoText = todoInput.value.trim();
+            const dueDate = todoDueDateInput.value; // YYYY-MM-DD string or empty
             if (!todoText) {
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, "To-Do cannot be empty.", 'error');
                 return;
@@ -1993,11 +2091,13 @@
                     text: todoText,
                     isCompleted: false,
                     isArchived: false,
-                    isStarred: false, // New field for priority star
+                    status: 'Not Started', // New field: default status
+                    dueDate: dueDate || null, // New field: optional due date
                     timestamp: serverTimestamp(),
                     archivedAt: null // Will be set when archived
                 });
                 todoInput.value = ''; // Clear input
+                todoDueDateInput.value = ''; // Clear due date input
                 todoInput.focus();
                 showToast("To-Do added successfully!", 'success');
             } catch (error) {
@@ -2016,8 +2116,11 @@
             showLoading();
             try {
                 const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
+                // If marking as complete, set status to 'Completed'. Otherwise, reset to 'Not Started'.
+                const newStatus = isCompleted ? 'Completed' : 'Not Started';
                 await updateDoc(todoRef, {
                     isCompleted: isCompleted,
+                    status: newStatus // Update status based on completion
                 });
                 // Apply bounce animation
                 if (eventTarget) {
@@ -2035,7 +2138,7 @@
             }
         }
 
-        async function handleToggleStar(todoId, isStarred, eventTarget) {
+        async function handleUpdateTodoStatus(todoId, newStatus, eventTarget) {
             if (!db || !userId) {
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Database not ready or user not authenticated. Please log in.", 'error');
                 return;
@@ -2044,7 +2147,7 @@
             try {
                 const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
                 await updateDoc(todoRef, {
-                    isStarred: isStarred,
+                    status: newStatus,
                 });
                 // Apply bounce animation
                 if (eventTarget) {
@@ -2053,10 +2156,10 @@
                         eventTarget.classList.remove('toggle-bounce');
                     }, { once: true });
                 }
-                showToast(`To-Do marked as ${isStarred ? 'starred' : 'unstarred'}.`, 'success');
+                showToast(`To-Do status updated to "${newStatus}".`, 'success');
             } catch (error) {
-                console.error("Error toggling todo star status: ", error);
-                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating To-Do priority: ${error.message}`, 'error');
+                console.error("Error updating todo status: ", error);
+                showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Error updating To-Do status: ${error.message}`, 'error');
             } finally {
                 hideLoading();
             }
@@ -2093,7 +2196,8 @@
                         batch.update(todoRef, {
                             isArchived: true,
                             archivedAt: now,
-                            isStarred: false // Unstar when archived
+                            // When archiving, keep the completed status, but remove other active statuses
+                            status: 'Completed' // Set status to 'Completed' when archived
                         });
                         console.log(`Adding todo ${todo.id} to batch for archiving.`);
                     }
@@ -2120,11 +2224,6 @@
                 const elementToDelete = todoList.querySelector(`[data-todo-id="${todoId}"]`) || archivedTodoList.querySelector(`[data-todo-id="${todoId}"]`);
                 if (elementToDelete) {
                     elementToDelete.classList.add('item-exit-active');
-                    // Set max-height to its current scrollHeight before setting to 0 to enable smooth transition
-                    elementToDelete.style.maxHeight = elementToDelete.scrollHeight + 'px';
-                    requestAnimationFrame(() => {
-                        elementToDelete.classList.add('item-exit-active');
-                    });
                     elementToDelete.addEventListener('transitionend', async () => {
                         const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
                         await deleteDoc(todoRef);
@@ -2148,6 +2247,12 @@
         }
 
         async function handleUpdateTodo(todoId, newText) {
+            const editTodoStatusSelect = document.getElementById(`editTodoStatus_${todoId}`);
+            const newStatus = editTodoStatusSelect ? editTodoStatusSelect.value : 'Not Started';
+
+            const editTodoDueDateInput = document.getElementById(`editTodoDueDate_${todoId}`);
+            const newDueDate = editTodoDueDateInput ? editTodoDueDateInput.value : null;
+
             if (!newText.trim()) {
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, "To-Do cannot be empty.", 'error');
                 return;
@@ -2162,9 +2267,12 @@
                 const todoRef = doc(db, `artifacts/${APP_ID_FOR_FIRESTORE}/users/${userId}/todos`, todoId);
                 await updateDoc(todoRef, {
                     text: newText,
+                    status: newStatus,
+                    dueDate: newDueDate || null,
                 });
                 editingTodoId = null; // Exit edit mode
-                // The onSnapshot listener will handle re-rendering, so no need to force render here.
+                // Explicitly re-render active todos to ensure UI updates immediately
+                renderTodos(activeTodos, todoList, 'active'); // Added this line
                 showToast("To-Do updated successfully!", 'success');
             } catch (error) {
                 console.error("Error updating todo: ", error);
@@ -2321,12 +2429,15 @@
         });
         archiveCompletedBtn.addEventListener('click', handleArchiveCompleted);
 
-        // Event delegation for dynamically added To-Do checkboxes, delete, edit, save, cancel, and star buttons
+        // Event delegation for dynamically added To-Do checkboxes, delete, edit, save, cancel, and status dropdowns
         todoList.addEventListener('change', (event) => {
             const target = event.target;
+            const todoId = target.closest('.todo-item').dataset.todoId;
+
             if (target.matches('input[type="checkbox"][data-action="toggle-complete"]')) {
-                const todoId = target.closest('.todo-item').dataset.todoId;
                 handleToggleComplete(todoId, target.checked, target); // Pass target for animation
+            } else if (target.matches('select[data-action="update-status"]')) {
+                handleUpdateTodoStatus(todoId, target.value, target); // Pass target for animation
             }
         });
 
@@ -2348,18 +2459,13 @@
                 }
             } else if (action === 'cancel-edit-todo') {
                 handleCancelEditTodo();
-            } else if (action === 'toggle-star') {
-                // Find the current starred status from the activeTodos array
-                const todoItem = activeTodos.find(todo => todo.id === todoId);
-                if (todoItem) {
-                    handleToggleStar(todoId, !todoItem.isStarred, target); // Pass target for animation
-                }
             }
         });
 
         archivedTodoList.addEventListener('click', (event) => {
             const target = event.target;
             if (target.dataset.action === 'delete') {
+                const todoId = target.closest('.todo-item').dataset.todoId;
                 showConfirmModal(confirmModal, confirmMessageDiv, "Are you sure you want to delete this archived To-Do? This action cannot be undone.");
                 pendingConfirmAction = () => handleDeleteTodo(todoId);
             }
