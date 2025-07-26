@@ -277,11 +277,21 @@
 <body class="p-4">
 
     <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
-        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                My Notebook
-            </span>
-        </h1>
+        <!-- Minimalistic Header -->
+        <div class="flex justify-between items-center pb-2"> <!-- Reduced padding-bottom -->
+            <h1 class="text-xl font-extrabold text-gray-800"> <!-- Smaller text-xl -->
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                    My Notebook
+                </span>
+            </h1>
+            <!-- User ID and Logout (compact) -->
+            <div id="userIdDisplay" class="flex items-center space-x-2 text-xs text-gray-600"> <!-- Smaller text-xs -->
+                <span id="currentUserId" class="font-mono text-blue-800 cursor-pointer hover:underline" title="Click to copy User ID"></span>
+                <button id="logoutBtn" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold text-xs rounded-md transition duration-200">
+                    <i class="fas fa-sign-out-alt"></i> <!-- Removed mr-1 for more compactness -->
+                </button>
+            </div>
+        </div>
 
         <!-- Authentication Section -->
         <div id="authSection" class="bg-gray-50 p-6 rounded-xl shadow-md space-y-6">
@@ -308,13 +318,6 @@
 
         <!-- Main App Content (initially hidden) -->
         <div id="appContent">
-            <!-- User ID Display -->
-            <div id="userIdDisplay" class="text-center text-sm text-gray-600 mb-6 p-3 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
-                <p class="font-semibold">Your User ID:</p>
-                <p id="currentUserId" class="font-mono break-all text-blue-800 text-xs sm:text-sm"></p>
-                <button id="logoutBtn" class="mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-lg transition duration-200"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
-            </div>
-
             <!-- Navigation Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
                 <button id="journalTabBtn" class="tab-button flex-1 py-3 text-center text-lg text-gray-600 hover:text-indigo-700 transition duration-200 active">
@@ -422,18 +425,24 @@
             </div>
 
             <!-- To-Do List Section (initially hidden) -->
-            <div id="todoSection" class="space-y-4 hidden tab-content"> <!-- Changed from space-y-8 to space-y-4 -->
+            <div id="todoSection" class="space-y-4 hidden tab-content">
                 <!-- New To-Do Entry Section -->
-                <div class="space-y-3"> <!-- Changed from space-y-4 to space-y-3 -->
-                    <input
-                        type="text"
-                        id="todoInput"
-                        class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
-                        placeholder="Add a new To-Do..."
-                    />
-                    <div class="w-full">
-                        <label for="todoDueDateInput" class="block text-gray-700 text-sm font-semibold mb-1">Due Date (Optional):</label>
-                        <input type="date" id="todoDueDateInput" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-base shadow-sm">
+                <div class="space-y-3">
+                    <!-- Combined input and due date on one line -->
+                    <div class="flex flex-col sm:flex-row gap-2 items-end"> <!-- Align items to end for better visual with labels -->
+                        <div class="flex-grow">
+                            <label for="todoInput" class="block text-gray-700 text-sm font-semibold mb-1">New To-Do:</label>
+                            <input
+                                type="text"
+                                id="todoInput"
+                                class="w-full py-2 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition duration-200 text-gray-800 text-base shadow-sm"
+                                placeholder="Add a new To-Do..."
+                            />
+                        </div>
+                        <div class="w-full sm:w-auto flex-shrink-0">
+                            <label for="todoDueDateInput" class="block text-gray-700 text-sm font-semibold mb-1">Due Date (Optional):</label>
+                            <input type="date" id="todoDueDateInput" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none text-gray-800 text-base shadow-sm">
+                        </div>
                     </div>
                     <button
                         id="addTodoBtn"
@@ -450,7 +459,7 @@
                 </div>
 
                 <!-- To-Do List -->
-                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                    <div class="mt-6 space-y-3">
                         <h2 class="text-2xl font-bold text-gray-800 text-center">Active To-Dos</h2>
                         <div id="todoList" class="space-y-2">
                         <!-- To-Do items will be dynamically loaded here -->
@@ -464,7 +473,7 @@
                 </div>
 
                 <!-- Archived To-Dos -->
-                    <div class="mt-6 space-y-3"> <!-- Changed mt-8 to mt-6 -->
+                    <div class="mt-6 space-y-3">
                         <h2 class="text-2xl font-bold text-gray-800 text-center">Archived To-Dos</h2>
                         <div id="archivedTodoList" class="space-y-2">
                         <!-- Archived To-Do items will be dynamically loaded here -->
@@ -613,9 +622,14 @@
         const registerBtn = document.getElementById('registerBtn');
         const showRegisterLink = document.getElementById('showRegisterLink');
         const showLoginLink = document.getElementById('showLoginLink');
-        const logoutBtn = document.getElementById('logoutBtn');
+        // const logoutBtn = document.getElementById('logoutBtn'); // Moved to top-level for minimalistic header
         const appContent = document.getElementById('appContent');
+        // const currentUserIdDisplay = document.getElementById('currentUserId'); // Moved to top-level for minimalistic header
+
+        // Get elements for the new minimalistic header
         const currentUserIdDisplay = document.getElementById('currentUserId');
+        const logoutBtn = document.getElementById('logoutBtn');
+
 
         // Modal Elements (Error only)
         const messageModal = document.getElementById('messageModal');
@@ -905,7 +919,9 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
-                        currentUserIdDisplay.textContent = userId;
+                        // Truncate User ID for display but keep full ID in title for hover
+                        currentUserIdDisplay.textContent = userId.substring(0, 8) + '...';
+                        currentUserIdDisplay.title = userId; // Full ID on hover
                         showAppContent(); // Show main app content
                         setupFirestoreListeners(); // Start listening for entries and todos
                         fetchAndListenForTags(); // Start listening for tags
@@ -983,7 +999,8 @@
                         'Next Action': 2,
                         'WIP': 3,
                         'Waiting for': 4,
-                        'Agenda': 5
+                        'Agenda': 5,
+                        'Completed': 6 // Ensure completed items are at the end if not archived
                     };
                     const statusA = gtdStatusOrder[a.status] || 99; // Default to high if status missing
                     const statusB = gtdStatusOrder[b.status] || 99;
@@ -1574,7 +1591,7 @@
                 if (selectedIndex > 0) {
                     if (selectedIndex !== -1) suggestions[selectedIndex].classList.remove('selected');
                     suggestions[--selectedIndex].classList.add('selected');
-                    suggestions[selectedIndex].scrollIntoView({ block: 'nearest' });
+                    suggestions[selectedIndex].scrollInView({ block: 'nearest' });
                 }
             } else if (event.key === 'Enter') {
                 event.preventDefault();
@@ -1818,7 +1835,7 @@
                         }
                     }
                 };
-                const apiKey = "AIzaSyBUHFr6rqFvPN6oqN25a_vfIXuORlDqnME"; // Canvas will provide this at runtime
+                const apiKey = ""; // Canvas will provide this at runtime
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -1969,7 +1986,7 @@
                         colorClass = 'text-green-600';
                         break;
                     case 'WIP':
-                        iconClass = 'fas fa-star';
+                        iconClass = 'fas fa-star'; // Changed to a star icon for priority
                         colorClass = 'text-blue-500';
                         break;
                     case 'Waiting for':
