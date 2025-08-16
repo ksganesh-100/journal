@@ -241,7 +241,6 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/milkdown/dist/index.es.js"></script>
 </head>
 <body class="p-4">
 
@@ -496,10 +495,10 @@
 
     <!-- Firebase SDKs from CDN -->
     <script type="module">
-        import { Editor, rootCtx, editorViewCtx, defaultValueCtx } from 'https://cdn.jsdelivr.net/npm/milkdown/dist/index.es.js';
-        import { nord } from 'https://cdn.jsdelivr.net/npm/@milkdown/theme-nord/dist/index.es.js';
-        import { gfm } from 'https://cdn.jsdelivr.net/npm/@milkdown/preset-gfm/dist/index.es.js';
-        import { getMarkdown } from 'https://cdn.jsdelivr.net/npm/@milkdown/utils/dist/index.es.js';
+        import { Editor, rootCtx, editorViewCtx, defaultValueCtx } from 'https://unpkg.com/milkdown@7.3.2/dist/index.es.js';
+        import { nord } from 'https://unpkg.com/@milkdown/theme-nord@7.3.2/dist/index.es.js';
+        import { gfm } from 'https://unpkg.com/@milkdown/preset-gfm@7.3.2/dist/index.es.js';
+        import { getMarkdown } from 'https://unpkg.com/@milkdown/utils@7.3.2/dist/index.es.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -856,6 +855,19 @@
 
         // --- Core Application Logic ---
 
+        let editor; // Make the editor instance accessible globally
+
+        async function setupEditor() {
+            editor = await Editor.make()
+                .config((ctx) => {
+                    ctx.set(rootCtx, document.getElementById('editor'));
+                    ctx.set(defaultValueCtx, 'Capture your notes, meeting minutes, or thoughts here.');
+                })
+                .use(nord) // A clean default theme
+                .use(gfm)  // Use GitHub Flavored Markdown for tables, checklists, etc.
+                .create();
+        }
+
         async function initializeAppAndAuth() {
             showLoading();
             try {
@@ -889,20 +901,6 @@
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Firebase initialization error: ${error.message}`, 'error');
                 hideLoading();
             }
-            // --- Inside your initializeAppAndAuth function or a new function ---
-                let editor; // Make the editor instance accessible globally
-
-                async function setupEditor() {
-                    editor = await Editor.make()
-                        .config((ctx) => {
-                            ctx.set(rootCtx, document.getElementById('editor'));
-                            ctx.set(defaultValueCtx, 'Capture your notes, meeting minutes, or thoughts here.');
-                        })
-                        .use(nord) // A clean default theme
-                        .use(gfm)  // Use GitHub Flavored Markdown for tables, checklists, etc.
-                        .create();
-                }
-
         }
 
         function setupFirestoreListeners() {
@@ -2408,12 +2406,15 @@
         }
 
         async function handleLogin() {
+            console.log("handleLogin called");
             const email = loginEmailInput.value;
             const password = loginPasswordInput.value;
             if (!email || !password) {
+                console.log("Email or password empty");
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, "Please enter both email and password to login.", 'error');
                 return;
             }
+            console.log("Attempting to log in with email:", email);
             showLoading();
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -2424,6 +2425,7 @@
                 console.error("Error logging in:", error.code, error.message);
                 showMessageModal(messageModal, messageModalTitle, messageContentDiv, `Login error: ${error.message}`, 'error');
             } finally {
+                console.log("handleLogin finished");
                 hideLoading();
             }
         }
