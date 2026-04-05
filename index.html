@@ -739,7 +739,7 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── SECTION 1: Firebase Config ───
 const firebaseConfig = {
@@ -977,8 +977,8 @@ function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
 async function seedInternalEngagements() {
   for (const eng of INTERNAL_ENGAGEMENTS) {
     const ref = doc(db, engPath(), eng.id);
-    const snap = await getDocs(query(collection(db, engPath()), where('code', '==', eng.code)));
-    if (snap.empty) {
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
       await setDoc(ref, { ...eng, createdAt: serverTimestamp() });
     }
   }
