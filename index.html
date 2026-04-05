@@ -10,11 +10,11 @@
 <style>
 * { box-sizing: border-box; }
 body { font-family:'Inter',sans-serif; margin:0; padding:0; background:#F8F9FC; font-size:14px; }
-#appLayout { display:none; height:100vh; overflow:hidden; }
-#authScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+#appLayout { display:none; flex-direction:row; height:100vh; height:100dvh; overflow:hidden; }
+#authScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; min-height:100dvh; }
 
 /* ── Sidebar ── */
-#sidebar { width:240px; min-width:240px; background:#1E2433; color:#fff; display:flex; flex-direction:column; height:100vh; overflow-y:auto; flex-shrink:0; }
+#sidebar { width:240px; min-width:240px; background:#1E2433; color:#fff; display:flex; flex-direction:column; height:100vh; height:100dvh; overflow-y:auto; flex-shrink:0; }
 #sidebar .brand { padding:20px 16px 12px; border-bottom:1px solid rgba(255,255,255,.08); }
 #sidebar .brand h1 { font-size:16px; font-weight:700; color:#fff; margin:0; letter-spacing:.3px; }
 #sidebar .brand p { font-size:11px; color:rgba(255,255,255,.45); margin:2px 0 0; }
@@ -35,7 +35,7 @@ body { font-family:'Inter',sans-serif; margin:0; padding:0; background:#F8F9FC; 
 #logoutBtn:hover { background:rgba(239,68,68,.2); color:#fca5a5; }
 
 /* ── Main area ── */
-#mainContent { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+#mainContent { flex:1; display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; }
 #topBar { padding:12px 24px; background:#fff; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
 #breadcrumb { font-size:13px; color:#6b7280; font-weight:500; }
 #breadcrumb span { color:#1f2937; }
@@ -251,10 +251,28 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 /* ── Mobile ── */
 @media(max-width:768px){
   #appLayout { flex-direction:column; }
-  #sidebar { width:100%; min-width:unset; height:auto; flex-direction:row; overflow-x:auto; }
-  #sidebar nav, #sidebar .user-block, #sidebar footer { display:none; }
-  #sidebar .brand { border-bottom:none; padding:12px; }
-  #mainContent { height:calc(100vh - 60px); }
+  #sidebar { display:none; }
+  #mainContent { height:100vh; height:100dvh; padding-bottom:60px; overflow-y:auto; }
+  #topBar { padding:10px 16px; }
+  #pageContent { padding:16px; }
+  #toastNotification { bottom:72px; }
+}
+#mobileNav { display:none; }
+@media(max-width:768px){
+  #mobileNav {
+    display:flex; position:fixed; bottom:0; left:0; right:0; height:60px;
+    background:#1E2433; border-top:1px solid rgba(255,255,255,.1); z-index:50;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .mob-tab {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; background:transparent; border:none; color:rgba(255,255,255,.5);
+    font-size:10px; font-family:'Inter',sans-serif; font-weight:500; cursor:pointer;
+    padding:4px 2px; -webkit-tap-highlight-color:transparent;
+  }
+  .mob-tab i { font-size:18px; line-height:1; }
+  .mob-tab span { font-size:10px; line-height:1; white-space:nowrap; }
+  .mob-tab.active { color:#93c5fd; }
 }
 </style>
 </head>
@@ -301,7 +319,7 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 </div>
 
 <!-- ══ APP LAYOUT ══ -->
-<div id="appLayout" style="display:none;flex-direction:row;">
+<div id="appLayout">
 
   <!-- Sidebar -->
   <aside id="sidebar">
@@ -599,6 +617,15 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     </div><!-- /pageContent -->
   </div><!-- /mainContent -->
 </div><!-- /appLayout -->
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav id="mobileNav">
+  <button class="mob-tab active" data-nav="dashboard"><i class="fas fa-th-large"></i><span>Dashboard</span></button>
+  <button class="mob-tab" data-nav="engagements"><i class="fas fa-briefcase"></i><span>Engagements</span></button>
+  <button class="mob-tab" data-nav="notes"><i class="fas fa-sticky-note"></i><span>Notes</span></button>
+  <button class="mob-tab" data-nav="actions"><i class="fas fa-check-square"></i><span>Actions</span></button>
+  <button class="mob-tab" data-nav="weekly-review"><i class="fas fa-calendar-check"></i><span>Review</span></button>
+</nav>
 
 <!-- ══ QUICK CAPTURE MODAL ══ -->
 <div id="quickCaptureModal">
@@ -1695,6 +1722,9 @@ function navigate(view, engId = null) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navKey = view === 'engagement-detail' ? 'engagements' : view;
   document.querySelector(`[data-nav="${navKey}"]`)?.classList.add('active');
+  // Update mobile bottom nav active state
+  document.querySelectorAll('.mob-tab').forEach(el => el.classList.remove('active'));
+  document.querySelector(`#mobileNav [data-nav="${navKey}"]`)?.classList.add('active');
   document.querySelectorAll('.engagement-nav-item').forEach(el => {
     el.classList.toggle('active', engId && el.dataset.navEng === engId);
   });
@@ -1725,6 +1755,7 @@ async function initApp() {
         currentUserEmailEl.textContent = user.email;
         authScreen.style.display = 'none';
         appLayout.style.display = 'flex';
+        appLayout.style.flexDirection = '';
         await seedInternalEngagements();
         setupListeners();
         navigate('dashboard');
@@ -1758,6 +1789,10 @@ document.getElementById('sidebarNav').addEventListener('click', e => {
   if (engItem) { activeEngagementId = engItem.dataset.navEng; navigate('engagement-detail', engItem.dataset.navEng); }
 });
 document.getElementById('captureBtn').addEventListener('click', () => openQuickCapture());
+document.getElementById('mobileNav').addEventListener('click', e => {
+  const tab = e.target.closest('[data-nav]');
+  if (tab) navigate(tab.dataset.nav);
+});
 
 // Confidentiality toggle
 document.getElementById('confidentialityToggle').addEventListener('click', () => {
