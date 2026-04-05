@@ -1845,8 +1845,16 @@ document.getElementById('notesList').addEventListener('click', e => {
     const card = e.currentTarget.querySelector(`[data-note-id="${id}"] .note-text`);
     if (card) {
       const full = decodeURIComponent(card.dataset.fullText || '');
-      if (card.innerHTML.includes('...') && card.innerHTML.length < full.length + 20) { card.innerHTML = autolink(full); readMore.textContent = 'Show Less'; }
-      else { card.innerHTML = autolink(full.substring(0,SNIPPET)+'...'); readMore.textContent = 'Read More'; }
+      const expanded = card.dataset.expanded === 'true';
+      if (!expanded) {
+        card.innerHTML = autolink(full);
+        card.dataset.expanded = 'true';
+        readMore.textContent = 'Show Less';
+      } else {
+        card.innerHTML = autolink(full.substring(0, SNIPPET) + '...');
+        card.dataset.expanded = 'false';
+        readMore.textContent = 'Read More';
+      }
     }
   }
 });
