@@ -1863,8 +1863,26 @@ document.getElementById('notesList').addEventListener('click', e => {
 document.getElementById('engDetailNotes').addEventListener('click', e => {
   const editBtn = e.target.closest('[data-action="edit-note"]');
   const delBtn = e.target.closest('[data-action="delete-note"]');
+  const readMore = e.target.closest('[data-action="toggle-read-more"]');
   if (editBtn) { const n = allNotes.find(x => x.id === editBtn.dataset.noteId); if(n) { navigate('notes'); openNoteForm({...n}); } }
   if (delBtn) showConfirm('Delete this note?', () => deleteNote(delBtn.dataset.noteId));
+  if (readMore) {
+    const id = readMore.dataset.noteId;
+    const card = e.currentTarget.querySelector(`[data-note-id="${id}"] .note-text`);
+    if (card) {
+      const full = decodeURIComponent(card.dataset.fullText || '');
+      const expanded = card.dataset.expanded === 'true';
+      if (!expanded) {
+        card.innerHTML = autolink(full);
+        card.dataset.expanded = 'true';
+        readMore.textContent = 'Show Less';
+      } else {
+        card.innerHTML = autolink(full.substring(0, SNIPPET) + '...');
+        card.dataset.expanded = 'false';
+        readMore.textContent = 'Read More';
+      }
+    }
+  }
 });
 document.getElementById('engDetailActions').addEventListener('click', e => {
   const editBtn = e.target.closest('[data-action="edit-action"]');
