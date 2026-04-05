@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultant OS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+* { box-sizing: border-box; }
+body { font-family:'Inter',sans-serif; margin:0; padding:0; background:#F8F9FC; font-size:14px; }
+#appLayout { display:none; height:100vh; overflow:hidden; }
+#authScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+
+/* ── Sidebar ── */
+#sidebar { width:240px; min-width:240px; background:#1E2433; color:#fff; display:flex; flex-direction:column; height:100vh; overflow-y:auto; flex-shrink:0; }
+#sidebar .brand { padding:20px 16px 12px; border-bottom:1px solid rgba(255,255,255,.08); }
+#sidebar .brand h1 { font-size:16px; font-weight:700; color:#fff; margin:0; letter-spacing:.3px; }
+#sidebar .brand p { font-size:11px; color:rgba(255,255,255,.45); margin:2px 0 0; }
+#sidebar .user-block { padding:10px 16px; border-bottom:1px solid rgba(255,255,255,.08); font-size:12px; color:rgba(255,255,255,.6); }
+#sidebar .user-block .email { color:rgba(255,255,255,.85); font-weight:500; word-break:break-all; }
+#sidebar nav { flex:1; padding:8px 0; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 16px; font-size:13px; color:rgba(255,255,255,.65); cursor:pointer; transition:all .15s; border-left:3px solid transparent; user-select:none; }
+.nav-item:hover { background:rgba(255,255,255,.06); color:#fff; }
+.nav-item.active { background:rgba(37,99,235,.25); color:#93c5fd; border-left-color:#2563EB; font-weight:600; }
+.nav-item i { width:16px; text-align:center; font-size:13px; }
+.nav-section-label { font-size:10px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,.3); padding:14px 16px 4px; text-transform:uppercase; }
+.engagement-nav-item { padding:6px 16px 6px 42px; font-size:12px; color:rgba(255,255,255,.55); cursor:pointer; display:flex; align-items:center; gap:8px; border-left:3px solid transparent; }
+.engagement-nav-item:hover { background:rgba(255,255,255,.05); color:#fff; }
+.engagement-nav-item.active { color:#93c5fd; background:rgba(37,99,235,.15); }
+.engagement-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+#sidebar footer { padding:12px 16px; border-top:1px solid rgba(255,255,255,.08); }
+#logoutBtn { width:100%; padding:8px; background:rgba(255,255,255,.06); border:none; color:rgba(255,255,255,.6); border-radius:6px; cursor:pointer; font-size:12px; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:6px; }
+#logoutBtn:hover { background:rgba(239,68,68,.2); color:#fca5a5; }
+
+/* ── Main area ── */
+#mainContent { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+#topBar { padding:12px 24px; background:#fff; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+#breadcrumb { font-size:13px; color:#6b7280; font-weight:500; }
+#breadcrumb span { color:#1f2937; }
+.top-actions { display:flex; align-items:center; gap:8px; }
+.btn-capture { background:#2563EB; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:background .15s; }
+.btn-capture:hover { background:#1d4ed8; }
+.btn-icon { background:transparent; border:1px solid #e5e7eb; color:#6b7280; width:32px; height:32px; border-radius:8px; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.btn-icon:hover { background:#f3f4f6; color:#374151; }
+.btn-icon.active { background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+#pageContent { flex:1; overflow-y:auto; padding:24px; }
+
+/* ── Sections ── */
+.page-section { display:none; }
+.page-section.visible { display:block; }
+
+/* ── Cards ── */
+.card { background:#fff; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,.06); border:1px solid #e5e7eb; }
+.card-header { padding:16px 20px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; justify-content:space-between; }
+.card-header h2 { font-size:15px; font-weight:600; color:#111827; margin:0; }
+.card-body { padding:16px 20px; }
+
+/* ── Engagement colors ── */
+.ec-blue { background:#dbeafe; color:#1d4ed8; }
+.ec-green { background:#dcfce7; color:#15803d; }
+.ec-amber { background:#fef3c7; color:#b45309; }
+.ec-rose { background:#ffe4e6; color:#be123c; }
+.ec-violet { background:#ede9fe; color:#6d28d9; }
+.ec-cyan { background:#cffafe; color:#0e7490; }
+.ec-orange { background:#ffedd5; color:#c2410c; }
+.ec-slate { background:#f1f5f9; color:#334155; }
+.dot-blue { background:#2563EB; }
+.dot-green { background:#16a34a; }
+.dot-amber { background:#d97706; }
+.dot-rose { background:#e11d48; }
+.dot-violet { background:#7c3aed; }
+.dot-cyan { background:#0891b2; }
+.dot-orange { background:#ea580c; }
+.dot-slate { background:#64748b; }
+
+/* ── Entry note cards ── */
+.note-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; margin-bottom:10px; position:relative; transition:box-shadow .15s; }
+.note-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.note-card .engagement-bar { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:10px 0 0 10px; }
+.note-card-inner { padding-left:8px; }
+.note-text { color:#374151; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.note-text.blurred { filter:blur(5px); transition:filter .2s; }
+body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s; }
+.badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-note { background:#ecfdf5; color:#059669; }
+.badge-meeting { background:#dbeafe; color:#1d4ed8; }
+.badge-hypothesis { background:#ede9fe; color:#6d28d9; }
+.badge-keyissues { background:#fef3c7; color:#b45309; }
+.badge-decision { background:#fce7f3; color:#be185d; }
+.badge-reflection { background:#f0fdf4; color:#15803d; }
+.hyp-proven { background:#dcfce7; color:#15803d; }
+.hyp-disproven { background:#fee2e2; color:#dc2626; }
+.hyp-investigating { background:#fef3c7; color:#b45309; }
+
+/* ── Action / Todo cards ── */
+.action-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; margin-bottom:8px; display:flex; align-items:flex-start; gap:10px; position:relative; transition:box-shadow .15s; }
+.action-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.action-card .engagement-bar { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:10px 0 0 10px; }
+.action-card-body { flex:1; min-width:0; padding-left:8px; }
+.action-text { color:#374151; font-size:13px; line-height:1.5; }
+.action-text.completed-text { text-decoration:line-through; color:#9ca3af; }
+.status-pill { display:inline-flex; align-items:center; padding:2px 7px; border-radius:20px; font-size:10px; font-weight:700; letter-spacing:.3px; }
+.sp-project { background:#e0f7fa; color:#006064; }
+.sp-next { background:#e8f5e9; color:#2e7d32; }
+.sp-wip { background:#e3f2fd; color:#1565c0; }
+.sp-waiting { background:#fff3e0; color:#e65100; }
+.sp-agenda { background:#f3e5f5; color:#6a1b9a; }
+.sp-completed { background:#d1fae5; color:#065f46; }
+
+/* ── Kanban ── */
+.kanban-board { display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; min-height:400px; }
+.kanban-col { min-width:220px; max-width:220px; background:#f8fafc; border-radius:10px; border:1px solid #e5e7eb; display:flex; flex-direction:column; }
+.kanban-col-header { padding:10px 14px; border-bottom:1px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
+.kanban-col-body { flex:1; padding:8px; overflow-y:auto; min-height:60px; }
+.kanban-col-body.drag-over { background:#eff6ff; border-radius:8px; }
+.kanban-card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin-bottom:6px; cursor:grab; transition:box-shadow .15s; font-size:12px; position:relative; }
+.kanban-card:hover { box-shadow:0 2px 6px rgba(0,0,0,.1); }
+.kanban-card.dragging { opacity:.5; }
+.kanban-card .kc-bar { position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:8px 0 0 8px; }
+
+/* ── Dashboard quadrants ── */
+.dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:900px){ .dashboard-grid { grid-template-columns:1fr; } }
+.dash-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; }
+.dash-card-header { padding:12px 16px; border-bottom:1px solid #f3f4f6; font-size:13px; font-weight:600; color:#374151; display:flex; align-items:center; gap:8px; }
+.dash-card-body { padding:12px 16px; max-height:280px; overflow-y:auto; }
+.dash-item { padding:8px 0; border-bottom:1px solid #f9fafb; display:flex; align-items:flex-start; gap:8px; }
+.dash-item:last-child { border-bottom:none; }
+.dash-item-text { font-size:13px; color:#374151; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dash-item-meta { font-size:11px; color:#9ca3af; flex-shrink:0; }
+.pulse-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+.pulse-card .pulse-count { font-size:20px; font-weight:700; color:#1f2937; }
+.pulse-card .pulse-label { font-size:11px; color:#6b7280; }
+
+/* ── Forms ── */
+.form-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; transition:border .15s,box-shadow .15s; font-family:inherit; }
+.form-input:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+.form-select { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; background:#fff; cursor:pointer; font-family:inherit; }
+.form-select:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+.form-textarea { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; resize:vertical; font-family:'SFMono-Regular',Consolas,monospace; line-height:1.6; }
+.form-textarea:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+.form-label { font-size:12px; font-weight:600; color:#374151; margin-bottom:4px; display:block; }
+.form-group { margin-bottom:14px; }
+.btn-primary { background:#2563EB; color:#fff; border:none; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary:hover { background:#1d4ed8; }
+.btn-secondary { background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-secondary:hover { background:#e5e7eb; }
+.btn-danger { background:#fee2e2; color:#dc2626; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; transition:all .15s; }
+.btn-danger:hover { background:#fecaca; }
+.btn-sm { padding:5px 10px; font-size:12px; }
+
+/* ── Tag pills ── */
+.tag-pill { display:inline-flex; align-items:center; background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; margin-right:4px; margin-bottom:2px; white-space:nowrap; }
+.tag-pill-remove { margin-left:4px; cursor:pointer; color:#6366f1; font-size:10px; }
+.tag-pill-remove:hover { color:#4338ca; }
+.autocomplete-suggestions { position:absolute; z-index:20; background:#fff; border:1px solid #e5e7eb; border-radius:8px; max-height:160px; overflow-y:auto; width:100%; box-shadow:0 4px 12px rgba(0,0,0,.1); margin-top:2px; }
+.autocomplete-suggestion-item { padding:8px 12px; cursor:pointer; font-size:13px; color:#374151; }
+.autocomplete-suggestion-item:hover, .autocomplete-suggestion-item.selected { background:#f3f4f6; }
+
+/* ── Modals ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:100; }
+.modal-box { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.2); width:100%; max-width:480px; margin:16px; overflow:hidden; }
+.modal-header { padding:18px 20px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; justify-content:space-between; }
+.modal-header h3 { font-size:16px; font-weight:700; color:#111827; margin:0; }
+.modal-body { padding:20px; }
+.modal-footer { padding:14px 20px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; gap:8px; }
+
+/* ── Quick Capture ── */
+#quickCaptureModal { position:fixed; top:0; left:0; right:0; z-index:200; display:none; }
+#quickCaptureModal.open { display:block; }
+.qc-box { background:#fff; border-radius:0 0 14px 14px; box-shadow:0 8px 32px rgba(0,0,0,.15); padding:16px 20px; max-width:640px; margin:0 auto; border:1px solid #e5e7eb; border-top:none; }
+.qc-pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.qc-pill { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #e5e7eb; color:#374151; background:#f9fafb; transition:all .15s; }
+.qc-pill:hover, .qc-pill.active { background:#dbeafe; color:#1d4ed8; border-color:#93c5fd; }
+.qc-type-pill { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; transition:all .15s; }
+.qc-type-pill.active-note { background:#ecfdf5; color:#059669; border-color:#a7f3d0; }
+.qc-type-pill.active-action { background:#eff6ff; color:#2563EB; border-color:#93c5fd; }
+
+/* ── Weekly Review ── */
+.wr-step-indicator { display:flex; gap:8px; margin-bottom:24px; align-items:center; }
+.wr-step { width:28px; height:28px; border-radius:50%; background:#f3f4f6; border:2px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; color:#9ca3af; }
+.wr-step.active { background:#2563EB; border-color:#2563EB; color:#fff; }
+.wr-step.done { background:#059669; border-color:#059669; color:#fff; }
+.wr-step-line { flex:1; height:2px; background:#e5e7eb; }
+.wr-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:10px; }
+.wr-actions { display:flex; gap:6px; margin-left:auto; flex-shrink:0; }
+.btn-wr { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.btn-wr-done { background:#dcfce7; color:#15803d; }
+.btn-wr-done:hover { background:#bbf7d0; }
+.btn-wr-skip { background:#f3f4f6; color:#6b7280; }
+.btn-wr-skip:hover { background:#e5e7eb; }
+.btn-wr-flag { background:#fef3c7; color:#b45309; }
+.btn-wr-flag:hover { background:#fde68a; }
+
+/* ── Engagement list grid ── */
+.engagement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.eng-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; cursor:pointer; transition:all .15s; position:relative; overflow:hidden; }
+.eng-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.08); border-color:#d1d5db; }
+.eng-detail-tab.active { color:#2563EB !important; border-bottom-color:#2563EB !important; }
+.eng-tab.active { background:#dbeafe; color:#1d4ed8; border-color:#93c5fd; }
+.eng-tab { transition:all .15s; }
+.eng-card-bar { position:absolute; left:0; top:0; bottom:0; width:5px; }
+.eng-card-content { padding-left:8px; }
+.eng-card-name { font-size:14px; font-weight:600; color:#111827; margin-bottom:2px; }
+.eng-card-client { font-size:12px; color:#6b7280; margin-bottom:8px; }
+.eng-card-meta { display:flex; align-items:center; gap:8px; }
+.eng-status-badge { padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+.esb-active { background:#dcfce7; color:#15803d; }
+.esb-onhold { background:#fef3c7; color:#b45309; }
+.esb-closed { background:#f3f4f6; color:#6b7280; }
+
+/* ── Animations ── */
+.item-enter { opacity:0; transform:translateY(-10px); }
+.item-enter-active { opacity:1; transform:translateY(0); transition:opacity .25s,transform .25s; }
+.item-exit-active { opacity:0; transform:translateY(-10px); transition:opacity .25s,transform .25s; }
+
+/* ── Misc ── */
+.read-more-btn { color:#2563EB; font-size:12px; cursor:pointer; font-weight:500; }
+.read-more-btn:hover { text-decoration:underline; }
+.empty-state { text-align:center; padding:40px 20px; color:#9ca3af; }
+.empty-state i { font-size:32px; margin-bottom:12px; display:block; }
+.empty-state p { font-size:14px; margin:0; }
+.separator-date { display:flex; align-items:center; gap:8px; margin:16px 0 8px; }
+.separator-date::before, .separator-date::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+.separator-date span { font-size:11px; font-weight:600; color:#9ca3af; white-space:nowrap; }
+.overdue-text { color:#dc2626; font-weight:600; }
+.confidential-lock { color:#dc2626; font-size:11px; margin-left:4px; }
+
+/* ── Loading / Toast ── */
+#loadingSpinner { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(2px); }
+.spinner { border:5px solid #f3f3f3; border-top:5px solid #2563EB; border-radius:50%; width:44px; height:44px; animation:spin 1s linear infinite; }
+@keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+#toastNotification { position:fixed; bottom:20px; right:20px; padding:12px 18px; border-radius:10px; color:#fff; font-size:13px; font-weight:500; z-index:300; opacity:0; transform:translateY(10px); transition:opacity .25s,transform .25s; pointer-events:none; }
+#toastNotification.show { opacity:1; transform:translateY(0); }
+#toastNotification.success { background:#059669; }
+#toastNotification.error { background:#dc2626; }
+
+/* ── Auth ── */
+.auth-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.1); width:100%; max-width:380px; padding:36px; }
+.auth-card h1 { font-size:22px; font-weight:800; color:#111827; text-align:center; margin:0 0 4px; }
+.auth-card .subtitle { text-align:center; font-size:13px; color:#6b7280; margin:0 0 24px; }
+
+/* ── Color swatch picker ── */
+.color-swatch { width:24px; height:24px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:border .15s,transform .15s; display:inline-block; }
+.color-swatch:hover { transform:scale(1.15); }
+.color-swatch.selected { border-color:#1f2937; }
+.color-swatches { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  #appLayout { flex-direction:column; }
+  #sidebar { width:100%; min-width:unset; height:auto; flex-direction:row; overflow-x:auto; }
+  #sidebar nav, #sidebar .user-block, #sidebar footer { display:none; }
+  #sidebar .brand { border-bottom:none; padding:12px; }
+  #mainContent { height:calc(100vh - 60px); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <h1>Consultant OS</h1>
+    <p class="subtitle">Your engagement workspace</p>
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="loginEmail" class="form-input" placeholder="you@firm.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••">
+      </div>
+      <button id="loginBtn" class="btn-primary" style="width:100%;justify-content:center;padding:11px;">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+      <p style="text-align:center;font-size:12px;color:#6b7280;margin-top:14px;">
+        No account? <a href="#" id="showRegisterLink" style="color:#2563EB;font-weight:600;">Register</a>
+      </p>
+    </div>
+    <div id="registerForm" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="registerEmail" class="form-input" placeholder="you@firm.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="registerPassword" class="form-input" placeholder="••••••••">
+      </div>
+      <button id="registerBtn" class="btn-primary" style="width:100%;justify-content:center;padding:11px;background:#6d28d9;">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+      <p style="text-align:center;font-size:12px;color:#6b7280;margin-top:14px;">
+        Have an account? <a href="#" id="showLoginLink" style="color:#2563EB;font-weight:600;">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP LAYOUT ══ -->
+<div id="appLayout" style="display:none;flex-direction:row;">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="brand">
+      <h1><i class="fas fa-briefcase" style="color:#93c5fd;margin-right:8px;"></i>Consultant OS</h1>
+      <p>Your engagement workspace</p>
+    </div>
+    <div class="user-block">
+      <div class="email" id="currentUserEmail"></div>
+    </div>
+    <nav id="sidebarNav">
+      <div class="nav-item active" data-nav="dashboard"><i class="fas fa-th-large"></i>Dashboard</div>
+      <div class="nav-item" data-nav="capture"><i class="fas fa-bolt"></i>Quick Capture</div>
+      <div class="nav-section-label">Work</div>
+      <div class="nav-item" data-nav="engagements"><i class="fas fa-briefcase"></i>Engagements</div>
+      <div class="nav-item" data-nav="notes"><i class="fas fa-sticky-note"></i>All Notes</div>
+      <div class="nav-item" data-nav="actions"><i class="fas fa-check-square"></i>All Actions</div>
+      <div class="nav-section-label">Review</div>
+      <div class="nav-item" data-nav="weekly-review"><i class="fas fa-calendar-check"></i>Weekly Review</div>
+    </nav>
+    <footer>
+      <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </footer>
+  </aside>
+
+  <!-- Main content -->
+  <div id="mainContent">
+    <!-- Top bar -->
+    <div id="topBar">
+      <div id="breadcrumb">Consultant OS &rsaquo; <span id="breadcrumbCurrent">Dashboard</span></div>
+      <div class="top-actions">
+        <button class="btn-icon" id="confidentialityToggle" title="Toggle Confidentiality Mode"><i class="fas fa-eye"></i></button>
+        <button class="btn-capture" id="captureBtn"><i class="fas fa-plus"></i> Capture</button>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div id="pageContent">
+
+      <!-- ── DASHBOARD ── -->
+      <section id="dashboardSection" class="page-section visible">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 4px;" id="dashGreeting">Good morning</h2>
+          <p style="font-size:13px;color:#6b7280;margin:0;" id="dashDate"></p>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dash-card">
+            <div class="dash-card-header"><i class="fas fa-crosshairs" style="color:#2563EB;"></i> Focus Today</div>
+            <div class="dash-card-body" id="dashFocus">
+              <div class="empty-state"><p>No active items</p></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Waiting For</div>
+            <div class="dash-card-body" id="dashWaiting">
+              <div class="empty-state"><p>Nothing waiting</p></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><i class="fas fa-file-alt" style="color:#059669;"></i> Recent Notes</div>
+            <div class="dash-card-body" id="dashNotes">
+              <div class="empty-state"><p>No recent notes</p></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><i class="fas fa-briefcase" style="color:#7c3aed;"></i> Engagement Pulse</div>
+            <div class="dash-card-body" id="dashPulse">
+              <div class="empty-state"><p>No active engagements</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ENGAGEMENTS LIST ── -->
+      <section id="engagementsSection" class="page-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0;">Engagements</h2>
+          <button class="btn-primary" id="newEngagementBtn"><i class="fas fa-plus"></i> New Engagement</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <input type="text" id="engSearch" class="form-input" style="flex:1;min-width:180px;max-width:300px;" placeholder="Search engagements…">
+          <div style="display:flex;gap:4px;" id="engStatusTabs">
+            <button class="btn-secondary btn-sm eng-tab active" data-status-tab="all">All</button>
+            <button class="btn-secondary btn-sm eng-tab" data-status-tab="Active">Active</button>
+            <button class="btn-secondary btn-sm eng-tab" data-status-tab="OnHold">On Hold</button>
+            <button class="btn-secondary btn-sm eng-tab" data-status-tab="Closed">Closed</button>
+          </div>
+        </div>
+        <div id="engagementGrid" class="engagement-grid"></div>
+      </section>
+
+      <!-- ── ENGAGEMENT DETAIL ── -->
+      <section id="engagementDetailSection" class="page-section">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn-secondary btn-sm" id="backToEngagementsBtn"><i class="fas fa-arrow-left"></i> Back</button>
+          <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0;" id="engDetailTitle"></h2>
+          <span id="engDetailStatus" class="eng-status-badge"></span>
+          <span id="engDetailLock" style="display:none;" class="confidential-lock"><i class="fas fa-lock"></i></span>
+          <div style="margin-left:auto;display:flex;gap:6px;">
+            <button class="btn-primary btn-sm" id="engNewNoteBtn"><i class="fas fa-plus"></i> Note</button>
+            <button class="btn-secondary btn-sm" id="engNewActionBtn"><i class="fas fa-plus"></i> Action</button>
+            <button class="btn-secondary btn-sm" id="engEditBtn" title="Edit engagement"><i class="fas fa-edit"></i></button>
+            <button class="btn-danger btn-sm" id="engDeleteBtn" title="Delete engagement"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <!-- Tab bar -->
+        <div style="display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:16px;gap:0;">
+          <button class="eng-detail-tab active" data-detail-tab="notes" style="padding:8px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;">
+            <i class="fas fa-sticky-note" style="margin-right:6px;"></i>Notes <span id="engNoteCount" style="font-size:11px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:10px;margin-left:4px;"></span>
+          </button>
+          <button class="eng-detail-tab" data-detail-tab="actions" style="padding:8px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;">
+            <i class="fas fa-check-square" style="margin-right:6px;"></i>Actions <span id="engActionCount" style="font-size:11px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:10px;margin-left:4px;"></span>
+          </button>
+        </div>
+        <div id="engDetailNotes"></div>
+        <div id="engDetailActions" style="display:none;"></div>
+      </section>
+
+      <!-- ── NOTES (ALL) ── -->
+      <section id="notesSection" class="page-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0;">Notes</h2>
+          <button class="btn-primary" id="newNoteBtn"><i class="fas fa-plus"></i> New Note</button>
+        </div>
+        <!-- New Note Form -->
+        <div id="newNoteForm" class="card" style="margin-bottom:20px;display:none;">
+          <div class="card-header"><h2 id="noteFormTitle">New Note</h2><button class="btn-icon" id="closeNoteFormBtn"><i class="fas fa-times"></i></button></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Type</label>
+                <select id="noteType" class="form-select">
+                  <option value="Note">Note</option>
+                  <option value="Meeting">Meeting</option>
+                  <option value="Hypothesis">Hypothesis</option>
+                  <option value="Key Issues">Key Issues</option>
+                  <option value="Decision">Decision</option>
+                  <option value="Reflection">Reflection</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Engagement</label>
+                <select id="noteEngagement" class="form-select">
+                  <option value="">— Unassigned —</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" id="noteTitleGroup" style="display:none;">
+              <label class="form-label">Title</label>
+              <input type="text" id="noteTitle" class="form-input" placeholder="Meeting title or decision headline">
+            </div>
+            <div class="form-group" id="noteAttendeesGroup" style="display:none;">
+              <label class="form-label">Attendees</label>
+              <input type="text" id="noteAttendees" class="form-input" placeholder="Names separated by commas">
+            </div>
+            <div id="hypothesisStatusGroup" style="display:none;" class="form-group">
+              <label class="form-label">Hypothesis Status</label>
+              <select id="hypothesisStatus" class="form-select">
+                <option value="Investigating">Investigating</option>
+                <option value="Proven">Proven</option>
+                <option value="Disproven">Disproven</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Content</label>
+              <textarea id="noteContent" class="form-textarea" rows="10" placeholder="Start typing..."></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <label class="form-label" style="margin:0;">Tags:</label>
+              <div id="selectedTagsContainer" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;flex:1;padding:4px 8px;border:1px solid #d1d5db;border-radius:8px;min-height:34px;position:relative;">
+                <input type="text" id="tagInput" style="border:none;outline:none;font-size:12px;min-width:80px;flex:1;" placeholder="Add tag…">
+              </div>
+            </div>
+            <div id="autocompleteSuggestions" class="autocomplete-suggestions" style="display:none;position:relative;"></div>
+            <div id="noteConfidentialGroup" class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#374151;">
+                <input type="checkbox" id="noteConfidential" style="width:14px;height:14px;"> Mark as confidential
+              </label>
+            </div>
+            <div id="promoteActionsArea" style="display:none;margin-bottom:12px;">
+              <button class="btn-secondary btn-sm" id="promoteActionsBtn"><i class="fas fa-arrow-up"></i> Promote Action Items</button>
+              <div id="promotedPreview" style="margin-top:8px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button class="btn-secondary" id="cancelNoteBtn">Cancel</button>
+              <button class="btn-primary" id="saveNoteBtn"><i class="fas fa-save"></i> Save Note</button>
+            </div>
+          </div>
+        </div>
+        <!-- Search -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <input type="text" id="notesSearch" class="form-input" style="flex:1;" placeholder="Search notes…">
+          <select id="notesEngFilter" class="form-select" style="width:180px;">
+            <option value="">All Engagements</option>
+          </select>
+          <select id="notesTypeFilter" class="form-select" style="width:140px;">
+            <option value="">All Types</option>
+            <option value="Note">Note</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Hypothesis">Hypothesis</option>
+            <option value="Key Issues">Key Issues</option>
+            <option value="Decision">Decision</option>
+            <option value="Reflection">Reflection</option>
+          </select>
+        </div>
+        <div id="notesList"></div>
+      </section>
+
+      <!-- ── ACTIONS (ALL) ── -->
+      <section id="actionsSection" class="page-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0;">Actions</h2>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary btn-sm" id="archiveCompletedBtn"><i class="fas fa-archive"></i> Archive Completed</button>
+            <button class="btn-icon" id="toggleKanbanBtn" title="Toggle Kanban/List"><i class="fas fa-columns"></i></button>
+            <button class="btn-primary" id="newActionBtn"><i class="fas fa-plus"></i> New Action</button>
+          </div>
+        </div>
+        <!-- New action form inline -->
+        <div id="newActionForm" class="card" style="margin-bottom:16px;display:none;">
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;">
+              <div>
+                <label class="form-label">Action</label>
+                <input type="text" id="actionInput" class="form-input" placeholder="What needs to be done?">
+              </div>
+              <div>
+                <label class="form-label">Due</label>
+                <input type="date" id="actionDueDate" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">Engagement</label>
+                <select id="actionEngagement" class="form-select" style="width:160px;"></select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+              <button class="btn-secondary btn-sm" id="cancelActionBtn">Cancel</button>
+              <button class="btn-primary btn-sm" id="saveActionBtn"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+        <!-- Engagement filter pills -->
+        <div id="actionsEngFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+        <!-- Kanban view -->
+        <div id="kanbanView" class="kanban-board">
+          <div class="kanban-col" data-status="Project">
+            <div class="kanban-col-header" style="border-top:3px solid #0e7490;border-radius:10px 10px 0 0;"><i class="fas fa-folder" style="color:#0e7490;"></i> Project <span id="kc-Project" class="badge" style="background:#e0f7fa;color:#006064;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Project" data-status="Project"></div>
+          </div>
+          <div class="kanban-col" data-status="Next Action">
+            <div class="kanban-col-header" style="border-top:3px solid #16a34a;border-radius:10px 10px 0 0;"><i class="fas fa-arrow-circle-right" style="color:#16a34a;"></i> Next Action <span id="kc-Next-Action" class="badge" style="background:#dcfce7;color:#15803d;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Next-Action" data-status="Next Action"></div>
+          </div>
+          <div class="kanban-col" data-status="WIP">
+            <div class="kanban-col-header" style="border-top:3px solid #2563EB;border-radius:10px 10px 0 0;"><i class="fas fa-star" style="color:#2563EB;"></i> WIP <span id="kc-WIP" class="badge" style="background:#dbeafe;color:#1d4ed8;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-WIP" data-status="WIP"></div>
+          </div>
+          <div class="kanban-col" data-status="Waiting for">
+            <div class="kanban-col-header" style="border-top:3px solid #d97706;border-radius:10px 10px 0 0;"><i class="fas fa-hourglass-start" style="color:#d97706;"></i> Waiting For <span id="kc-Waiting-for" class="badge" style="background:#fef3c7;color:#b45309;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Waiting-for" data-status="Waiting for"></div>
+          </div>
+          <div class="kanban-col" data-status="Agenda">
+            <div class="kanban-col-header" style="border-top:3px solid #7c3aed;border-radius:10px 10px 0 0;"><i class="fas fa-calendar-alt" style="color:#7c3aed;"></i> Agenda <span id="kc-Agenda" class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Agenda" data-status="Agenda"></div>
+          </div>
+        </div>
+        <!-- List view -->
+        <div id="listView" style="display:none;">
+          <div id="actionsList"></div>
+          <div style="margin-top:20px;">
+            <h3 style="font-size:13px;font-weight:600;color:#6b7280;margin:0 0 8px;">Archived</h3>
+            <div id="archivedActionsList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── WEEKLY REVIEW ── -->
+      <section id="weeklyReviewSection" class="page-section">
+        <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0 0 6px;">Weekly Review</h2>
+        <p style="font-size:13px;color:#6b7280;margin:0 0 24px;">A guided process to stay on top of your commitments.</p>
+        <div class="wr-step-indicator">
+          <div class="wr-step active" id="wr-step-0">1</div><div class="wr-step-line"></div>
+          <div class="wr-step" id="wr-step-1">2</div><div class="wr-step-line"></div>
+          <div class="wr-step" id="wr-step-2">3</div><div class="wr-step-line"></div>
+          <div class="wr-step" id="wr-step-3">4</div><div class="wr-step-line"></div>
+          <div class="wr-step" id="wr-step-4">5</div>
+        </div>
+        <div id="wrContent"></div>
+        <div style="display:flex;gap:8px;margin-top:20px;" id="wrNavButtons">
+          <button class="btn-secondary" id="wrPrevBtn" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn-primary" id="wrNextBtn">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </section>
+
+    </div><!-- /pageContent -->
+  </div><!-- /mainContent -->
+</div><!-- /appLayout -->
+
+<!-- ══ QUICK CAPTURE MODAL ══ -->
+<div id="quickCaptureModal">
+  <div class="qc-box">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div class="qc-type-pill active-note" id="qcTypeNote" data-type="note">Note</div>
+      <div class="qc-type-pill" id="qcTypeAction" data-type="action">! Action</div>
+      <span style="font-size:11px;color:#9ca3af;margin-left:auto;">Esc to close &bull; ⌘↵ to save</span>
+    </div>
+    <textarea id="qcInput" class="form-textarea" rows="2" placeholder="What's on your mind? Use ! prefix for actions…" style="min-height:60px;resize:none;"></textarea>
+    <div class="qc-pills" id="qcEngagementPills"></div>
+  </div>
+</div>
+
+<!-- ══ ENGAGEMENT MODAL ══ -->
+<div id="engagementModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="engModalTitle">New Engagement</h3>
+      <button class="btn-icon" id="closeEngModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Engagement Name</label>
+        <input type="text" id="engName" class="form-input" placeholder="e.g. Pharma Corp – M&A Due Diligence">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Client Name</label>
+          <input type="text" id="engClient" class="form-input" placeholder="Client name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Code</label>
+          <input type="text" id="engCode" class="form-input" placeholder="e.g. PHARMA" maxlength="10" style="text-transform:uppercase;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="engStatus" class="form-select">
+            <option value="Active">Active</option>
+            <option value="OnHold">On Hold</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input type="date" id="engStartDate" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div class="color-swatches" id="colorSwatches">
+          <div class="color-swatch selected dot-blue" data-color="blue" style="background:#2563EB;"></div>
+          <div class="color-swatch dot-green" data-color="green" style="background:#16a34a;"></div>
+          <div class="color-swatch dot-amber" data-color="amber" style="background:#d97706;"></div>
+          <div class="color-swatch dot-rose" data-color="rose" style="background:#e11d48;"></div>
+          <div class="color-swatch dot-violet" data-color="violet" style="background:#7c3aed;"></div>
+          <div class="color-swatch dot-cyan" data-color="cyan" style="background:#0891b2;"></div>
+          <div class="color-swatch dot-orange" data-color="orange" style="background:#ea580c;"></div>
+          <div class="color-swatch dot-slate" data-color="slate" style="background:#64748b;"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#374151;">
+          <input type="checkbox" id="engConfidential" style="width:14px;height:14px;"> Mark as confidential
+        </label>
+      </div>
+      <input type="hidden" id="engEditId">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="cancelEngModalBtn">Cancel</button>
+      <button class="btn-primary" id="saveEngBtn"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ══ -->
+<div id="confirmModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-body" style="padding:24px;">
+      <p style="font-size:15px;font-weight:600;color:#111827;margin:0 0 8px;">Confirm Action</p>
+      <p id="confirmMessage" style="font-size:13px;color:#6b7280;margin:0 0 20px;"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button class="btn-secondary" id="confirmCancelBtn">Cancel</button>
+        <button class="btn-primary" id="confirmOkBtn" style="background:#dc2626;">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MESSAGE MODAL ══ -->
+<div id="messageModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-body" style="padding:24px;">
+      <p style="font-size:15px;font-weight:600;color:#dc2626;margin:0 0 8px;"><i class="fas fa-exclamation-circle"></i> Error</p>
+      <p id="messageContent" style="font-size:13px;color:#374151;margin:0 0 20px;"></p>
+      <button class="btn-primary" id="messageCloseBtn" style="width:100%;justify-content:center;background:#dc2626;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div id="loadingSpinner" style="display:none;"><div class="spinner"></div></div>
+
+<!-- ══ TOAST ══ -->
+<div id="toastNotification" style="display:none;"><span id="toastMessage"></span></div>
+
+<!-- ══ JAVASCRIPT ══ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ─── SECTION 1: Firebase Config ───
+const firebaseConfig = {
+  apiKey: "AIzaSyA9zXA5vFC67BE-ijLWxbyk6OyZGLavD1c",
+  authDomain: "journal-e3a71.firebaseapp.com",
+  projectId: "journal-e3a71",
+  storageBucket: "journal-e3a71.firebaseapp.com",
+  messagingSenderId: "414736594452",
+  appId: "1:414736594452:web:285ae539d35022713e1901"
+};
+const APP_ID = firebaseConfig.projectId;
+let app, db, auth, userId = null;
+
+// ─── SECTION 2: Global State ───
+let allEngagements = [];
+let allNotes = [];
+let activeTodos = [];
+let archivedTodos = [];
+let availableTags = new Set();
+let currentSelectedTags = new Set();
+let currentView = 'dashboard';
+let activeEngagementId = null; // for detail view
+let isConfidentialMode = false;
+let actionsViewMode = 'kanban';
+let editingNoteId = null;
+let editingActionId = null;
+let activeActionsEngFilter = null;
+let engStatusFilter = 'all';
+let engDetailTab = 'notes';
+let pendingConfirmAction = null;
+let wrStep = 0;
+let wrReflectionText = '';
+let quickCaptureType = 'note';
+let quickCaptureEngId = null;
+let toastTimeout = null;
+
+// Color map
+const COLOR_MAP = {
+  blue: '#2563EB', green: '#16a34a', amber: '#d97706', rose: '#e11d48',
+  violet: '#7c3aed', cyan: '#0891b2', orange: '#ea580c', slate: '#64748b'
+};
+const INTERNAL_ENGAGEMENTS = [
+  { id: 'FIRM', name: 'Firm Internal', code: 'FIRM', clientName: 'Internal', status: 'Active', color: 'slate', isConfidential: false },
+  { id: 'BD', name: 'Business Development', code: 'BD', clientName: 'Internal', status: 'Active', color: 'green', isConfidential: false },
+  { id: 'PERSONAL', name: 'Personal', code: 'PERSONAL', clientName: 'Self', status: 'Active', color: 'violet', isConfidential: false }
+];
+const MEETING_TEMPLATE = `Date: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}
+Attendees:
+Objective:
+
+Key Discussion Points:
+-
+
+Decisions Made:
+-
+
+Action Items:
+- [ ] [Owner] [Due Date]
+
+Next Meeting: `;
+
+// ─── SECTION 3: DOM Refs ───
+const authScreen = document.getElementById('authScreen');
+const appLayout = document.getElementById('appLayout');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const loginEmailInput = document.getElementById('loginEmail');
+const loginPasswordInput = document.getElementById('loginPassword');
+const loginBtn = document.getElementById('loginBtn');
+const registerEmailInput = document.getElementById('registerEmail');
+const registerPasswordInput = document.getElementById('registerPassword');
+const registerBtn = document.getElementById('registerBtn');
+const showRegisterLink = document.getElementById('showRegisterLink');
+const showLoginLink = document.getElementById('showLoginLink');
+const logoutBtn = document.getElementById('logoutBtn');
+const currentUserEmailEl = document.getElementById('currentUserEmail');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const toastNotification = document.getElementById('toastNotification');
+const toastMessageEl = document.getElementById('toastMessage');
+const messageModal = document.getElementById('messageModal');
+const messageContent = document.getElementById('messageContent');
+const messageCloseBtn = document.getElementById('messageCloseBtn');
+const confirmModal = document.getElementById('confirmModal');
+const confirmMessageEl = document.getElementById('confirmMessage');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmOkBtn = document.getElementById('confirmOkBtn');
+const tagInput = document.getElementById('tagInput');
+const selectedTagsContainer = document.getElementById('selectedTagsContainer');
+const autocompleteSuggestions = document.getElementById('autocompleteSuggestions');
+const noteContent = document.getElementById('noteContent');
+const noteType = document.getElementById('noteType');
+const noteEngagement = document.getElementById('noteEngagement');
+const noteTitle = document.getElementById('noteTitle');
+const noteAttendees = document.getElementById('noteAttendees');
+const hypothesisStatus = document.getElementById('hypothesisStatus');
+const noteConfidential = document.getElementById('noteConfidential');
+
+// ─── SECTION 4: Utility Functions ───
+function showLoading() { loadingSpinner.style.display = 'flex'; }
+function hideLoading() { loadingSpinner.style.display = 'none'; }
+function showError(msg) {
+  messageContent.textContent = msg;
+  messageModal.style.display = 'flex';
+}
+function showConfirm(msg, cb) {
+  confirmMessageEl.textContent = msg;
+  pendingConfirmAction = cb;
+  confirmModal.style.display = 'flex';
+}
+function showToast(msg, type='success', duration=3000) {
+  clearTimeout(toastTimeout);
+  toastMessageEl.textContent = msg;
+  toastNotification.className = type;
+  toastNotification.style.display = 'block';
+  void toastNotification.offsetWidth;
+  toastNotification.classList.add('show');
+  toastTimeout = setTimeout(() => {
+    toastNotification.classList.remove('show');
+    setTimeout(() => { toastNotification.style.display = 'none'; }, 300);
+  }, duration);
+}
+function formatTs(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true });
+}
+function formatDateSep(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+}
+function formatDueDate(s) {
+  if (!s) return null;
+  const d = new Date(s + 'T00:00:00');
+  if (isNaN(d.getTime())) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(d); due.setHours(0,0,0,0);
+  return { text: d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), isOverdue: due < today };
+}
+function autolink(text) {
+  return text.replace(/(https?:\/\/[^\s<>"'()]+|www\.[^\s<>"'()]+)(?=[.,;!?'")\s]|$)/g, m => {
+    const url = m.startsWith('www.') ? 'http://'+m : m;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#2563EB;">${m}</a>`;
+  });
+}
+function getEngagementColor(colorKey) { return COLOR_MAP[colorKey] || COLOR_MAP.slate; }
+function getEngagement(id) { return allEngagements.find(e => e.id === id) || null; }
+function engColorHex(eng) { return eng ? getEngagementColor(eng.color) : '#e5e7eb'; }
+function handleTextareaKeydown(event) {
+  const ta = event.target;
+  const start = ta.selectionStart, end = ta.selectionEnd, val = ta.value;
+  const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+  const lineEnd = val.indexOf('\n', start);
+  const currentLine = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
+  const bulletMatch = currentLine.match(/^(\s*)([-*] |\[\] )/);
+  const existingIndent = bulletMatch ? bulletMatch[1] : '';
+  const bulletPrefix = bulletMatch ? bulletMatch[2] : '';
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    if (event.shiftKey) {
+      const newIndent = existingIndent.startsWith('\t') ? existingIndent.slice(1) : existingIndent.startsWith('  ') ? existingIndent.slice(2) : existingIndent;
+      if (newIndent !== existingIndent) {
+        const newLine = newIndent + bulletPrefix + currentLine.substring(existingIndent.length + bulletPrefix.length);
+        ta.setRangeText(newLine, lineStart, lineEnd === -1 ? val.length : lineEnd, 'end');
+        ta.selectionStart = ta.selectionEnd = start - (existingIndent.length - newIndent.length);
+      }
+    } else {
+      const newLine = '\t' + currentLine;
+      ta.setRangeText(newLine, lineStart, lineEnd === -1 ? val.length : lineEnd, 'end');
+      ta.selectionStart = ta.selectionEnd = start + 1;
+    }
+  }
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    let newPrefix = '';
+    if (bulletMatch) newPrefix = existingIndent + bulletPrefix;
+    else { const im = currentLine.match(/^(\s*)/); if (im && im[1].length > 0) newPrefix = im[1]; }
+    ta.setRangeText('\n' + newPrefix, start, end, 'end');
+    ta.selectionStart = ta.selectionEnd = start + newPrefix.length + 1;
+  }
+}
+
+// ─── SECTION 5: Auth ───
+async function handleLogin() {
+  const email = loginEmailInput.value, pass = loginPasswordInput.value;
+  if (!email || !pass) { showError('Please enter email and password.'); return; }
+  showLoading();
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    showToast('Signed in!');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+async function handleRegister() {
+  const email = registerEmailInput.value, pass = registerPasswordInput.value;
+  if (!email || !pass) { showError('Please enter email and password.'); return; }
+  showLoading();
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    showToast('Account created!');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+async function handleLogout() {
+  showLoading();
+  try { await signOut(auth); showToast('Signed out.'); } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+// ─── SECTION 6: Engagement CRUD ───
+function engPath() { return `artifacts/${APP_ID}/users/${userId}/engagements`; }
+function notesPath() { return `artifacts/${APP_ID}/users/${userId}/journalEntries`; }
+function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
+
+async function seedInternalEngagements() {
+  for (const eng of INTERNAL_ENGAGEMENTS) {
+    const ref = doc(db, engPath(), eng.id);
+    const snap = await getDocs(query(collection(db, engPath()), where('code', '==', eng.code)));
+    if (snap.empty) {
+      await setDoc(ref, { ...eng, createdAt: serverTimestamp() });
+    }
+  }
+}
+
+async function saveEngagement() {
+  const name = document.getElementById('engName').value.trim();
+  const client = document.getElementById('engClient').value.trim();
+  const code = document.getElementById('engCode').value.trim().toUpperCase();
+  const status = document.getElementById('engStatus').value;
+  const startDate = document.getElementById('engStartDate').value;
+  const confidential = document.getElementById('engConfidential').checked;
+  const editId = document.getElementById('engEditId').value;
+  const selectedSwatch = document.querySelector('.color-swatch.selected');
+  const color = selectedSwatch ? selectedSwatch.dataset.color : 'blue';
+  if (!name) { showError('Engagement name is required.'); return; }
+  showLoading();
+  try {
+    const data = { name, clientName: client, code, status, color, isConfidential: confidential, startDate: startDate || null, updatedAt: serverTimestamp() };
+    if (editId) {
+      await updateDoc(doc(db, engPath(), editId), data);
+      showToast('Engagement updated.');
+    } else {
+      await addDoc(collection(db, engPath()), { ...data, createdAt: serverTimestamp() });
+      showToast('Engagement created.');
+    }
+    document.getElementById('engagementModal').style.display = 'none';
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+function openNewEngagementModal() {
+  document.getElementById('engModalTitle').textContent = 'New Engagement';
+  document.getElementById('engName').value = '';
+  document.getElementById('engClient').value = '';
+  document.getElementById('engCode').value = '';
+  document.getElementById('engStatus').value = 'Active';
+  document.getElementById('engStartDate').value = '';
+  document.getElementById('engConfidential').checked = false;
+  document.getElementById('engEditId').value = '';
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  document.querySelector('.color-swatch[data-color="blue"]').classList.add('selected');
+  document.getElementById('engagementModal').style.display = 'flex';
+}
+
+function openEditEngagementModal(eng) {
+  document.getElementById('engModalTitle').textContent = 'Edit Engagement';
+  document.getElementById('engName').value = eng.name || '';
+  document.getElementById('engClient').value = eng.clientName || '';
+  document.getElementById('engCode').value = eng.code || '';
+  document.getElementById('engStatus').value = eng.status || 'Active';
+  document.getElementById('engStartDate').value = eng.startDate || '';
+  document.getElementById('engConfidential').checked = eng.isConfidential || false;
+  document.getElementById('engEditId').value = eng.id;
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.color === (eng.color || 'blue'));
+  });
+  document.getElementById('engagementModal').style.display = 'flex';
+}
+
+async function deleteEngagement(id) {
+  showLoading();
+  try {
+    await deleteDoc(doc(db, engPath(), id));
+    showToast('Engagement deleted.');
+    navigate('engagements');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+// ─── SECTION 7: Note CRUD ───
+async function saveNote() {
+  const text = noteContent.value.trim();
+  const type = noteType.value;
+  const engId = noteEngagement.value || null;
+  const title = noteTitle.value.trim();
+  const attendees = noteAttendees.value ? noteAttendees.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const hypStatus = hypothesisStatus.value;
+  const confidential = noteConfidential.checked;
+  const tags = Array.from(currentSelectedTags);
+  if (!text) { showError('Note content cannot be empty.'); return; }
+  showLoading();
+  try {
+    const data = { text, type, tags, engagementId: engId, title: title || null, attendees,
+      hypothesisStatus: type === 'Hypothesis' ? hypStatus : null,
+      isConfidential: confidential, timestamp: serverTimestamp(), updatedAt: serverTimestamp(),
+      linkedActionIds: [] };
+    if (editingNoteId) {
+      const { timestamp, ...updateData } = data;
+      await updateDoc(doc(db, notesPath(), editingNoteId), updateData);
+      showToast('Note updated.');
+    } else {
+      const newDoc = await addDoc(collection(db, notesPath()), data);
+      // After saving a meeting note, check if we should promote actions
+      if (type === 'Meeting') {
+        const lines = text.split('\n').filter(l => l.trim().match(/^-\s*\[\s*\]\s+/));
+        if (lines.length > 0) {
+          const batch = writeBatch(db);
+          const actionIds = [];
+          lines.forEach(line => {
+            const actionText = line.replace(/^-\s*\[\s*\]\s+/, '').trim();
+            if (actionText) {
+              const aRef = doc(collection(db, actionsPath()));
+              batch.set(aRef, { text: actionText, isCompleted: false, isArchived: false, status: 'Next Action',
+                dueDate: null, engagementId: engId, sourceNoteId: newDoc.id, owner: '', timestamp: serverTimestamp() });
+              actionIds.push(aRef.id);
+            }
+          });
+          await batch.commit();
+          if (actionIds.length > 0) showToast(`Note saved + ${actionIds.length} action(s) promoted!`);
+          else showToast('Note saved.');
+        } else { showToast('Note saved.'); }
+      } else { showToast('Note saved.'); }
+    }
+    resetNoteForm();
+    document.getElementById('newNoteForm').style.display = 'none';
+    editingNoteId = null;
+    currentSelectedTags.clear();
+    renderSelectedTags([]);
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+async function deleteNote(id) {
+  showLoading();
+  try {
+    await deleteDoc(doc(db, notesPath(), id));
+    showToast('Note deleted.');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+function resetNoteForm() {
+  noteContent.value = '';
+  noteTitle.value = '';
+  noteAttendees.value = '';
+  noteType.value = 'Note';
+  noteEngagement.value = '';
+  noteConfidential.checked = false;
+  currentSelectedTags.clear();
+  renderSelectedTags([]);
+  updateNoteFormFields();
+}
+
+function openNoteForm(opts = {}) {
+  editingNoteId = opts.id || null;
+  document.getElementById('noteFormTitle').textContent = opts.id ? 'Edit Note' : 'New Note';
+  noteContent.value = opts.text || '';
+  noteType.value = opts.type || 'Note';
+  noteTitle.value = opts.title || '';
+  noteAttendees.value = (opts.attendees || []).join(', ');
+  hypothesisStatus.value = opts.hypothesisStatus || 'Investigating';
+  noteConfidential.checked = opts.isConfidential || false;
+  noteEngagement.value = opts.engagementId || (activeEngagementId || '');
+  currentSelectedTags = new Set(opts.tags || []);
+  renderSelectedTags(Array.from(currentSelectedTags));
+  updateNoteFormFields();
+  document.getElementById('newNoteForm').style.display = 'block';
+  noteContent.focus();
+}
+
+function updateNoteFormFields() {
+  const t = noteType.value;
+  const showTitle = ['Meeting','Hypothesis','Decision'].includes(t);
+  document.getElementById('noteTitleGroup').style.display = showTitle ? 'block' : 'none';
+  document.getElementById('noteAttendeesGroup').style.display = t === 'Meeting' ? 'block' : 'none';
+  document.getElementById('hypothesisStatusGroup').style.display = t === 'Hypothesis' ? 'block' : 'none';
+  document.getElementById('promoteActionsArea').style.display = t === 'Meeting' ? 'block' : 'none';
+  if (t === 'Meeting' && !editingNoteId && !noteContent.value) {
+    noteContent.value = MEETING_TEMPLATE;
+  }
+}
+
+// ─── SECTION 8: Action CRUD ───
+async function saveAction(text, engId, dueDate) {
+  if (!text.trim()) { showError('Action cannot be empty.'); return; }
+  showLoading();
+  try {
+    await addDoc(collection(db, actionsPath()), {
+      text: text.trim(), isCompleted: false, isArchived: false, status: 'Next Action',
+      dueDate: dueDate || null, engagementId: engId || null, owner: '',
+      timestamp: serverTimestamp(), archivedAt: null
+    });
+    showToast('Action added.');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+async function updateAction(id, updates) {
+  showLoading();
+  try {
+    await updateDoc(doc(db, actionsPath(), id), { ...updates, updatedAt: serverTimestamp() });
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+async function deleteAction(id) {
+  showLoading();
+  try {
+    await deleteDoc(doc(db, actionsPath(), id));
+    showToast('Action deleted.');
+  } catch(e) { showError(e.message); } finally { hideLoading(); }
+}
+
+async function archiveCompleted() {
+  const completed = activeTodos.filter(t => t.isCompleted);
+  if (!completed.length) { showError('No completed actions to archive.'); return; }
+  showConfirm(`Archive ${completed.length} completed action(s)?`, async () => {
+    showLoading();
+    try {
+      const batch = writeBatch(db);
+      completed.forEach(t => batch.update(doc(db, actionsPath(), t.id), { isArchived: true, archivedAt: serverTimestamp(), status: 'Completed' }));
+      await batch.commit();
+      showToast(`${completed.length} action(s) archived.`);
+    } catch(e) { showError(e.message); } finally { hideLoading(); }
+  });
+}
+
+// ─── SECTION 9: Tag Management ───
+function renderSelectedTags(tags) {
+  const inp = tagInput;
+  selectedTagsContainer.innerHTML = '';
+  selectedTagsContainer.appendChild(inp);
+  tags.forEach(tag => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.innerHTML = `#${tag}<i class="fas fa-times tag-pill-remove" data-tag="${tag}"></i>`;
+    selectedTagsContainer.insertBefore(pill, inp);
+  });
+}
+function addTag(tag) {
+  const t = tag.toLowerCase().replace(/^#/,'');
+  if (t && !currentSelectedTags.has(t)) { currentSelectedTags.add(t); renderSelectedTags(Array.from(currentSelectedTags)); tagInput.value = ''; autocompleteSuggestions.style.display = 'none'; }
+}
+function removeTag(tag) { currentSelectedTags.delete(tag); renderSelectedTags(Array.from(currentSelectedTags)); }
+function showTagSuggestions(q) {
+  autocompleteSuggestions.innerHTML = '';
+  const filtered = Array.from(availableTags).filter(t => t.includes(q) && !currentSelectedTags.has(t)).sort();
+  const typed = q.replace(/^#/,'');
+  if (typed && !availableTags.has(typed) && !currentSelectedTags.has(typed)) {
+    const d = document.createElement('div'); d.className = 'autocomplete-suggestion-item'; d.textContent = `#${typed}`; d.dataset.tag = typed; autocompleteSuggestions.appendChild(d);
+  }
+  filtered.forEach(t => { const d = document.createElement('div'); d.className = 'autocomplete-suggestion-item'; d.textContent = `#${t}`; d.dataset.tag = t; autocompleteSuggestions.appendChild(d); });
+  const hasItems = autocompleteSuggestions.children.length > 0;
+  autocompleteSuggestions.style.display = hasItems ? 'block' : 'none';
+  if (hasItems) autocompleteSuggestions.children[0].classList.add('selected');
+}
+function handleTagKeydown(e) {
+  const items = Array.from(autocompleteSuggestions.children);
+  let idx = items.findIndex(i => i.classList.contains('selected'));
+  if (e.key === 'ArrowDown') { e.preventDefault(); if (idx < items.length-1) { if(idx>=0) items[idx].classList.remove('selected'); items[++idx].classList.add('selected'); } }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if (idx > 0) { items[idx].classList.remove('selected'); items[--idx].classList.add('selected'); } }
+  else if (e.key === 'Enter') { e.preventDefault(); if (idx >= 0) addTag(items[idx].dataset.tag); else if (tagInput.value.trim()) addTag(tagInput.value.trim()); }
+  else if (e.key === 'Escape') { autocompleteSuggestions.style.display = 'none'; tagInput.value = ''; }
+  else if (e.key === 'Backspace' && tagInput.selectionStart === 0 && tagInput.selectionEnd === 0) {
+    e.preventDefault(); const last = Array.from(currentSelectedTags).pop(); if (last) removeTag(last);
+  }
+}
+
+// ─── SECTION 10: Firestore Listeners ───
+function setupListeners() {
+  // Engagements
+  onSnapshot(query(collection(db, engPath()), orderBy('createdAt','asc')), snap => {
+    allEngagements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSidebarEngagements();
+    populateEngagementSelects();
+    renderEngagementGrid();
+    renderDashboardPulse();
+  });
+  // Notes
+  onSnapshot(query(collection(db, notesPath()), orderBy('timestamp','desc')), snap => {
+    allNotes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allNotes.forEach(n => (n.tags||[]).forEach(t => availableTags.add(t)));
+    renderNotesList();
+    renderDashboardNotes();
+    if (activeEngagementId) renderEngagementDetail(activeEngagementId);
+  });
+  // Active actions
+  onSnapshot(query(collection(db, actionsPath()), where('isArchived','==',false)), snap => {
+    activeTodos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    activeTodos.sort((a,b) => {
+      const order = {'Project':1,'Next Action':2,'WIP':3,'Waiting for':4,'Agenda':5,'Completed':6};
+      const diff = (order[a.status]||9) - (order[b.status]||9); if (diff) return diff;
+      const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+      const db2 = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+      if (da !== db2) return da - db2;
+      return (a.timestamp?.toDate?.()?.getTime()||0) - (b.timestamp?.toDate?.()?.getTime()||0);
+    });
+    renderActionsView();
+    renderDashboardFocus();
+    renderDashboardWaiting();
+    if (activeEngagementId) renderEngagementDetail(activeEngagementId);
+  });
+  // Archived actions
+  onSnapshot(query(collection(db, actionsPath()), where('isArchived','==',true)), snap => {
+    archivedTodos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    archivedTodos.sort((a,b) => (b.archivedAt?.toDate?.()?.getTime()||0) - (a.archivedAt?.toDate?.()?.getTime()||0));
+    renderArchivedList();
+  });
+}
+
+// ─── SECTION 11: Render – Sidebar ───
+function renderSidebarEngagements() {
+  // Sidebar no longer shows engagement sub-list — clean nav, no stale names
+}
+
+function populateEngagementSelects() {
+  const options = `<option value="">— Unassigned —</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  [noteEngagement, document.getElementById('notesEngFilter'), document.getElementById('actionEngagement')].forEach(sel => {
+    if (!sel) return;
+    const cur = sel.value;
+    const isFilter = sel.id === 'notesEngFilter';
+    sel.innerHTML = isFilter ? `<option value="">All Engagements</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('') : options;
+    sel.value = cur;
+  });
+  // Actions engagement filter pills
+  const pf = document.getElementById('actionsEngFilter');
+  if (pf) {
+    pf.innerHTML = `<span class="qc-pill ${!activeActionsEngFilter ? 'active' : ''}" data-eng-filter="">All</span>` +
+      allEngagements.filter(e => e.status==='Active').map(e => `<span class="qc-pill ${activeActionsEngFilter===e.id ? 'active' : ''}" data-eng-filter="${e.id}" style="border-left:3px solid ${engColorHex(e)};">${e.name}</span>`).join('');
+  }
+}
+
+// ─── SECTION 12: Render – Dashboard ───
+function renderDashboardFocus() {
+  const el = document.getElementById('dashFocus');
+  const items = activeTodos.filter(t => ['Next Action','WIP'].includes(t.status) && !t.isCompleted).slice(0, 6);
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No active items — great job!</p></div>'; return; }
+  el.innerHTML = items.map(t => {
+    const eng = getEngagement(t.engagementId);
+    const due = formatDueDate(t.dueDate);
+    return `<div class="dash-item">
+      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
+      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
+      ${due ? `<span class="dash-item-meta ${due.isOverdue ? 'overdue-text' : ''}">${due.text}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+function renderDashboardWaiting() {
+  const el = document.getElementById('dashWaiting');
+  const items = activeTodos.filter(t => t.status === 'Waiting for' && !t.isArchived);
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>Nothing waiting</p></div>'; return; }
+  el.innerHTML = items.map(t => {
+    const eng = getEngagement(t.engagementId);
+    return `<div class="dash-item">
+      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
+      ${t.owner ? `<span class="dash-item-meta">${t.owner}</span>` : ''}
+      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
+    </div>`;
+  }).join('');
+}
+function renderDashboardNotes() {
+  const el = document.getElementById('dashNotes');
+  const items = allNotes.slice(0, 5);
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No recent notes</p></div>'; return; }
+  el.innerHTML = items.map(n => {
+    const eng = getEngagement(n.engagementId);
+    return `<div class="dash-item">
+      <div style="flex:1;min-width:0;">
+        <div class="blur-sensitive" style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.title || n.text.substring(0,60)}</div>
+        <div style="font-size:11px;color:#9ca3af;">${formatTs(n.timestamp)}${eng ? ' · '+eng.name : ''}</div>
+      </div>
+      <span class="badge badge-${(n.type||'note').toLowerCase().replace(' ','')} ">${n.type||'Note'}</span>
+    </div>`;
+  }).join('');
+}
+function renderDashboardPulse() {
+  const el = document.getElementById('dashPulse');
+  const active = allEngagements.filter(e => e.status === 'Active');
+  if (!active.length) { el.innerHTML = '<div class="empty-state"><p>No active engagements</p></div>'; return; }
+  el.innerHTML = active.map(e => {
+    const count = activeTodos.filter(t => t.engagementId === e.id && !t.isCompleted && !t.isArchived).length;
+    return `<div class="pulse-card" style="border-left:4px solid ${engColorHex(e)};">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.name}</div>
+        <div style="font-size:11px;color:#6b7280;">${e.clientName || ''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="pulse-count">${count}</div>
+        <div class="pulse-label">open actions</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateDashGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dashGreeting').textContent = greet;
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+// ─── SECTION 13: Render – Engagements ───
+function renderEngagementGrid() {
+  const el = document.getElementById('engagementGrid');
+  if (!el) return;
+  const search = (document.getElementById('engSearch')?.value || '').toLowerCase();
+  // Sort: Active first → OnHold → Closed, then alphabetical within each group
+  const statusOrder = { Active: 0, OnHold: 1, Closed: 2 };
+  let filtered = [...allEngagements].sort((a, b) => {
+    const sd = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+    return sd !== 0 ? sd : (a.name || '').localeCompare(b.name || '');
+  });
+  if (engStatusFilter !== 'all') filtered = filtered.filter(e => e.status === engStatusFilter);
+  if (search) filtered = filtered.filter(e => (e.name || '').toLowerCase().includes(search) || (e.clientName || '').toLowerCase().includes(search) || (e.code || '').toLowerCase().includes(search));
+  if (!filtered.length) { el.innerHTML = '<div class="empty-state"><i class="fas fa-briefcase"></i><p>No engagements found.</p></div>'; return; }
+  el.innerHTML = filtered.map(e => {
+    const count = activeTodos.filter(t => t.engagementId === e.id && !t.isArchived).length;
+    const hex = engColorHex(e);
+    const sbClass = e.status === 'Active' ? 'esb-active' : e.status === 'OnHold' ? 'esb-onhold' : 'esb-closed';
+    return `<div class="eng-card" data-open-eng="${e.id}">
+      <div class="eng-card-bar" style="background:${hex};"></div>
+      <div class="eng-card-content">
+        <div class="eng-card-name">${e.name}${e.isConfidential ? ' <i class="fas fa-lock confidential-lock"></i>' : ''}</div>
+        <div class="eng-card-client">${e.clientName || ''}</div>
+        <div class="eng-card-meta">
+          <span class="eng-status-badge ${sbClass}">${e.status === 'OnHold' ? 'On Hold' : e.status}</span>
+          <span style="font-size:11px;color:#6b7280;">${count} action${count!==1?'s':''}</span>
+          <div style="margin-left:auto;display:flex;gap:4px;">
+            <button class="btn-icon" style="width:26px;height:26px;font-size:11px;" data-edit-eng="${e.id}" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon" style="width:26px;height:26px;font-size:11px;color:#dc2626;" data-delete-eng="${e.id}" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderEngagementDetail(engId) {
+  const eng = getEngagement(engId);
+  if (!eng) return;
+  document.getElementById('engDetailTitle').textContent = eng.name;
+  const sbClass = eng.status === 'Active' ? 'esb-active' : eng.status === 'OnHold' ? 'esb-onhold' : 'esb-closed';
+  document.getElementById('engDetailStatus').className = `eng-status-badge ${sbClass}`;
+  document.getElementById('engDetailStatus').textContent = eng.status === 'OnHold' ? 'On Hold' : eng.status;
+  document.getElementById('engDetailLock').style.display = eng.isConfidential ? 'inline' : 'none';
+  const engNotes = allNotes.filter(n => n.engagementId === engId);
+  const engActions = activeTodos.filter(t => t.engagementId === engId && !t.isArchived);
+  document.getElementById('engNoteCount').textContent = engNotes.length;
+  document.getElementById('engActionCount').textContent = engActions.length;
+  // Render active tab content
+  const notesEl = document.getElementById('engDetailNotes');
+  const actionsEl = document.getElementById('engDetailActions');
+  notesEl.style.display = engDetailTab === 'notes' ? 'block' : 'none';
+  actionsEl.style.display = engDetailTab === 'actions' ? 'block' : 'none';
+  notesEl.innerHTML = engNotes.length ? engNotes.map(n => renderNoteCard(n, true)).join('') : '<div class="empty-state"><i class="fas fa-sticky-note"></i><p>No notes yet — add your first one!</p></div>';
+  actionsEl.innerHTML = engActions.length ? engActions.map(t => renderActionCard(t, true)).join('') : '<div class="empty-state"><i class="fas fa-check-square"></i><p>No actions yet</p></div>';
+  // Update tab button active states
+  document.querySelectorAll('.eng-detail-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.detailTab === engDetailTab));
+}
+
+// ─── SECTION 14: Render – Notes ───
+const SNIPPET = 250;
+function badgeClass(type) {
+  const map = { Note:'note', Meeting:'meeting', Hypothesis:'hypothesis', 'Key Issues':'keyissues', Decision:'decision', Reflection:'reflection' };
+  return 'badge badge-' + (map[type] || 'note');
+}
+function hypBadge(status) {
+  if (!status) return '';
+  const cls = status === 'Proven' ? 'hyp-proven' : status === 'Disproven' ? 'hyp-disproven' : 'hyp-investigating';
+  return `<span class="badge ${cls}" style="margin-left:6px;">${status}</span>`;
+}
+function renderNoteCard(n, compact = false) {
+  const eng = getEngagement(n.engagementId);
+  const hex = eng ? engColorHex(eng) : '#e5e7eb';
+  const isConfidential = n.isConfidential || (eng && eng.isConfidential);
+  const fullText = n.text || '';
+  const displayText = fullText.length > SNIPPET ? fullText.substring(0, SNIPPET) + '...' : fullText;
+  const tags = (n.tags || []).map(t => `<span class="tag-pill">#${t}</span>`).join('');
+  return `<div class="note-card" data-note-id="${n.id}">
+    <div class="engagement-bar" style="background:${hex};"></div>
+    <div class="note-card-inner">
+      ${n.title ? `<div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;">${n.title}${isConfidential ? '<i class="fas fa-lock confidential-lock"></i>' : ''}</div>` : ''}
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span class="${badgeClass(n.type)}">${n.type||'Note'}</span>
+        ${n.type === 'Hypothesis' ? hypBadge(n.hypothesisStatus) : ''}
+        ${n.attendees && n.attendees.length ? `<span style="font-size:11px;color:#6b7280;">${n.attendees.length} attendee${n.attendees.length!==1?'s':''}</span>` : ''}
+        ${!n.title && isConfidential ? '<i class="fas fa-lock confidential-lock"></i>' : ''}
+        <span style="font-size:11px;color:#9ca3af;margin-left:auto;">${formatTs(n.timestamp)}</span>
+      </div>
+      <div class="note-text blur-sensitive" style="font-size:13px;margin-bottom:6px;" data-full-text="${encodeURIComponent(fullText)}">${autolink(displayText)}</div>
+      ${fullText.length > SNIPPET ? `<span class="read-more-btn" data-action="toggle-read-more" data-note-id="${n.id}">Read More</span>` : ''}
+      ${tags ? `<div style="margin:6px 0;">${tags}</div>` : ''}
+      ${eng ? `<div style="font-size:11px;color:#6b7280;margin-top:4px;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+        <button class="btn-secondary btn-sm" data-action="edit-note" data-note-id="${n.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-danger btn-sm" data-action="delete-note" data-note-id="${n.id}"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderNotesList() {
+  const el = document.getElementById('notesList');
+  if (!el) return;
+  const search = (document.getElementById('notesSearch')?.value || '').toLowerCase();
+  const engFilter = document.getElementById('notesEngFilter')?.value || '';
+  const typeFilter = document.getElementById('notesTypeFilter')?.value || '';
+  let filtered = allNotes;
+  if (search) filtered = filtered.filter(n => (n.text||'').toLowerCase().includes(search) || (n.title||'').toLowerCase().includes(search) || (n.tags||[]).some(t => t.includes(search)));
+  if (engFilter) filtered = filtered.filter(n => n.engagementId === engFilter);
+  if (typeFilter) filtered = filtered.filter(n => n.type === typeFilter);
+  if (!filtered.length) { el.innerHTML = '<div class="empty-state"><i class="fas fa-sticky-note"></i><p>No notes found</p></div>'; return; }
+  let html = '', lastDate = null;
+  filtered.forEach(n => {
+    const d = n.timestamp ? new Date(n.timestamp.toDate().setHours(0,0,0,0)) : null;
+    const ds = d ? formatDateSep(n.timestamp) : 'Unknown';
+    if (ds !== lastDate) { html += `<div class="separator-date"><span>${ds}</span></div>`; lastDate = ds; }
+    html += renderNoteCard(n);
+  });
+  el.innerHTML = html;
+}
+
+// ─── SECTION 15: Render – Actions ───
+function spClass(status) {
+  const m = { Project:'sp-project', 'Next Action':'sp-next', WIP:'sp-wip', 'Waiting for':'sp-waiting', Agenda:'sp-agenda', Completed:'sp-completed' };
+  return 'status-pill ' + (m[status] || 'sp-next');
+}
+function renderActionCard(t, compact = false) {
+  const eng = getEngagement(t.engagementId);
+  const hex = eng ? engColorHex(eng) : '#e5e7eb';
+  const due = formatDueDate(t.dueDate);
+  return `<div class="action-card" data-action-id="${t.id}">
+    <div class="engagement-bar" style="background:${hex};"></div>
+    <div style="padding-top:2px;flex-shrink:0;">
+      <input type="checkbox" ${t.isCompleted ? 'checked' : ''} data-action="toggle-action" data-id="${t.id}" data-completed="${t.isCompleted}" style="width:14px;height:14px;cursor:pointer;">
+    </div>
+    <div class="action-card-body">
+      <div class="action-text blur-sensitive ${t.isCompleted ? 'completed-text' : ''}">${t.text}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+        <span class="${spClass(t.status)}">${t.status}</span>
+        ${due ? `<span style="font-size:11px;${due.isOverdue ? 'color:#dc2626;font-weight:600;' : 'color:#6b7280;'}"><i class="far fa-calendar-alt"></i> ${due.text}${due.isOverdue ? ' ⚠' : ''}</span>` : ''}
+        ${t.owner ? `<span style="font-size:11px;color:#6b7280;">${t.owner}</span>` : ''}
+        ${eng ? `<span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:3px;"><span style="width:6px;height:6px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;flex-shrink:0;">
+      <button class="btn-secondary btn-sm" data-action="edit-action" data-id="${t.id}" style="padding:4px 8px;"><i class="fas fa-edit"></i></button>
+      <button class="btn-danger btn-sm" data-action="delete-action" data-id="${t.id}"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function renderKanban() {
+  const statuses = ['Project', 'Next Action', 'WIP', 'Waiting for', 'Agenda'];
+  let filtered = activeTodos;
+  if (activeActionsEngFilter) filtered = filtered.filter(t => t.engagementId === activeActionsEngFilter);
+  statuses.forEach(status => {
+    const colId = 'kb-' + status.replace(/ /g, '-');
+    const countId = 'kc-' + status.replace(/ /g, '-');
+    const col = document.getElementById(colId);
+    const countEl = document.getElementById(countId);
+    if (!col) return;
+    const items = filtered.filter(t => t.status === status && !t.isCompleted);
+    countEl.textContent = items.length;
+    col.innerHTML = items.map(t => {
+      const eng = getEngagement(t.engagementId);
+      const hex = eng ? engColorHex(eng) : '#e5e7eb';
+      const due = formatDueDate(t.dueDate);
+      return `<div class="kanban-card" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
+        <div class="kc-bar" style="background:${hex};"></div>
+        <div style="padding-left:6px;font-size:12px;color:#374151;line-height:1.4;" class="blur-sensitive">${t.text}</div>
+        ${due ? `<div style="font-size:10px;margin-top:4px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
+        ${eng ? `<div style="font-size:10px;color:#9ca3af;margin-top:2px;display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</div>` : ''}
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderActionsView() {
+  if (actionsViewMode === 'kanban') renderKanban();
+  else renderActionsList();
+}
+
+function renderActionsList() {
+  const el = document.getElementById('actionsList');
+  if (!el) return;
+  let filtered = activeTodos;
+  if (activeActionsEngFilter) filtered = filtered.filter(t => t.engagementId === activeActionsEngFilter);
+  el.innerHTML = filtered.length ? filtered.map(t => renderActionCard(t)).join('') : '<div class="empty-state"><i class="fas fa-check-square"></i><p>All clear!</p></div>';
+}
+
+function renderArchivedList() {
+  const el = document.getElementById('archivedActionsList');
+  if (!el) return;
+  el.innerHTML = archivedTodos.length ? archivedTodos.map(t => {
+    const eng = getEngagement(t.engagementId);
+    return `<div class="action-card" data-action-id="${t.id}" style="opacity:.65;">
+      <div class="engagement-bar" style="background:${eng ? engColorHex(eng) : '#e5e7eb'};"></div>
+      <div class="action-card-body" style="padding-left:8px;">
+        <div class="action-text completed-text blur-sensitive">${t.text}</div>
+        ${eng ? `<div style="font-size:11px;color:#9ca3af;">${eng.name}</div>` : ''}
+      </div>
+      <button class="btn-danger btn-sm" data-action="delete-action" data-id="${t.id}"><i class="fas fa-trash"></i></button>
+    </div>`;
+  }).join('') : '<div class="empty-state" style="padding:16px;"><p>No archived actions</p></div>';
+}
+
+// ─── SECTION 16: Inline Edit ───
+function openEditActionInline(id) {
+  const t = activeTodos.find(a => a.id === id); if (!t) return;
+  const el = document.querySelector(`[data-action-id="${id}"]`); if (!el) return;
+  const eng = getEngagement(t.engagementId);
+  const engOpts = `<option value="">—</option>` + allEngagements.map(e => `<option value="${e.id}" ${e.id === t.engagementId ? 'selected' : ''}>${e.name}</option>`).join('');
+  el.innerHTML = `
+    <div class="engagement-bar" style="background:${eng ? engColorHex(eng) : '#e5e7eb'};"></div>
+    <div style="padding-left:8px;flex:1;display:flex;flex-direction:column;gap:6px;">
+      <input type="text" class="form-input" id="editActionText_${id}" value="${t.text.replace(/"/g,'&quot;')}" style="font-size:13px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <select class="form-select" id="editActionStatus_${id}" style="flex:1;font-size:12px;">
+          ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <input type="date" class="form-input" id="editActionDue_${id}" value="${t.dueDate||''}" style="flex:1;font-size:12px;">
+        <input type="text" class="form-input" id="editActionOwner_${id}" value="${t.owner||''}" placeholder="Owner" style="flex:1;font-size:12px;">
+        <select class="form-select" id="editActionEng_${id}" style="flex:1;font-size:12px;">${engOpts}</select>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;">
+        <button class="btn-secondary btn-sm" data-action="cancel-edit-action" data-id="${id}">Cancel</button>
+        <button class="btn-primary btn-sm" data-action="save-edit-action" data-id="${id}"><i class="fas fa-check"></i> Save</button>
+      </div>
+    </div>`;
+}
+
+// ─── SECTION 17: Quick Capture ───
+function openQuickCapture(defaultEngId = null) {
+  quickCaptureEngId = defaultEngId;
+  quickCaptureType = 'note';
+  document.getElementById('qcTypeNote').className = 'qc-type-pill active-note';
+  document.getElementById('qcTypeAction').className = 'qc-type-pill';
+  document.getElementById('qcInput').value = '';
+  const pf = document.getElementById('qcEngagementPills');
+  pf.innerHTML = `<span class="qc-pill ${!quickCaptureEngId ? 'active' : ''}" data-qc-eng="">Unassigned</span>` +
+    allEngagements.filter(e => e.status === 'Active').map(e => `<span class="qc-pill ${quickCaptureEngId === e.id ? 'active' : ''}" data-qc-eng="${e.id}" style="border-left:3px solid ${engColorHex(e)};">${e.name}</span>`).join('');
+  document.getElementById('quickCaptureModal').classList.add('open');
+  document.getElementById('qcInput').focus();
+}
+function closeQuickCapture() { document.getElementById('quickCaptureModal').classList.remove('open'); }
+async function submitQuickCapture() {
+  const text = document.getElementById('qcInput').value.trim();
+  if (!text) { closeQuickCapture(); return; }
+  const isAction = quickCaptureType === 'action' || text.startsWith('!');
+  const cleanText = text.replace(/^!\s*/,'');
+  if (isAction) {
+    await saveAction(cleanText, quickCaptureEngId, null);
+  } else {
+    showLoading();
+    try {
+      await addDoc(collection(db, notesPath()), { text: cleanText, type: 'Note', tags: [], engagementId: quickCaptureEngId || null,
+        title: null, attendees: [], hypothesisStatus: null, isConfidential: false, timestamp: serverTimestamp(), linkedActionIds: [] });
+      showToast('Note captured!');
+    } catch(e) { showError(e.message); } finally { hideLoading(); }
+  }
+  closeQuickCapture();
+}
+
+// ─── SECTION 18: Weekly Review ───
+const WR_STEPS = [
+  { title: 'Inbox Review', desc: 'Assign unassigned notes and actions to an engagement.' },
+  { title: 'WIP Check', desc: 'Review items in progress. Mark done or flag as blocked.' },
+  { title: 'Waiting For Check', desc: 'Review what you\'re waiting on. Got it? Still waiting? Blocked?' },
+  { title: 'Plan Next Week', desc: 'Review your Next Action items and prioritize.' },
+  { title: 'Weekly Reflection', desc: 'A moment to reflect on the week.' }
+];
+function renderWRStep() {
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById(`wr-step-${i}`);
+    el.className = 'wr-step ' + (i < wrStep ? 'done' : i === wrStep ? 'active' : '');
+  }
+  const step = WR_STEPS[wrStep];
+  const prevBtn = document.getElementById('wrPrevBtn');
+  const nextBtn = document.getElementById('wrNextBtn');
+  prevBtn.style.display = wrStep > 0 ? 'inline-flex' : 'none';
+  nextBtn.textContent = wrStep === 4 ? 'Complete Review' : 'Next';
+  nextBtn.innerHTML = wrStep === 4 ? '<i class="fas fa-check"></i> Complete Review' : 'Next <i class="fas fa-arrow-right"></i>';
+  let html = `<div style="margin-bottom:16px;"><h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 4px;">${step.title}</h3><p style="font-size:13px;color:#6b7280;margin:0;">${step.desc}</p></div>`;
+  if (wrStep === 0) {
+    const inbox = [...allNotes.filter(n => !n.engagementId), ...activeTodos.filter(t => !t.engagementId)];
+    if (!inbox.length) html += '<div class="empty-state"><i class="fas fa-inbox"></i><p>Inbox is clear!</p></div>';
+    else html += inbox.map(item => {
+      const isNote = !!item.text && item.type !== undefined;
+      const engOpts = `<option value="">Unassigned</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+      return `<div class="wr-card">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${isNote ? (item.type||'Note') : 'Action'}</div>
+          <div style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" class="blur-sensitive">${item.text}</div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+          <select class="form-select" style="font-size:11px;padding:4px 8px;" onchange="assignWRItem('${item.id}','${isNote?'note':'action'}',this.value)">${engOpts}</select>
+        </div>
+      </div>`;
+    }).join('');
+  } else if (wrStep === 1) {
+    const wip = activeTodos.filter(t => t.status === 'WIP');
+    if (!wip.length) html += '<div class="empty-state"><i class="fas fa-star"></i><p>No WIP items!</p></div>';
+    else html += wip.map(t => `<div class="wr-card">
+      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
+      <div class="wr-actions">
+        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Done</button>
+        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
+        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
+      </div>
+    </div>`).join('');
+  } else if (wrStep === 2) {
+    const waiting = activeTodos.filter(t => t.status === 'Waiting for');
+    if (!waiting.length) html += '<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Nothing in Waiting For!</p></div>';
+    else html += waiting.map(t => `<div class="wr-card">
+      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div>${t.owner ? `<div style="font-size:11px;color:#6b7280;">${t.owner}</div>` : ''}</div>
+      <div class="wr-actions">
+        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Got it</button>
+        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
+        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Still waiting</button>
+      </div>
+    </div>`).join('');
+  } else if (wrStep === 3) {
+    const next = activeTodos.filter(t => t.status === 'Next Action' && !t.isCompleted);
+    if (!next.length) html += '<div class="empty-state"><i class="fas fa-arrow-circle-right"></i><p>No Next Actions set.</p></div>';
+    else html += `<p style="font-size:13px;color:#6b7280;margin:0 0 12px;">Review your upcoming actions. Promote key ones to WIP for next week.</p>` +
+      next.map(t => `<div class="wr-card">
+        <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
+        <div class="wr-actions">
+          <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','promote')">Make WIP</button>
+          <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
+        </div>
+      </div>`).join('');
+  } else if (wrStep === 4) {
+    html += `<div class="form-group">
+      <label class="form-label">Weekly Reflection</label>
+      <textarea class="form-textarea" id="wrReflectionInput" rows="8" placeholder="What went well? What could be improved? What did you learn?" style="min-height:180px;">${wrReflectionText}</textarea>
+    </div>`;
+  }
+  document.getElementById('wrContent').innerHTML = html;
+}
+window.assignWRItem = async (id, itemType, engId) => {
+  try {
+    if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
+    else await updateDoc(doc(db, actionsPath(), id), { engagementId: engId || null });
+  } catch(e) { showError(e.message); }
+};
+window.wrActionUpdate = async (id, action) => {
+  try {
+    if (action === 'done') await updateDoc(doc(db, actionsPath(), id), { isCompleted: true, status: 'Completed' });
+    else if (action === 'blocked') await updateDoc(doc(db, actionsPath(), id), { status: 'Next Action' });
+    else if (action === 'promote') await updateDoc(doc(db, actionsPath(), id), { status: 'WIP' });
+    renderWRStep();
+  } catch(e) { showError(e.message); }
+};
+async function advanceWRStep() {
+  if (wrStep === 4) {
+    const reflection = document.getElementById('wrReflectionInput')?.value?.trim();
+    if (reflection) {
+      showLoading();
+      try {
+        await addDoc(collection(db, notesPath()), { text: reflection, type: 'Reflection', tags: ['weekly-review'],
+          engagementId: null, title: 'Weekly Reflection', attendees: [], hypothesisStatus: null, isConfidential: false, timestamp: serverTimestamp(), linkedActionIds: [] });
+        showToast('Weekly review complete! Reflection saved.');
+      } catch(e) { showError(e.message); } finally { hideLoading(); }
+    } else { showToast('Weekly review complete!'); }
+    wrStep = 0; renderWRStep(); navigate('dashboard'); return;
+  }
+  wrStep++;
+  renderWRStep();
+}
+
+// ─── SECTION 19: Navigation ───
+function navigate(view, engId = null) {
+  currentView = view;
+  const sections = ['dashboard','engagements','engagement-detail','notes','actions','weekly-review'];
+  const sectionIds = { dashboard:'dashboardSection', engagements:'engagementsSection', 'engagement-detail':'engagementDetailSection', notes:'notesSection', actions:'actionsSection', 'weekly-review':'weeklyReviewSection' };
+  sections.forEach(v => { const el = document.getElementById(sectionIds[v]); if (el) el.classList.remove('visible'); });
+  const active = sectionIds[view]; if (active) document.getElementById(active)?.classList.add('visible');
+  // Update sidebar nav active states
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navKey = view === 'engagement-detail' ? 'engagements' : view;
+  document.querySelector(`[data-nav="${navKey}"]`)?.classList.add('active');
+  document.querySelectorAll('.engagement-nav-item').forEach(el => {
+    el.classList.toggle('active', engId && el.dataset.navEng === engId);
+  });
+  // Update breadcrumb
+  const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions', 'weekly-review':'Weekly Review' };
+  document.getElementById('breadcrumbCurrent').textContent = labels[view] || view;
+  // Refresh view-specific rendering
+  if (view === 'dashboard') { updateDashGreeting(); renderDashboardFocus(); renderDashboardWaiting(); renderDashboardNotes(); renderDashboardPulse(); }
+  if (view === 'engagements') renderEngagementGrid();
+  if (view === 'engagement-detail' && engId) { activeEngagementId = engId; renderEngagementDetail(engId); renderSidebarEngagements(); }
+  if (view === 'notes') renderNotesList();
+  if (view === 'actions') { renderActionsView(); renderArchivedList(); populateEngagementSelects(); }
+  if (view === 'weekly-review') renderWRStep();
+  // Hash routing
+  window.location.hash = '#/' + view + (engId ? '/' + engId : '');
+}
+
+// ─── SECTION 20: Initialization ───
+async function initApp() {
+  showLoading();
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        userId = user.uid;
+        currentUserEmailEl.textContent = user.email;
+        authScreen.style.display = 'none';
+        appLayout.style.display = 'flex';
+        await seedInternalEngagements();
+        setupListeners();
+        navigate('dashboard');
+      } else {
+        userId = null;
+        authScreen.style.display = 'flex';
+        appLayout.style.display = 'none';
+        allEngagements = []; allNotes = []; activeTodos = []; archivedTodos = [];
+      }
+      hideLoading();
+    });
+  } catch(e) { showError('Firebase init error: ' + e.message); hideLoading(); }
+}
+
+// ─── SECTION 21: Event Listeners ───
+loginBtn.addEventListener('click', handleLogin);
+loginPasswordInput.addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+registerBtn.addEventListener('click', handleRegister);
+logoutBtn.addEventListener('click', () => handleLogout());
+showRegisterLink.addEventListener('click', e => { e.preventDefault(); loginForm.style.display='none'; registerForm.style.display='block'; registerEmailInput.focus(); });
+showLoginLink.addEventListener('click', e => { e.preventDefault(); registerForm.style.display='none'; loginForm.style.display='block'; loginEmailInput.focus(); });
+messageCloseBtn.addEventListener('click', () => { messageModal.style.display='none'; });
+confirmCancelBtn.addEventListener('click', () => { confirmModal.style.display='none'; pendingConfirmAction=null; });
+confirmOkBtn.addEventListener('click', () => { if(pendingConfirmAction) pendingConfirmAction(); confirmModal.style.display='none'; pendingConfirmAction=null; });
+
+// Sidebar nav
+document.getElementById('sidebarNav').addEventListener('click', e => {
+  const navItem = e.target.closest('[data-nav]');
+  if (navItem) navigate(navItem.dataset.nav);
+  const engItem = e.target.closest('[data-nav-eng]');
+  if (engItem) { activeEngagementId = engItem.dataset.navEng; navigate('engagement-detail', engItem.dataset.navEng); }
+});
+document.getElementById('captureBtn').addEventListener('click', () => openQuickCapture());
+
+// Confidentiality toggle
+document.getElementById('confidentialityToggle').addEventListener('click', () => {
+  isConfidentialMode = !isConfidentialMode;
+  document.body.classList.toggle('confidential-mode', isConfidentialMode);
+  const btn = document.getElementById('confidentialityToggle');
+  btn.classList.toggle('active', isConfidentialMode);
+  btn.querySelector('i').className = isConfidentialMode ? 'fas fa-eye-slash' : 'fas fa-eye';
+  btn.title = isConfidentialMode ? 'Confidentiality Mode ON' : 'Toggle Confidentiality Mode';
+});
+
+// Engagement modal
+document.getElementById('newEngagementBtn')?.addEventListener('click', openNewEngagementModal);
+document.getElementById('closeEngModalBtn').addEventListener('click', () => { document.getElementById('engagementModal').style.display='none'; });
+document.getElementById('cancelEngModalBtn').addEventListener('click', () => { document.getElementById('engagementModal').style.display='none'; });
+document.getElementById('saveEngBtn').addEventListener('click', saveEngagement);
+document.getElementById('colorSwatches').addEventListener('click', e => {
+  const sw = e.target.closest('.color-swatch'); if(!sw) return;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  sw.classList.add('selected');
+});
+
+// Engagement search + filter tabs
+document.getElementById('engSearch').addEventListener('input', renderEngagementGrid);
+document.getElementById('engStatusTabs').addEventListener('click', e => {
+  const tab = e.target.closest('[data-status-tab]'); if (!tab) return;
+  engStatusFilter = tab.dataset.statusTab;
+  document.querySelectorAll('.eng-tab').forEach(t => t.classList.toggle('active', t.dataset.statusTab === engStatusFilter));
+  renderEngagementGrid();
+});
+
+// Engagement grid (delegated)
+document.getElementById('engagementGrid').addEventListener('click', e => {
+  const openCard = e.target.closest('[data-open-eng]');
+  const editBtn = e.target.closest('[data-edit-eng]');
+  const delBtn = e.target.closest('[data-delete-eng]');
+  if (delBtn) { e.stopPropagation(); const id = delBtn.dataset.deleteEng; showConfirm('Delete this engagement? Notes and actions will remain but become unassigned.', () => deleteEngagement(id)); return; }
+  if (editBtn) { e.stopPropagation(); const eng = getEngagement(editBtn.dataset.editEng); if(eng) openEditEngagementModal(eng); return; }
+  if (openCard && !e.target.closest('button')) { activeEngagementId = openCard.dataset.openEng; engDetailTab = 'notes'; navigate('engagement-detail', openCard.dataset.openEng); }
+});
+document.getElementById('backToEngagementsBtn').addEventListener('click', () => { activeEngagementId = null; navigate('engagements'); });
+document.getElementById('engNewNoteBtn')?.addEventListener('click', () => { navigate('notes'); openNoteForm({ engagementId: activeEngagementId }); });
+document.getElementById('engNewActionBtn')?.addEventListener('click', () => { navigate('actions'); document.getElementById('newActionForm').style.display='block'; if(activeEngagementId) document.getElementById('actionEngagement').value = activeEngagementId; });
+document.getElementById('engEditBtn')?.addEventListener('click', () => { const eng = getEngagement(activeEngagementId); if(eng) openEditEngagementModal(eng); });
+document.getElementById('engDeleteBtn')?.addEventListener('click', () => { showConfirm('Delete this engagement? Notes and actions will remain but become unassigned.', () => deleteEngagement(activeEngagementId)); });
+
+// Engagement detail tabs
+document.getElementById('engagementDetailSection').addEventListener('click', e => {
+  const tab = e.target.closest('[data-detail-tab]'); if (!tab) return;
+  engDetailTab = tab.dataset.detailTab;
+  renderEngagementDetail(activeEngagementId);
+});
+
+// Notes
+document.getElementById('newNoteBtn').addEventListener('click', () => openNoteForm());
+document.getElementById('closeNoteFormBtn').addEventListener('click', () => { document.getElementById('newNoteForm').style.display='none'; editingNoteId=null; resetNoteForm(); });
+document.getElementById('cancelNoteBtn').addEventListener('click', () => { document.getElementById('newNoteForm').style.display='none'; editingNoteId=null; resetNoteForm(); });
+document.getElementById('saveNoteBtn').addEventListener('click', saveNote);
+noteType.addEventListener('change', updateNoteFormFields);
+noteContent.addEventListener('keydown', handleTextareaKeydown);
+document.getElementById('notesSearch').addEventListener('input', renderNotesList);
+document.getElementById('notesEngFilter').addEventListener('change', renderNotesList);
+document.getElementById('notesTypeFilter').addEventListener('change', renderNotesList);
+document.getElementById('promoteActionsBtn')?.addEventListener('click', () => {
+  const lines = noteContent.value.split('\n').filter(l => l.trim().match(/^-\s*\[\s*\]\s+/));
+  const prev = document.getElementById('promotedPreview');
+  if (!lines.length) { prev.innerHTML = '<p style="font-size:12px;color:#6b7280;">No action item lines found (format: - [ ] text)</p>'; return; }
+  prev.innerHTML = `<p style="font-size:12px;color:#059669;font-weight:600;">${lines.length} action item(s) will be promoted on save:</p>` +
+    lines.map(l => `<div style="font-size:12px;color:#374151;padding:2px 0;">• ${l.replace(/^-\s*\[\s*\]\s+/,'').trim()}</div>`).join('');
+});
+
+// Note list delegation
+document.getElementById('notesList').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-action="edit-note"]');
+  const delBtn = e.target.closest('[data-action="delete-note"]');
+  const readMore = e.target.closest('[data-action="toggle-read-more"]');
+  if (editBtn) {
+    const id = editBtn.dataset.noteId;
+    const n = allNotes.find(x => x.id === id);
+    if (n) { openNoteForm({ ...n }); document.getElementById('newNoteForm').scrollIntoView({ behavior:'smooth' }); }
+  }
+  if (delBtn) showConfirm('Delete this note? This cannot be undone.', () => deleteNote(delBtn.dataset.noteId));
+  if (readMore) {
+    const id = readMore.dataset.noteId;
+    const card = e.currentTarget.querySelector(`[data-note-id="${id}"] .note-text`);
+    if (card) {
+      const full = decodeURIComponent(card.dataset.fullText || '');
+      if (card.innerHTML.includes('...') && card.innerHTML.length < full.length + 20) { card.innerHTML = autolink(full); readMore.textContent = 'Show Less'; }
+      else { card.innerHTML = autolink(full.substring(0,SNIPPET)+'...'); readMore.textContent = 'Read More'; }
+    }
+  }
+});
+
+// Engagement detail note/action delegation
+document.getElementById('engDetailNotes').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-action="edit-note"]');
+  const delBtn = e.target.closest('[data-action="delete-note"]');
+  if (editBtn) { const n = allNotes.find(x => x.id === editBtn.dataset.noteId); if(n) { navigate('notes'); openNoteForm({...n}); } }
+  if (delBtn) showConfirm('Delete this note?', () => deleteNote(delBtn.dataset.noteId));
+});
+document.getElementById('engDetailActions').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-action="edit-action"]');
+  const delBtn = e.target.closest('[data-action="delete-action"]');
+  const cb = e.target.closest('[data-action="toggle-action"]');
+  if (editBtn) { navigate('actions'); openEditActionInline(editBtn.dataset.id); }
+  if (delBtn) showConfirm('Delete this action?', () => deleteAction(delBtn.dataset.id));
+  if (cb) { const t = activeTodos.find(x => x.id === cb.dataset.id); if(t) updateAction(t.id, { isCompleted: !t.isCompleted, status: !t.isCompleted ? 'Completed' : 'Next Action' }); }
+});
+
+// Tags
+tagInput.addEventListener('input', () => {
+  const q = tagInput.value.trim().toLowerCase();
+  if (q) showTagSuggestions(q); else autocompleteSuggestions.style.display = 'none';
+});
+tagInput.addEventListener('keydown', handleTagKeydown);
+autocompleteSuggestions.addEventListener('click', e => { const it = e.target.closest('.autocomplete-suggestion-item'); if(it) addTag(it.dataset.tag); });
+selectedTagsContainer.addEventListener('click', e => { const rm = e.target.closest('.tag-pill-remove'); if(rm) removeTag(rm.dataset.tag); });
+document.addEventListener('click', e => { if (!autocompleteSuggestions.contains(e.target) && e.target !== tagInput) autocompleteSuggestions.style.display = 'none'; });
+
+// Actions
+document.getElementById('newActionBtn').addEventListener('click', () => {
+  const f = document.getElementById('newActionForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('actionInput').focus();
+});
+document.getElementById('cancelActionBtn').addEventListener('click', () => { document.getElementById('newActionForm').style.display='none'; });
+document.getElementById('saveActionBtn').addEventListener('click', async () => {
+  const text = document.getElementById('actionInput').value;
+  const due = document.getElementById('actionDueDate').value;
+  const eng = document.getElementById('actionEngagement').value;
+  await saveAction(text, eng, due);
+  document.getElementById('actionInput').value = '';
+  document.getElementById('actionDueDate').value = '';
+  document.getElementById('newActionForm').style.display = 'none';
+});
+document.getElementById('actionInput')?.addEventListener('keydown', async e => {
+  if (e.key === 'Enter') {
+    const text = document.getElementById('actionInput').value;
+    const due = document.getElementById('actionDueDate').value;
+    const eng = document.getElementById('actionEngagement').value;
+    await saveAction(text, eng, due);
+    document.getElementById('actionInput').value = '';
+    document.getElementById('actionDueDate').value = '';
+  }
+});
+document.getElementById('archiveCompletedBtn').addEventListener('click', archiveCompleted);
+document.getElementById('toggleKanbanBtn').addEventListener('click', () => {
+  actionsViewMode = actionsViewMode === 'kanban' ? 'list' : 'kanban';
+  document.getElementById('kanbanView').style.display = actionsViewMode === 'kanban' ? 'flex' : 'none';
+  document.getElementById('listView').style.display = actionsViewMode === 'list' ? 'block' : 'none';
+  renderActionsView();
+  document.getElementById('toggleKanbanBtn').querySelector('i').className = actionsViewMode === 'kanban' ? 'fas fa-columns' : 'fas fa-list';
+});
+
+// Actions list delegation (kanban and list)
+function handleActionsClick(e) {
+  const editBtn = e.target.closest('[data-action="edit-action"]');
+  const delBtn = e.target.closest('[data-action="delete-action"]');
+  const cb = e.target.closest('[data-action="toggle-action"]');
+  const saveBtn = e.target.closest('[data-action="save-edit-action"]');
+  const cancelBtn = e.target.closest('[data-action="cancel-edit-action"]');
+  if (editBtn) openEditActionInline(editBtn.dataset.id);
+  if (delBtn) showConfirm('Delete this action?', () => deleteAction(delBtn.dataset.id));
+  if (cb) {
+    const newCompleted = cb.dataset.completed !== 'true';
+    updateAction(cb.dataset.id, { isCompleted: newCompleted, status: newCompleted ? 'Completed' : 'Next Action' });
+  }
+  if (saveBtn) {
+    const id = saveBtn.dataset.id;
+    const text = document.getElementById(`editActionText_${id}`)?.value;
+    const status = document.getElementById(`editActionStatus_${id}`)?.value;
+    const due = document.getElementById(`editActionDue_${id}`)?.value;
+    const owner = document.getElementById(`editActionOwner_${id}`)?.value;
+    const eng = document.getElementById(`editActionEng_${id}`)?.value;
+    updateAction(id, { text: text||'', status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
+    editingActionId = null;
+  }
+  if (cancelBtn) renderActionsView();
+}
+document.getElementById('actionsList').addEventListener('click', handleActionsClick);
+document.getElementById('archivedActionsList').addEventListener('click', e => {
+  const delBtn = e.target.closest('[data-action="delete-action"]');
+  if (delBtn) showConfirm('Delete this action?', () => deleteAction(delBtn.dataset.id));
+});
+
+// Kanban drag & drop
+document.getElementById('kanbanView').addEventListener('dragstart', e => {
+  const card = e.target.closest('.kanban-card'); if (!card) return;
+  e.dataTransfer.setData('todoId', card.dataset.todoId);
+  card.classList.add('dragging');
+});
+document.getElementById('kanbanView').addEventListener('dragend', e => {
+  const card = e.target.closest('.kanban-card'); if (!card) return;
+  card.classList.remove('dragging');
+});
+document.getElementById('kanbanView').addEventListener('dragover', e => {
+  e.preventDefault();
+  const col = e.target.closest('.kanban-col-body'); if (!col) return;
+  document.querySelectorAll('.kanban-col-body').forEach(c => c.classList.remove('drag-over'));
+  col.classList.add('drag-over');
+});
+document.getElementById('kanbanView').addEventListener('dragleave', e => {
+  const col = e.target.closest('.kanban-col-body'); if (col) col.classList.remove('drag-over');
+});
+document.getElementById('kanbanView').addEventListener('drop', async e => {
+  e.preventDefault();
+  document.querySelectorAll('.kanban-col-body').forEach(c => c.classList.remove('drag-over'));
+  const col = e.target.closest('.kanban-col-body'); if (!col) return;
+  const todoId = e.dataTransfer.getData('todoId');
+  const newStatus = col.dataset.status;
+  if (todoId && newStatus) {
+    await updateAction(todoId, { status: newStatus, isCompleted: false });
+    showToast(`Moved to ${newStatus}`);
+  }
+});
+
+// Actions engagement filter pills
+document.getElementById('actionsEngFilter').addEventListener('click', e => {
+  const pill = e.target.closest('[data-eng-filter]'); if (!pill) return;
+  activeActionsEngFilter = pill.dataset.engFilter || null;
+  populateEngagementSelects();
+  renderActionsView();
+});
+
+// Quick capture
+document.getElementById('qcInput').addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); submitQuickCapture(); }
+  if (e.key === 'Escape') closeQuickCapture();
+  // Auto-detect type prefix
+  const v = document.getElementById('qcInput').value;
+  if (v.startsWith('!') || quickCaptureType === 'action') {
+    document.getElementById('qcTypeAction').className = 'qc-type-pill active-action';
+    document.getElementById('qcTypeNote').className = 'qc-type-pill';
+    quickCaptureType = 'action';
+  }
+});
+document.getElementById('qcTypeNote').addEventListener('click', () => {
+  quickCaptureType = 'note';
+  document.getElementById('qcTypeNote').className = 'qc-type-pill active-note';
+  document.getElementById('qcTypeAction').className = 'qc-type-pill';
+});
+document.getElementById('qcTypeAction').addEventListener('click', () => {
+  quickCaptureType = 'action';
+  document.getElementById('qcTypeAction').className = 'qc-type-pill active-action';
+  document.getElementById('qcTypeNote').className = 'qc-type-pill';
+});
+document.getElementById('qcEngagementPills').addEventListener('click', e => {
+  const pill = e.target.closest('[data-qc-eng]'); if (!pill) return;
+  quickCaptureEngId = pill.dataset.qcEng || null;
+  document.querySelectorAll('#qcEngagementPills [data-qc-eng]').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+});
+// Close quick capture clicking outside
+document.addEventListener('click', e => {
+  const modal = document.getElementById('quickCaptureModal');
+  if (modal.classList.contains('open') && !modal.contains(e.target) && e.target.id !== 'captureBtn') closeQuickCapture();
+});
+// Global keyboard shortcut
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'C') { e.preventDefault(); openQuickCapture(); }
+  if (e.key === '?' && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
+    showToast('Shortcuts: Ctrl+Shift+C = Quick Capture | Drag kanban cards to change status', 'success', 5000);
+  }
+});
+// Weekly Review
+document.getElementById('wrNextBtn').addEventListener('click', advanceWRStep);
+document.getElementById('wrPrevBtn').addEventListener('click', () => { if(wrStep>0) { wrStep--; renderWRStep(); } });
+
+// Hash routing on load
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.replace('#/','');
+  const [view, id] = hash.split('/');
+  if (view && userId) navigate(view, id || null);
+});
+
+// Start app
+window.onload = initApp;
+</script>
+</body>
+</html>
