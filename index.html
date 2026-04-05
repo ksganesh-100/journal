@@ -975,6 +975,11 @@ function notesPath() { return `artifacts/${APP_ID}/users/${userId}/journalEntrie
 function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
 
 async function seedInternalEngagements() {
+  // Only seed once per user — store a flag in Firestore so deleting
+  // an internal engagement doesn't bring it back on next login.
+  const metaRef = doc(db, `artifacts/${APP_ID}/users/${userId}/meta/appState`);
+  const metaSnap = await getDoc(metaRef);
+  if (metaSnap.exists() && metaSnap.data().seeded) return;
   for (const eng of INTERNAL_ENGAGEMENTS) {
     const ref = doc(db, engPath(), eng.id);
     const snap = await getDoc(ref);
@@ -982,6 +987,7 @@ async function seedInternalEngagements() {
       await setDoc(ref, { ...eng, createdAt: serverTimestamp() });
     }
   }
+  await setDoc(metaRef, { seeded: true, seededAt: serverTimestamp() }, { merge: true });
 }
 
 async function saveEngagement() {
