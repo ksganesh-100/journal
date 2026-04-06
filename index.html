@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 * { box-sizing: border-box; }
 body { font-family:'Inter',sans-serif; margin:0; padding:0; background:#F8F9FC; font-size:14px; }
@@ -275,6 +276,30 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
   .mob-tab span { font-size:10px; line-height:1; white-space:nowrap; }
   .mob-tab.active { color:#93c5fd; }
 }
+/* ── GitHub-style editor ── */
+.editor-tabs { display:flex; align-items:center; border:1px solid #d1d5db; border-radius:8px 8px 0 0; border-bottom:none; background:#f9fafb; padding:0 8px; gap:0; overflow-x:auto; }
+.editor-tab { background:none; border:none; border-bottom:2px solid transparent; padding:7px 14px; font-size:12px; font-weight:600; color:#6b7280; cursor:pointer; font-family:inherit; margin-bottom:-1px; transition:color .15s; white-space:nowrap; flex-shrink:0; }
+.editor-tab.active { color:#111827; border-bottom-color:#2563EB; background:#fff; }
+.editor-toolbar { display:flex; align-items:center; gap:1px; margin-left:auto; padding:4px 0; flex-shrink:0; }
+.tb-btn { background:none; border:none; padding:4px 7px; border-radius:5px; cursor:pointer; color:#6b7280; font-size:13px; font-weight:700; line-height:1; transition:all .15s; font-family:inherit; }
+.tb-btn:hover { background:#e5e7eb; color:#111827; }
+.tb-sep { width:1px; height:14px; background:#d1d5db; margin:0 3px; display:inline-block; flex-shrink:0; }
+.editor-body { border:1px solid #d1d5db; border-radius:0 0 8px 8px; overflow:hidden; transition:border-color .15s,box-shadow .15s; }
+.editor-body:focus-within { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+#noteContent { border:none !important; box-shadow:none !important; border-radius:0 !important; }
+.note-preview { padding:10px 12px; min-height:160px; font-size:13px; color:#111827; line-height:1.7; display:none; }
+.note-preview h1,.note-preview h2,.note-preview h3 { font-weight:700; margin:10px 0 4px; }
+.note-preview h1 { font-size:17px; } .note-preview h2 { font-size:15px; } .note-preview h3 { font-size:13px; }
+.note-preview p { margin:4px 0; }
+.note-preview code { background:#f3f4f6; padding:1px 5px; border-radius:3px; font-family:monospace; font-size:12px; }
+.note-preview pre { background:#f3f4f6; padding:10px 12px; border-radius:6px; overflow-x:auto; margin:6px 0; }
+.note-preview pre code { background:none; padding:0; }
+.note-preview a { color:#2563EB; }
+.note-preview ul,.note-preview ol { padding-left:20px; margin:4px 0; }
+.note-preview li { margin:2px 0; }
+.note-preview blockquote { border-left:3px solid #d1d5db; padding-left:10px; color:#6b7280; margin:6px 0; }
+.note-preview input[type="checkbox"] { margin-right:5px; }
+.note-preview hr { border:none; border-top:1px solid #e5e7eb; margin:10px 0; }
 </style>
 </head>
 <body>
@@ -485,8 +510,27 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Content</label>
-              <textarea id="noteContent" class="form-textarea" rows="10" placeholder="Start typing..."></textarea>
+              <div class="editor-tabs">
+                <button id="editorWriteTab" class="editor-tab active" data-editor-mode="write">Write</button>
+                <button id="editorPreviewTab" class="editor-tab" data-editor-mode="preview">Preview</button>
+                <div id="editorToolbar" class="editor-toolbar">
+                  <button class="tb-btn" data-format="heading" title="Heading">H</button>
+                  <button class="tb-btn" data-format="bold" title="Bold (⌘B)"><b>B</b></button>
+                  <button class="tb-btn" data-format="italic" title="Italic (⌘I)"><i style="font-style:italic;">I</i></button>
+                  <span class="tb-sep"></span>
+                  <button class="tb-btn" data-format="quote" title="Quote"><i class="fas fa-quote-right"></i></button>
+                  <button class="tb-btn" data-format="code" title="Code (⌘E)"><i class="fas fa-code"></i></button>
+                  <button class="tb-btn" data-format="link" title="Link (⌘K)"><i class="fas fa-link"></i></button>
+                  <span class="tb-sep"></span>
+                  <button class="tb-btn" data-format="bullet" title="Bullet list"><i class="fas fa-list-ul"></i></button>
+                  <button class="tb-btn" data-format="numbered" title="Numbered list"><i class="fas fa-list-ol"></i></button>
+                  <button class="tb-btn" data-format="task" title="Task list"><i class="fas fa-tasks"></i></button>
+                </div>
+              </div>
+              <div class="editor-body">
+                <textarea id="noteContent" class="form-textarea" placeholder="Start typing…"></textarea>
+                <div id="notePreview" class="note-preview"></div>
+              </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
               <label class="form-label" style="margin:0;">Tags:</label>
@@ -893,6 +937,61 @@ function autoResizeTextarea(ta) {
   ta.style.height = ta.scrollHeight + 'px';
 }
 
+function applyFormat(type) {
+  const ta = noteContent;
+  const start = ta.selectionStart, end = ta.selectionEnd, val = ta.value;
+  const selected = val.substring(start, end);
+  const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+  const wrap = (before, after, placeholder) => {
+    const text = selected || placeholder;
+    ta.setRangeText(before + text + after, start, end, 'end');
+    if (!selected) { ta.selectionStart = start + before.length; ta.selectionEnd = start + before.length + text.length; }
+    ta.focus(); autoResizeTextarea(ta);
+  };
+  const prefix = (p) => {
+    ta.setRangeText(p, lineStart, lineStart, 'end');
+    ta.selectionStart = ta.selectionEnd = start + p.length;
+    ta.focus(); autoResizeTextarea(ta);
+  };
+  switch(type) {
+    case 'bold':    wrap('**', '**', 'bold text'); break;
+    case 'italic':  wrap('_', '_', 'italic text'); break;
+    case 'heading': prefix('## '); break;
+    case 'quote':   prefix('> '); break;
+    case 'code':
+      if (selected.includes('\n')) wrap('```\n', '\n```', 'code');
+      else wrap('`', '`', 'code'); break;
+    case 'link': {
+      const ltext = selected || 'link text';
+      ta.setRangeText('[' + ltext + '](url)', start, end, 'end');
+      const us = start + 1 + ltext.length + 2;
+      ta.selectionStart = us; ta.selectionEnd = us + 3;
+      ta.focus(); break;
+    }
+    case 'bullet':   prefix('- '); break;
+    case 'numbered': prefix('1. '); break;
+    case 'task':     prefix('- [ ] '); break;
+  }
+}
+
+let noteEditorMode = 'write';
+function setNoteEditorMode(mode) {
+  noteEditorMode = mode;
+  const isPreview = mode === 'preview';
+  document.getElementById('notePreview').style.display = isPreview ? 'block' : 'none';
+  noteContent.style.display = isPreview ? 'none' : 'block';
+  document.getElementById('editorToolbar').style.display = isPreview ? 'none' : 'flex';
+  document.getElementById('editorWriteTab').classList.toggle('active', !isPreview);
+  document.getElementById('editorPreviewTab').classList.toggle('active', isPreview);
+  if (isPreview) {
+    const raw = noteContent.value || '*Nothing to preview*';
+    document.getElementById('notePreview').innerHTML =
+      (typeof marked !== 'undefined') ? marked.parse(raw) : '<pre style="white-space:pre-wrap">' + raw + '</pre>';
+  } else {
+    noteContent.focus();
+  }
+}
+
 function handleTextareaKeydown(event) {
   const ta = event.target;
   const start = ta.selectionStart, end = ta.selectionEnd, val = ta.value;
@@ -903,6 +1002,13 @@ function handleTextareaKeydown(event) {
   const existingIndent = bulletMatch ? bulletMatch[1] : '';
   const bulletPrefix = bulletMatch ? bulletMatch[2] : '';
 
+  // Cmd/Ctrl + formatting shortcuts
+  if ((event.metaKey || event.ctrlKey) && !event.shiftKey) {
+    if (event.key === 'b') { event.preventDefault(); applyFormat('bold'); return; }
+    if (event.key === 'i') { event.preventDefault(); applyFormat('italic'); return; }
+    if (event.key === 'k') { event.preventDefault(); applyFormat('link'); return; }
+    if (event.key === 'e') { event.preventDefault(); applyFormat('code'); return; }
+  }
   // Cmd/Ctrl+Enter — save note
   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
     event.preventDefault();
@@ -1123,6 +1229,7 @@ function resetNoteForm() {
   currentSelectedTags.clear();
   renderSelectedTags([]);
   updateNoteFormFields();
+  setNoteEditorMode('write');
 }
 
 function openNoteForm(opts = {}) {
@@ -1139,6 +1246,7 @@ function openNoteForm(opts = {}) {
   renderSelectedTags(Array.from(currentSelectedTags));
   updateNoteFormFields();
   document.getElementById('newNoteForm').style.display = 'block';
+  setNoteEditorMode('write');
   noteContent.focus();
   setTimeout(() => autoResizeTextarea(noteContent), 0);
 }
@@ -1885,6 +1993,14 @@ document.getElementById('saveNoteBtn').addEventListener('click', saveNote);
 noteType.addEventListener('change', updateNoteFormFields);
 noteContent.addEventListener('keydown', handleTextareaKeydown);
 noteContent.addEventListener('input', () => autoResizeTextarea(noteContent));
+document.querySelector('.editor-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('[data-editor-mode]');
+  if (tab) setNoteEditorMode(tab.dataset.editorMode);
+});
+document.getElementById('editorToolbar').addEventListener('click', e => {
+  const btn = e.target.closest('[data-format]');
+  if (btn) applyFormat(btn.dataset.format);
+});
 document.getElementById('notesSearch').addEventListener('input', renderNotesList);
 document.getElementById('notesEngFilter').addEventListener('change', renderNotesList);
 document.getElementById('notesTypeFilter').addEventListener('change', renderNotesList);
