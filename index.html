@@ -2047,6 +2047,10 @@ document.querySelector('.editor-tabs').addEventListener('click', e => {
   const tab = e.target.closest('[data-editor-mode]');
   if (tab) setNoteEditorMode(tab.dataset.editorMode);
 });
+document.getElementById('editorToolbar').addEventListener('mousedown', e => {
+  // Prevent toolbar buttons from stealing focus so textarea selection is preserved
+  e.preventDefault();
+});
 document.getElementById('editorToolbar').addEventListener('click', e => {
   const btn = e.target.closest('[data-format]');
   if (btn) applyFormat(btn.dataset.format);
