@@ -295,8 +295,10 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .note-preview pre { background:#f3f4f6; padding:10px 12px; border-radius:6px; overflow-x:auto; margin:6px 0; }
 .note-preview pre code { background:none; padding:0; }
 .note-preview a { color:#2563EB; }
-.note-preview ul,.note-preview ol { padding-left:20px; margin:4px 0; }
-.note-preview li { margin:2px 0; }
+.note-preview ul { list-style-type:disc; padding-left:20px; margin:4px 0; }
+.note-preview ol { list-style-type:decimal; padding-left:20px; margin:4px 0; }
+.note-preview li { margin:2px 0; display:list-item; }
+.note-preview li input[type="checkbox"] { margin-right:5px; vertical-align:middle; }
 .note-preview blockquote { border-left:3px solid #d1d5db; padding-left:10px; color:#6b7280; margin:6px 0; }
 .note-preview input[type="checkbox"] { margin-right:5px; }
 .note-preview hr { border:none; border-top:1px solid #e5e7eb; margin:10px 0; }
@@ -941,26 +943,50 @@ function applyFormat(type) {
   const ta = noteContent;
   const start = ta.selectionStart, end = ta.selectionEnd, val = ta.value;
   const selected = val.substring(start, end);
+  const lineEnd = val.indexOf('\n', start);
   const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+  const lineText = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
+
   const wrap = (before, after, placeholder) => {
     const text = selected || placeholder;
     ta.setRangeText(before + text + after, start, end, 'end');
     if (!selected) { ta.selectionStart = start + before.length; ta.selectionEnd = start + before.length + text.length; }
     ta.focus(); autoResizeTextarea(ta);
   };
-  const prefix = (p) => {
+  const addPrefix = (p) => {
     ta.setRangeText(p, lineStart, lineStart, 'end');
     ta.selectionStart = ta.selectionEnd = start + p.length;
     ta.focus(); autoResizeTextarea(ta);
   };
+  const removePrefix = (len) => {
+    ta.setRangeText('', lineStart, lineStart + len, 'end');
+    ta.selectionStart = ta.selectionEnd = Math.max(lineStart, start - len);
+    ta.focus(); autoResizeTextarea(ta);
+  };
+
   switch(type) {
-    case 'bold':    wrap('**', '**', 'bold text'); break;
-    case 'italic':  wrap('_', '_', 'italic text'); break;
-    case 'heading': prefix('## '); break;
-    case 'quote':   prefix('> '); break;
+    case 'bold':
+      if (selected.startsWith('**') && selected.endsWith('**') && selected.length > 4)
+        { ta.setRangeText(selected.slice(2,-2), start, end, 'end'); ta.focus(); }
+      else wrap('**', '**', 'bold text');
+      break;
+    case 'italic':
+      if (selected.startsWith('_') && selected.endsWith('_') && selected.length > 2)
+        { ta.setRangeText(selected.slice(1,-1), start, end, 'end'); ta.focus(); }
+      else wrap('_', '_', 'italic text');
+      break;
+    case 'heading':
+      lineText.startsWith('## ') ? removePrefix(3) : addPrefix('## ');
+      break;
+    case 'quote':
+      lineText.startsWith('> ') ? removePrefix(2) : addPrefix('> ');
+      break;
     case 'code':
-      if (selected.includes('\n')) wrap('```\n', '\n```', 'code');
-      else wrap('`', '`', 'code'); break;
+      if (selected.startsWith('`') && selected.endsWith('`') && selected.length > 2)
+        { ta.setRangeText(selected.slice(1,-1), start, end, 'end'); ta.focus(); }
+      else if (selected.includes('\n')) wrap('```\n', '\n```', 'code');
+      else wrap('`', '`', 'code');
+      break;
     case 'link': {
       const ltext = selected || 'link text';
       ta.setRangeText('[' + ltext + '](url)', start, end, 'end');
@@ -968,9 +994,19 @@ function applyFormat(type) {
       ta.selectionStart = us; ta.selectionEnd = us + 3;
       ta.focus(); break;
     }
-    case 'bullet':   prefix('- '); break;
-    case 'numbered': prefix('1. '); break;
-    case 'task':     prefix('- [ ] '); break;
+    case 'bullet':
+      (lineText.startsWith('- ') && !lineText.startsWith('- [ ]') && !lineText.startsWith('- [x]'))
+        ? removePrefix(2) : addPrefix('- ');
+      break;
+    case 'numbered': {
+      const nm = lineText.match(/^(\d+)\. /);
+      nm ? removePrefix(nm[0].length) : addPrefix('1. ');
+      break;
+    }
+    case 'task':
+      (lineText.startsWith('- [ ] ') || lineText.startsWith('- [x] '))
+        ? removePrefix(6) : addPrefix('- [ ] ');
+      break;
   }
 }
 
@@ -986,7 +1022,7 @@ function setNoteEditorMode(mode) {
   if (isPreview) {
     const raw = noteContent.value || '*Nothing to preview*';
     document.getElementById('notePreview').innerHTML =
-      (typeof marked !== 'undefined') ? marked.parse(raw) : '<pre style="white-space:pre-wrap">' + raw + '</pre>';
+      (typeof marked !== 'undefined') ? marked.parse(raw, { gfm: true, breaks: true }) : '<pre style="white-space:pre-wrap">' + raw + '</pre>';
   } else {
     noteContent.focus();
   }
@@ -999,7 +1035,8 @@ function handleTextareaKeydown(event) {
   const lineEnd = val.indexOf('\n', start);
   const currentLine = val.substring(lineStart, lineEnd === -1 ? val.length : lineEnd);
   const bulletMatch = currentLine.match(/^(\s*)([-*] |\[ \] |\[x\] )/);
-  const existingIndent = bulletMatch ? bulletMatch[1] : '';
+  const numberedMatch = currentLine.match(/^(\s*)(\d+)\. /);
+  const existingIndent = bulletMatch ? bulletMatch[1] : (numberedMatch ? numberedMatch[1] : '');
   const bulletPrefix = bulletMatch ? bulletMatch[2] : '';
 
   // Cmd/Ctrl + formatting shortcuts
@@ -1034,12 +1071,25 @@ function handleTextareaKeydown(event) {
 
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    const lineContent = currentLine.substring(existingIndent.length + bulletPrefix.length);
-    if (bulletMatch && lineContent.trim() === '') {
-      // Empty bullet — exit list: delete the bullet prefix, leave a blank line
+    const bulletContent = bulletMatch ? currentLine.substring(existingIndent.length + bulletPrefix.length) : '';
+    const numberedContent = numberedMatch ? currentLine.substring(numberedMatch[0].length) : '';
+
+    if (bulletMatch && bulletContent.trim() === '') {
+      // Empty bullet/task — exit list
       const lineEndPos = lineEnd === -1 ? val.length : lineEnd;
       ta.setRangeText('', lineStart, lineEndPos, 'end');
       ta.selectionStart = ta.selectionEnd = lineStart;
+    } else if (numberedMatch && numberedContent.trim() === '') {
+      // Empty numbered item — exit list
+      const lineEndPos = lineEnd === -1 ? val.length : lineEnd;
+      ta.setRangeText('', lineStart, lineEndPos, 'end');
+      ta.selectionStart = ta.selectionEnd = lineStart;
+    } else if (numberedMatch) {
+      // Continue numbered list: increment number
+      const num = parseInt(numberedMatch[2], 10);
+      const newPrefix = existingIndent + (num + 1) + '. ';
+      ta.setRangeText('\n' + newPrefix, start, end, 'end');
+      ta.selectionStart = ta.selectionEnd = start + newPrefix.length + 1;
     } else {
       let newPrefix = '';
       if (bulletMatch) newPrefix = existingIndent + bulletPrefix;
