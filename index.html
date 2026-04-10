@@ -118,10 +118,21 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .kanban-col-header { padding:10px 14px; border-bottom:1px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
 .kanban-col-body { flex:1; padding:8px; overflow-y:auto; min-height:60px; }
 .kanban-col-body.drag-over { background:#eff6ff; border-radius:8px; }
-.kanban-card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin-bottom:6px; cursor:grab; transition:box-shadow .15s; font-size:12px; position:relative; }
+.kanban-card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:7px 8px 7px 11px; margin-bottom:5px; cursor:grab; transition:box-shadow .15s; font-size:12px; position:relative; }
 .kanban-card:hover { box-shadow:0 2px 6px rgba(0,0,0,.1); }
 .kanban-card.dragging { opacity:.5; }
 .kanban-card .kc-bar { position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:8px 0 0 8px; }
+.kanban-card .kc-actions { position:absolute; top:3px; right:3px; display:none; gap:2px; z-index:2; }
+.kanban-card:hover .kc-actions { display:flex; }
+.kc-actions button { background:#fff; border:1px solid #e5e7eb; border-radius:4px; width:20px; height:20px; font-size:9px; cursor:pointer; color:#6b7280; display:flex; align-items:center; justify-content:center; padding:0; transition:all .1s; }
+.kc-actions button:hover { background:#f3f4f6; color:#111827; }
+.kc-actions .kc-complete:hover { color:#16a34a; border-color:#16a34a; }
+.kc-actions .kc-delete:hover { color:#dc2626; border-color:#dc2626; }
+.kanban-card .kc-extra { display:none; font-size:10px; color:#9ca3af; margin-top:3px; padding-left:6px; }
+.kanban-card.expanded .kc-extra { display:block; }
+.kanban-card .kc-edit-form { display:flex; flex-direction:column; gap:5px; }
+.kanban-card .kc-edit-form input, .kanban-card .kc-edit-form select { font-size:11px; padding:4px 6px; border:1px solid #d1d5db; border-radius:4px; width:100%; box-sizing:border-box; }
+.kanban-card.editing { cursor:default; }
 
 /* ── Dashboard quadrants ── */
 .dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -1690,9 +1701,14 @@ function renderKanban() {
       const due = formatDueDate(t.dueDate);
       return `<div class="kanban-card" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
         <div class="kc-bar" style="background:${hex};"></div>
+        <div class="kc-actions">
+          <button class="kc-complete" data-kb-action="complete" data-id="${t.id}" title="Complete"><i class="fas fa-check"></i></button>
+          <button data-kb-action="edit" data-id="${t.id}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="kc-delete" data-kb-action="delete" data-id="${t.id}" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
         <div style="padding-left:6px;font-size:12px;color:#374151;line-height:1.4;" class="blur-sensitive">${t.text}</div>
-        ${due ? `<div style="font-size:10px;margin-top:4px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
-        ${eng ? `<div style="font-size:10px;color:#9ca3af;margin-top:2px;display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</div>` : ''}
+        ${due ? `<div style="font-size:10px;margin-top:3px;padding-left:6px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
+        <div class="kc-extra">${eng ? `<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}${t.owner ? `<span style="margin-left:${eng ? '6px' : '0'};"> ${t.owner}</span>` : ''}</div>
       </div>`;
     }).join('');
   });
@@ -2224,6 +2240,62 @@ document.getElementById('kanbanView').addEventListener('drop', async e => {
     showToast(`Moved to ${newStatus}`);
   }
 });
+
+// Kanban card click actions (complete, edit, delete, expand)
+document.getElementById('kanbanView').addEventListener('click', e => {
+  const actionBtn = e.target.closest('[data-kb-action]');
+  if (actionBtn) {
+    e.stopPropagation();
+    const id = actionBtn.dataset.id;
+    const action = actionBtn.dataset.kbAction;
+    if (action === 'complete') {
+      updateAction(id, { isCompleted: true, status: 'Completed' });
+      showToast('Action completed!');
+    } else if (action === 'delete') {
+      showConfirm('Delete this action?', () => deleteAction(id));
+    } else if (action === 'edit') {
+      openKanbanEditInline(id);
+    } else if (action === 'save-edit') {
+      const text = document.getElementById(`kbEditText_${id}`)?.value;
+      const status = document.getElementById(`kbEditStatus_${id}`)?.value;
+      const due = document.getElementById(`kbEditDue_${id}`)?.value;
+      const eng = document.getElementById(`kbEditEng_${id}`)?.value;
+      updateAction(id, { text: text||'', status: status||'Next Action', dueDate: due||null, engagementId: eng||null });
+    } else if (action === 'cancel-edit') {
+      renderKanban();
+    }
+    return;
+  }
+  const card = e.target.closest('.kanban-card');
+  if (card && !card.classList.contains('editing')) {
+    card.classList.toggle('expanded');
+  }
+});
+
+function openKanbanEditInline(id) {
+  const t = activeTodos.find(a => a.id === id); if (!t) return;
+  const card = document.querySelector(`.kanban-card[data-todo-id="${id}"]`); if (!card) return;
+  card.setAttribute('draggable', 'false');
+  card.classList.add('editing');
+  const engOpts = `<option value="">—</option>` + allEngagements.map(e =>
+    `<option value="${e.id}" ${e.id === t.engagementId ? 'selected' : ''}>${e.name}</option>`
+  ).join('');
+  card.innerHTML = `<div class="kc-edit-form">
+    <input type="text" id="kbEditText_${id}" value="${t.text.replace(/"/g,'&quot;')}" placeholder="Action text">
+    <div style="display:flex;gap:4px;">
+      <select id="kbEditStatus_${id}" style="flex:1;">
+        ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input type="date" id="kbEditDue_${id}" value="${t.dueDate||''}" style="flex:1;">
+    </div>
+    <select id="kbEditEng_${id}">${engOpts}</select>
+    <div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-secondary btn-sm" data-kb-action="cancel-edit" data-id="${id}" style="font-size:10px;padding:3px 8px;">Cancel</button>
+      <button class="btn-primary btn-sm" data-kb-action="save-edit" data-id="${id}" style="font-size:10px;padding:3px 8px;"><i class="fas fa-check"></i> Save</button>
+    </div>
+  </div>`;
+  document.getElementById(`kbEditText_${id}`)?.focus();
+}
 
 // Actions engagement filter pills
 document.getElementById('actionsEngFilter').addEventListener('click', e => {
