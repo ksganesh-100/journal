@@ -133,6 +133,11 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .kanban-card .kc-edit-form { display:flex; flex-direction:column; gap:5px; }
 .kanban-card .kc-edit-form input, .kanban-card .kc-edit-form select { font-size:11px; padding:4px 6px; border:1px solid #d1d5db; border-radius:4px; width:100%; box-sizing:border-box; }
 .kanban-card.editing { cursor:default; }
+.kanban-col-footer { padding:6px 8px; }
+.kb-add-btn { background:none; border:none; color:#9ca3af; font-size:11px; cursor:pointer; padding:4px 6px; border-radius:4px; width:100%; text-align:left; transition:all .15s; }
+.kb-add-btn:hover { color:#374151; background:#f3f4f6; }
+.kb-quick-input { width:100%; font-size:12px; padding:6px 8px; border:1px solid #d1d5db; border-radius:6px; outline:none; box-sizing:border-box; }
+.kb-quick-input:focus { border-color:#2563EB; box-shadow:0 0 0 2px rgba(37,99,235,.15); }
 
 /* ── Dashboard quadrants ── */
 .dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -662,22 +667,27 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
           <div class="kanban-col" data-status="Project">
             <div class="kanban-col-header" style="border-top:3px solid #0e7490;border-radius:10px 10px 0 0;"><i class="fas fa-folder" style="color:#0e7490;"></i> Project <span id="kc-Project" class="badge" style="background:#e0f7fa;color:#006064;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Project" data-status="Project"></div>
+            <div class="kanban-col-footer" data-status="Project"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Project"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Next Action">
             <div class="kanban-col-header" style="border-top:3px solid #16a34a;border-radius:10px 10px 0 0;"><i class="fas fa-arrow-circle-right" style="color:#16a34a;"></i> Next Action <span id="kc-Next-Action" class="badge" style="background:#dcfce7;color:#15803d;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Next-Action" data-status="Next Action"></div>
+            <div class="kanban-col-footer" data-status="Next Action"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Next Action"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="WIP">
             <div class="kanban-col-header" style="border-top:3px solid #2563EB;border-radius:10px 10px 0 0;"><i class="fas fa-star" style="color:#2563EB;"></i> WIP <span id="kc-WIP" class="badge" style="background:#dbeafe;color:#1d4ed8;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-WIP" data-status="WIP"></div>
+            <div class="kanban-col-footer" data-status="WIP"><button class="kb-add-btn" data-kb-action="quick-add" data-status="WIP"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Waiting for">
             <div class="kanban-col-header" style="border-top:3px solid #d97706;border-radius:10px 10px 0 0;"><i class="fas fa-hourglass-start" style="color:#d97706;"></i> Waiting For <span id="kc-Waiting-for" class="badge" style="background:#fef3c7;color:#b45309;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Waiting-for" data-status="Waiting for"></div>
+            <div class="kanban-col-footer" data-status="Waiting for"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Waiting for"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Agenda">
             <div class="kanban-col-header" style="border-top:3px solid #7c3aed;border-radius:10px 10px 0 0;"><i class="fas fa-calendar-alt" style="color:#7c3aed;"></i> Agenda <span id="kc-Agenda" class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Agenda" data-status="Agenda"></div>
+            <div class="kanban-col-footer" data-status="Agenda"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Agenda"><i class="fas fa-plus"></i> Add</button></div>
           </div>
         </div>
         <!-- List view -->
@@ -1302,13 +1312,13 @@ function updateNoteFormFields() {
 }
 
 // ─── SECTION 8: Action CRUD ───
-async function saveAction(text, engId, dueDate) {
+async function saveAction(text, engId, dueDate, status) {
   if (!text.trim()) { showError('Action cannot be empty.'); return; }
   showLoading();
   try {
     await addDoc(collection(db, actionsPath()), {
-      text: text.trim(), isCompleted: false, isArchived: false, status: 'Next Action',
-      dueDate: dueDate || null, engagementId: engId || null, owner: '',
+      text: text.trim(), isCompleted: false, isArchived: false, status: status || 'Next Action',
+      description: '', dueDate: dueDate || null, engagementId: engId || null, owner: '',
       timestamp: serverTimestamp(), archivedAt: null
     });
     showToast('Action added.');
@@ -1669,6 +1679,7 @@ function renderActionCard(t, compact = false) {
     </div>
     <div class="action-card-body">
       <div class="action-text blur-sensitive ${t.isCompleted ? 'completed-text' : ''}">${t.text}</div>
+      ${t.description ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.3;">${t.description.length > 80 ? (t.description.substring(0,80).replace(/</g,'&lt;').replace(/>/g,'&gt;'))+'…' : (t.description||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
         <span class="${spClass(t.status)}">${t.status}</span>
         ${due ? `<span style="font-size:11px;${due.isOverdue ? 'color:#dc2626;font-weight:600;' : 'color:#6b7280;'}"><i class="far fa-calendar-alt"></i> ${due.text}${due.isOverdue ? ' ⚠' : ''}</span>` : ''}
@@ -1707,8 +1718,9 @@ function renderKanban() {
           <button class="kc-delete" data-kb-action="delete" data-id="${t.id}" title="Delete"><i class="fas fa-trash"></i></button>
         </div>
         <div style="padding-left:6px;font-size:12px;color:#374151;line-height:1.4;" class="blur-sensitive">${t.text}</div>
+        ${t.description ? `<div style="font-size:10px;color:#9ca3af;padding-left:6px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;" title="${(t.description||'').replace(/"/g,'&quot;')}">${t.description.length > 60 ? t.description.substring(0,60)+'…' : t.description}</div>` : ''}
         ${due ? `<div style="font-size:10px;margin-top:3px;padding-left:6px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
-        <div class="kc-extra">${eng ? `<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}${t.owner ? `<span style="margin-left:${eng ? '6px' : '0'};"> ${t.owner}</span>` : ''}</div>
+        <div class="kc-extra">${t.description ? `<div style="font-size:11px;color:#6b7280;margin-bottom:4px;white-space:pre-wrap;line-height:1.4;">${(t.description||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}${eng ? `<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}${t.owner ? `<span style="margin-left:${eng ? '6px' : '0'};"> ${t.owner}</span>` : ''}</div>
       </div>`;
     }).join('');
   });
@@ -1753,6 +1765,7 @@ function openEditActionInline(id) {
     <div class="engagement-bar" style="background:${eng ? engColorHex(eng) : '#e5e7eb'};"></div>
     <div style="padding-left:8px;flex:1;display:flex;flex-direction:column;gap:6px;">
       <input type="text" class="form-input" id="editActionText_${id}" value="${t.text.replace(/"/g,'&quot;')}" style="font-size:13px;">
+      <textarea class="form-input" id="editActionDesc_${id}" placeholder="Details (optional)" style="font-size:12px;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select class="form-select" id="editActionStatus_${id}" style="flex:1;font-size:12px;">
           ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
@@ -2195,11 +2208,12 @@ function handleActionsClick(e) {
   if (saveBtn) {
     const id = saveBtn.dataset.id;
     const text = document.getElementById(`editActionText_${id}`)?.value;
+    const desc = document.getElementById(`editActionDesc_${id}`)?.value || '';
     const status = document.getElementById(`editActionStatus_${id}`)?.value;
     const due = document.getElementById(`editActionDue_${id}`)?.value;
     const owner = document.getElementById(`editActionOwner_${id}`)?.value;
     const eng = document.getElementById(`editActionEng_${id}`)?.value;
-    updateAction(id, { text: text||'', status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
+    updateAction(id, { text: text||'', description: desc, status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
     editingActionId = null;
   }
   if (cancelBtn) renderActionsView();
@@ -2257,12 +2271,38 @@ document.getElementById('kanbanView').addEventListener('click', e => {
       openKanbanEditInline(id);
     } else if (action === 'save-edit') {
       const text = document.getElementById(`kbEditText_${id}`)?.value;
+      const description = document.getElementById(`kbEditDesc_${id}`)?.value || '';
       const status = document.getElementById(`kbEditStatus_${id}`)?.value;
       const due = document.getElementById(`kbEditDue_${id}`)?.value;
       const eng = document.getElementById(`kbEditEng_${id}`)?.value;
-      updateAction(id, { text: text||'', status: status||'Next Action', dueDate: due||null, engagementId: eng||null });
+      updateAction(id, { text: text||'', description, status: status||'Next Action', dueDate: due||null, engagementId: eng||null });
     } else if (action === 'cancel-edit') {
       renderKanban();
+    } else if (action === 'quick-add') {
+      const qaStatus = actionBtn.dataset.status;
+      const footer = actionBtn.closest('.kanban-col-footer');
+      footer.innerHTML = `<input type="text" class="kb-quick-input" data-status="${qaStatus}" placeholder="Add a task…" autofocus>`;
+      const input = footer.querySelector('.kb-quick-input');
+      input.focus();
+      input.addEventListener('keydown', async ev => {
+        if (ev.key === 'Enter' && input.value.trim()) {
+          ev.preventDefault();
+          const txt = input.value.trim();
+          input.value = '';
+          await saveAction(txt, null, null, qaStatus);
+          input.focus();
+        }
+        if (ev.key === 'Escape') {
+          footer.innerHTML = `<button class="kb-add-btn" data-kb-action="quick-add" data-status="${qaStatus}"><i class="fas fa-plus"></i> Add</button>`;
+        }
+      });
+      input.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (document.activeElement !== input) {
+            footer.innerHTML = `<button class="kb-add-btn" data-kb-action="quick-add" data-status="${qaStatus}"><i class="fas fa-plus"></i> Add</button>`;
+          }
+        }, 150);
+      });
     }
     return;
   }
@@ -2282,6 +2322,7 @@ function openKanbanEditInline(id) {
   ).join('');
   card.innerHTML = `<div class="kc-edit-form">
     <input type="text" id="kbEditText_${id}" value="${t.text.replace(/"/g,'&quot;')}" placeholder="Action text">
+    <textarea id="kbEditDesc_${id}" placeholder="Details (optional)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;width:100%;box-sizing:border-box;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
     <div style="display:flex;gap:4px;">
       <select id="kbEditStatus_${id}" style="flex:1;">
         ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
