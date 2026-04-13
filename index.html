@@ -139,19 +139,31 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .kb-quick-input { width:100%; font-size:12px; padding:6px 8px; border:1px solid #d1d5db; border-radius:6px; outline:none; box-sizing:border-box; }
 .kb-quick-input:focus { border-color:#2563EB; box-shadow:0 0 0 2px rgba(37,99,235,.15); }
 
-/* ── Dashboard quadrants ── */
-.dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-@media(max-width:900px){ .dashboard-grid { grid-template-columns:1fr; } }
+/* ── Dashboard / Needs Attention ── */
 .dash-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; }
 .dash-card-header { padding:12px 16px; border-bottom:1px solid #f3f4f6; font-size:13px; font-weight:600; color:#374151; display:flex; align-items:center; gap:8px; }
-.dash-card-body { padding:12px 16px; max-height:280px; overflow-y:auto; }
-.dash-item { padding:8px 0; border-bottom:1px solid #f9fafb; display:flex; align-items:flex-start; gap:8px; }
+.dash-card-body { padding:12px 16px; max-height:320px; overflow-y:auto; }
+.dash-item { padding:8px 0; border-bottom:1px solid #f9fafb; display:flex; align-items:center; gap:8px; }
 .dash-item:last-child { border-bottom:none; }
 .dash-item-text { font-size:13px; color:#374151; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .dash-item-meta { font-size:11px; color:#9ca3af; flex-shrink:0; }
-.pulse-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
-.pulse-card .pulse-count { font-size:20px; font-weight:700; color:#1f2937; }
-.pulse-card .pulse-label { font-size:11px; color:#6b7280; }
+.na-badge { font-size:13px; font-weight:600; cursor:pointer; padding:4px 10px; border-radius:20px; transition:opacity .15s; }
+.na-badge:hover { opacity:.8; }
+.na-badge-overdue { background:#fee2e2; color:#dc2626; }
+.na-badge-stale { background:#fef3c7; color:#b45309; }
+.na-badge-unassigned { background:#f3f4f6; color:#6b7280; }
+.na-badge-dueweek { background:#dbeafe; color:#2563EB; }
+.na-actions { display:flex; gap:6px; margin-left:auto; flex-shrink:0; align-items:center; }
+.na-btn { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.na-btn-complete { background:#dcfce7; color:#15803d; }
+.na-btn-complete:hover { background:#bbf7d0; }
+.na-btn-snooze { background:#f3f4f6; color:#6b7280; }
+.na-btn-snooze:hover { background:#e5e7eb; }
+.na-btn-keep { background:#fef3c7; color:#b45309; }
+.na-btn-keep:hover { background:#fde68a; }
+.na-date-input { font-size:11px; padding:3px 6px; border:1px solid #d1d5db; border-radius:6px; }
+.na-date-input:focus { border-color:#2563EB; }
+@media(max-width:600px) { .na-actions { flex-wrap:wrap; gap:4px; } .dash-item { flex-wrap:wrap; } }
 
 /* ── Forms ── */
 .form-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; transition:border .15s,box-shadow .15s; font-family:inherit; }
@@ -197,22 +209,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .qc-type-pill { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; transition:all .15s; }
 .qc-type-pill.active-note { background:#ecfdf5; color:#059669; border-color:#a7f3d0; }
 .qc-type-pill.active-action { background:#eff6ff; color:#2563EB; border-color:#93c5fd; }
-
-/* ── Weekly Review ── */
-.wr-step-indicator { display:flex; gap:8px; margin-bottom:24px; align-items:center; }
-.wr-step { width:28px; height:28px; border-radius:50%; background:#f3f4f6; border:2px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; color:#9ca3af; }
-.wr-step.active { background:#2563EB; border-color:#2563EB; color:#fff; }
-.wr-step.done { background:#059669; border-color:#059669; color:#fff; }
-.wr-step-line { flex:1; height:2px; background:#e5e7eb; }
-.wr-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:10px; }
-.wr-actions { display:flex; gap:6px; margin-left:auto; flex-shrink:0; }
-.btn-wr { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
-.btn-wr-done { background:#dcfce7; color:#15803d; }
-.btn-wr-done:hover { background:#bbf7d0; }
-.btn-wr-skip { background:#f3f4f6; color:#6b7280; }
-.btn-wr-skip:hover { background:#e5e7eb; }
-.btn-wr-flag { background:#fef3c7; color:#b45309; }
-.btn-wr-flag:hover { background:#fde68a; }
 
 /* ── Engagement list grid ── */
 .engagement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
@@ -428,8 +424,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
       <div class="nav-item" data-nav="engagements"><i class="fas fa-briefcase"></i>Engagements</div>
       <div class="nav-item" data-nav="notes"><i class="fas fa-sticky-note"></i>All Notes</div>
       <div class="nav-item" data-nav="actions"><i class="fas fa-check-square"></i>All Actions</div>
-      <div class="nav-section-label">Review</div>
-      <div class="nav-item" data-nav="weekly-review"><i class="fas fa-calendar-check"></i>Weekly Review</div>
     </nav>
     <footer>
       <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign out</button>
@@ -450,37 +444,33 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     <!-- Page content -->
     <div id="pageContent">
 
-      <!-- ── DASHBOARD ── -->
+      <!-- ── DASHBOARD: NEEDS ATTENTION ── -->
       <section id="dashboardSection" class="page-section visible">
         <div style="margin-bottom:20px;">
           <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 4px;" id="dashGreeting">Good morning</h2>
           <p style="font-size:13px;color:#6b7280;margin:0;" id="dashDate"></p>
         </div>
-        <div class="dashboard-grid">
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-crosshairs" style="color:#2563EB;"></i> Focus Today</div>
-            <div class="dash-card-body" id="dashFocus">
-              <div class="empty-state"><p>No active items</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Waiting For</div>
-            <div class="dash-card-body" id="dashWaiting">
-              <div class="empty-state"><p>Nothing waiting</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-file-alt" style="color:#059669;"></i> Recent Notes</div>
-            <div class="dash-card-body" id="dashNotes">
-              <div class="empty-state"><p>No recent notes</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-briefcase" style="color:#7c3aed;"></i> Engagement Pulse</div>
-            <div class="dash-card-body" id="dashPulse">
-              <div class="empty-state"><p>No active engagements</p></div>
-            </div>
-          </div>
+        <div id="naSummaryStrip" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:10px 16px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;"></div>
+        <div id="naAllClear" style="display:none;text-align:center;padding:48px 20px;">
+          <div style="font-size:36px;margin-bottom:8px;">✅</div>
+          <div style="font-size:16px;font-weight:600;color:#111827;">All clear</div>
+          <div style="font-size:13px;color:#6b7280;">Nothing needs your attention right now.</div>
+        </div>
+        <div id="na-section-overdue" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#dc2626;">🔴</span> Overdue</div>
+          <div class="dash-card-body" id="naOverdueBody"></div>
+        </div>
+        <div id="na-section-stale" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#eab308;">🟡</span> Stale WIP</div>
+          <div class="dash-card-body" id="naStaleBody"></div>
+        </div>
+        <div id="na-section-unassigned" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#9ca3af;">⚪</span> Unassigned</div>
+          <div class="dash-card-body" id="naUnassignedBody"></div>
+        </div>
+        <div id="na-section-dueweek" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#2563EB;">📅</span> Due This Week</div>
+          <div class="dash-card-body" id="naDueWeekBody"></div>
         </div>
       </section>
 
@@ -700,24 +690,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
         </div>
       </section>
 
-      <!-- ── WEEKLY REVIEW ── -->
-      <section id="weeklyReviewSection" class="page-section">
-        <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0 0 6px;">Weekly Review</h2>
-        <p style="font-size:13px;color:#6b7280;margin:0 0 24px;">A guided process to stay on top of your commitments.</p>
-        <div class="wr-step-indicator">
-          <div class="wr-step active" id="wr-step-0">1</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-1">2</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-2">3</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-3">4</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-4">5</div>
-        </div>
-        <div id="wrContent"></div>
-        <div style="display:flex;gap:8px;margin-top:20px;" id="wrNavButtons">
-          <button class="btn-secondary" id="wrPrevBtn" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
-          <button class="btn-primary" id="wrNextBtn">Next <i class="fas fa-arrow-right"></i></button>
-        </div>
-      </section>
-
     </div><!-- /pageContent -->
   </div><!-- /mainContent -->
 </div><!-- /appLayout -->
@@ -728,7 +700,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
   <button class="mob-tab" data-nav="engagements"><i class="fas fa-briefcase"></i><span>Engagements</span></button>
   <button class="mob-tab" data-nav="notes"><i class="fas fa-sticky-note"></i><span>Notes</span></button>
   <button class="mob-tab" data-nav="actions"><i class="fas fa-check-square"></i><span>Actions</span></button>
-  <button class="mob-tab" data-nav="weekly-review"><i class="fas fa-calendar-check"></i><span>Review</span></button>
 </nav>
 
 <!-- ══ QUICK CAPTURE MODAL ══ -->
@@ -876,8 +847,6 @@ let activeActionsEngFilter = null;
 let engStatusFilter = 'all';
 let engDetailTab = 'notes';
 let pendingConfirmAction = null;
-let wrStep = 0;
-let wrReflectionText = '';
 let quickCaptureType = 'note';
 let quickCaptureEngId = null;
 let toastTimeout = null;
@@ -1403,7 +1372,7 @@ function setupListeners() {
     renderSidebarEngagements();
     populateEngagementSelects();
     renderEngagementGrid();
-    renderDashboardPulse();
+    if (currentView === 'dashboard') renderNeedsAttention();
   });
   // Notes
   onSnapshot(query(collection(db, notesPath()), orderBy('timestamp','desc')), snap => {
@@ -1419,7 +1388,7 @@ function setupListeners() {
       selectedNoteId = null;
     }
     renderNotesList();
-    renderDashboardNotes();
+    if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
   });
   // Active actions
@@ -1434,8 +1403,7 @@ function setupListeners() {
       return (a.timestamp?.toDate?.()?.getTime()||0) - (b.timestamp?.toDate?.()?.getTime()||0);
     });
     renderActionsView();
-    renderDashboardFocus();
-    renderDashboardWaiting();
+    if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
   });
   // Archived actions
@@ -1468,73 +1436,106 @@ function populateEngagementSelects() {
   }
 }
 
-// ─── SECTION 12: Render – Dashboard ───
-function renderDashboardFocus() {
-  const el = document.getElementById('dashFocus');
-  const items = activeTodos.filter(t => ['Next Action','WIP'].includes(t.status) && !t.isCompleted).slice(0, 6);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No active items — great job!</p></div>'; return; }
-  el.innerHTML = items.map(t => {
-    const eng = getEngagement(t.engagementId);
-    const due = formatDueDate(t.dueDate);
-    return `<div class="dash-item">
-      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
-      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
-      ${due ? `<span class="dash-item-meta ${due.isOverdue ? 'overdue-text' : ''}">${due.text}</span>` : ''}
-    </div>`;
-  }).join('');
-}
-function renderDashboardWaiting() {
-  const el = document.getElementById('dashWaiting');
-  const items = activeTodos.filter(t => t.status === 'Waiting for' && !t.isArchived);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>Nothing waiting</p></div>'; return; }
-  el.innerHTML = items.map(t => {
-    const eng = getEngagement(t.engagementId);
-    return `<div class="dash-item">
-      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
-      ${t.owner ? `<span class="dash-item-meta">${t.owner}</span>` : ''}
-      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
-    </div>`;
-  }).join('');
-}
-function renderDashboardNotes() {
-  const el = document.getElementById('dashNotes');
-  const items = allNotes.slice(0, 5);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No recent notes</p></div>'; return; }
-  el.innerHTML = items.map(n => {
-    const eng = getEngagement(n.engagementId);
-    return `<div class="dash-item">
-      <div style="flex:1;min-width:0;">
-        <div class="blur-sensitive" style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.title || n.text.substring(0,60)}</div>
-        <div style="font-size:11px;color:#9ca3af;">${formatTs(n.timestamp)}${eng ? ' · '+eng.name : ''}</div>
-      </div>
-      <span class="badge badge-${(n.type||'note').toLowerCase().replace(' ','')} ">${n.type||'Note'}</span>
-    </div>`;
-  }).join('');
-}
-function renderDashboardPulse() {
-  const el = document.getElementById('dashPulse');
-  const active = allEngagements.filter(e => e.status === 'Active');
-  if (!active.length) { el.innerHTML = '<div class="empty-state"><p>No active engagements</p></div>'; return; }
-  el.innerHTML = active.map(e => {
-    const count = activeTodos.filter(t => t.engagementId === e.id && !t.isCompleted && !t.isArchived).length;
-    return `<div class="pulse-card" style="border-left:4px solid ${engColorHex(e)};">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.name}</div>
-        <div style="font-size:11px;color:#6b7280;">${e.clientName || ''}</div>
-      </div>
-      <div style="text-align:right;">
-        <div class="pulse-count">${count}</div>
-        <div class="pulse-label">open actions</div>
-      </div>
-    </div>`;
-  }).join('');
-}
+// ─── SECTION 12: Render – Dashboard (Needs Attention) ───
 function updateDashGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('dashGreeting').textContent = greet;
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
+function getItemAge(item) {
+  const ts = item.updatedAt || item.timestamp;
+  if (!ts) return Infinity;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function todayStr() { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+function weekFromNowStr() { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+7); return d.toISOString().slice(0,10); }
+
+function renderNeedsAttention() {
+  const today = todayStr();
+  const weekEnd = weekFromNowStr();
+  const active = activeTodos.filter(t => !t.isCompleted && !t.isArchived);
+
+  const overdue = active.filter(t => t.dueDate && t.dueDate < today);
+  const staleWip = active.filter(t => t.status === 'WIP' && getItemAge(t) >= 5);
+  const unassignedActions = active.filter(t => !t.engagementId);
+  const unassignedNotes = allNotes.filter(n => !n.engagementId);
+  const unassigned = [...unassignedNotes.map(n => ({...n, _type:'note'})), ...unassignedActions.map(a => ({...a, _type:'action'}))];
+  const dueWeek = active.filter(t => t.dueDate && t.dueDate >= today && t.dueDate <= weekEnd);
+
+  const counts = { overdue: overdue.length, stale: staleWip.length, unassigned: unassigned.length, dueweek: dueWeek.length };
+  const total = counts.overdue + counts.stale + counts.unassigned + counts.dueweek;
+
+  const strip = document.getElementById('naSummaryStrip');
+  strip.innerHTML = [
+    counts.overdue ? `<span class="na-badge na-badge-overdue" onclick="document.getElementById('na-section-overdue').scrollIntoView({behavior:'smooth'})">${counts.overdue} overdue</span>` : '',
+    counts.stale ? `<span class="na-badge na-badge-stale" onclick="document.getElementById('na-section-stale').scrollIntoView({behavior:'smooth'})">${counts.stale} stale</span>` : '',
+    counts.unassigned ? `<span class="na-badge na-badge-unassigned" onclick="document.getElementById('na-section-unassigned').scrollIntoView({behavior:'smooth'})">${counts.unassigned} unassigned</span>` : '',
+    counts.dueweek ? `<span class="na-badge na-badge-dueweek" onclick="document.getElementById('na-section-dueweek').scrollIntoView({behavior:'smooth'})">${counts.dueweek} due this week</span>` : '',
+  ].filter(Boolean).join(' <span style="color:#d1d5db;">·</span> ');
+  strip.style.display = total > 0 ? 'flex' : 'none';
+  document.getElementById('naAllClear').style.display = total === 0 ? 'block' : 'none';
+
+  renderNASection('na-section-overdue', 'naOverdueBody', overdue, 'overdue');
+  renderNASection('na-section-stale', 'naStaleBody', staleWip, 'stale');
+  renderNASection('na-section-unassigned', 'naUnassignedBody', unassigned, 'unassigned');
+  renderNASection('na-section-dueweek', 'naDueWeekBody', dueWeek, 'dueweek');
+}
+
+function renderNASection(sectionId, bodyId, items, type) {
+  const section = document.getElementById(sectionId);
+  const body = document.getElementById(bodyId);
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  body.innerHTML = items.map(item => {
+    const eng = getEngagement(item.engagementId);
+    const engDot = eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;" title="${eng.name}"></span>` : '';
+    const due = formatDueDate(item.dueDate);
+    const dueBadge = due ? `<span class="dash-item-meta ${due.isOverdue ? 'overdue-text' : ''}">${due.text}</span>` : '';
+    const itemLabel = item._type === 'note' ? `<span class="badge badge-${(item.type||'note').toLowerCase()}" style="margin-right:6px;">${item.type||'Note'}</span>` : '';
+    let actions = '';
+    if (type === 'overdue') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <input type="date" class="na-date-input" onchange="naReschedule('${item.id}', this.value)" title="Reschedule">
+        <button class="na-btn na-btn-snooze" onclick="naSnooze('${item.id}')" title="Snooze 3 days">+3d</button>
+      </div>`;
+    } else if (type === 'stale') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <button class="na-btn na-btn-keep" onclick="naKeepWip('${item.id}')">Keep</button>
+        <button class="na-btn na-btn-snooze" onclick="naMoveToNext('${item.id}')">→ Next</button>
+      </div>`;
+    } else if (type === 'unassigned') {
+      const engOpts = `<option value="">Assign…</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+      const itemType = item._type || 'action';
+      actions = `<div class="na-actions"><select class="form-select" style="font-size:11px;padding:4px 8px;max-width:160px;" onchange="naAssign('${item.id}','${itemType}',this.value)">${engOpts}</select></div>`;
+    } else if (type === 'dueweek') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <input type="date" class="na-date-input" onchange="naReschedule('${item.id}', this.value)" title="Reschedule">
+      </div>`;
+    }
+    return `<div class="dash-item">${itemLabel}<div class="dash-item-text blur-sensitive">${item.title || item.text}</div>${engDot} ${dueBadge} ${actions}</div>`;
+  }).join('');
+}
+
+window.naComplete = async (id) => { await updateAction(id, { isCompleted: true, status: 'Completed' }); showToast('Completed'); };
+window.naReschedule = async (id, dateStr) => { if (!dateStr) return; await updateAction(id, { dueDate: dateStr }); showToast('Rescheduled'); };
+window.naSnooze = async (id) => {
+  const d = new Date(); d.setDate(d.getDate() + 3);
+  await updateAction(id, { dueDate: d.toISOString().slice(0,10) }); showToast('Snoozed 3 days');
+};
+window.naKeepWip = async (id) => { await updateAction(id, {}); showToast('Marked as active'); };
+window.naMoveToNext = async (id) => { await updateAction(id, { status: 'Next Action' }); showToast('Moved to Next Action'); };
+window.naAssign = async (id, itemType, engId) => {
+  try {
+    if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
+    else await updateAction(id, { engagementId: engId || null });
+    showToast('Assigned');
+  } catch(e) { showError(e.message); }
+};
 
 // ─── SECTION 13: Render – Engagements ───
 function renderEngagementGrid() {
@@ -1813,119 +1814,11 @@ async function submitQuickCapture() {
   closeQuickCapture();
 }
 
-// ─── SECTION 18: Weekly Review ───
-const WR_STEPS = [
-  { title: 'Inbox Review', desc: 'Assign unassigned notes and actions to an engagement.' },
-  { title: 'WIP Check', desc: 'Review items in progress. Mark done or flag as blocked.' },
-  { title: 'Waiting For Check', desc: 'Review what you\'re waiting on. Got it? Still waiting? Blocked?' },
-  { title: 'Plan Next Week', desc: 'Review your Next Action items and prioritize.' },
-  { title: 'Weekly Reflection', desc: 'A moment to reflect on the week.' }
-];
-function renderWRStep() {
-  for (let i = 0; i < 5; i++) {
-    const el = document.getElementById(`wr-step-${i}`);
-    el.className = 'wr-step ' + (i < wrStep ? 'done' : i === wrStep ? 'active' : '');
-  }
-  const step = WR_STEPS[wrStep];
-  const prevBtn = document.getElementById('wrPrevBtn');
-  const nextBtn = document.getElementById('wrNextBtn');
-  prevBtn.style.display = wrStep > 0 ? 'inline-flex' : 'none';
-  nextBtn.textContent = wrStep === 4 ? 'Complete Review' : 'Next';
-  nextBtn.innerHTML = wrStep === 4 ? '<i class="fas fa-check"></i> Complete Review' : 'Next <i class="fas fa-arrow-right"></i>';
-  let html = `<div style="margin-bottom:16px;"><h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 4px;">${step.title}</h3><p style="font-size:13px;color:#6b7280;margin:0;">${step.desc}</p></div>`;
-  if (wrStep === 0) {
-    const inbox = [...allNotes.filter(n => !n.engagementId), ...activeTodos.filter(t => !t.engagementId)];
-    if (!inbox.length) html += '<div class="empty-state"><i class="fas fa-inbox"></i><p>Inbox is clear!</p></div>';
-    else html += inbox.map(item => {
-      const isNote = !!item.text && item.type !== undefined;
-      const engOpts = `<option value="">Unassigned</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-      return `<div class="wr-card">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${isNote ? (item.type||'Note') : 'Action'}</div>
-          <div style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" class="blur-sensitive">${item.text}</div>
-        </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
-          <select class="form-select" style="font-size:11px;padding:4px 8px;" onchange="assignWRItem('${item.id}','${isNote?'note':'action'}',this.value)">${engOpts}</select>
-        </div>
-      </div>`;
-    }).join('');
-  } else if (wrStep === 1) {
-    const wip = activeTodos.filter(t => t.status === 'WIP');
-    if (!wip.length) html += '<div class="empty-state"><i class="fas fa-star"></i><p>No WIP items!</p></div>';
-    else html += wip.map(t => `<div class="wr-card">
-      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
-      <div class="wr-actions">
-        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Done</button>
-        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
-        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
-      </div>
-    </div>`).join('');
-  } else if (wrStep === 2) {
-    const waiting = activeTodos.filter(t => t.status === 'Waiting for');
-    if (!waiting.length) html += '<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Nothing in Waiting For!</p></div>';
-    else html += waiting.map(t => `<div class="wr-card">
-      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div>${t.owner ? `<div style="font-size:11px;color:#6b7280;">${t.owner}</div>` : ''}</div>
-      <div class="wr-actions">
-        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Got it</button>
-        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
-        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Still waiting</button>
-      </div>
-    </div>`).join('');
-  } else if (wrStep === 3) {
-    const next = activeTodos.filter(t => t.status === 'Next Action' && !t.isCompleted);
-    if (!next.length) html += '<div class="empty-state"><i class="fas fa-arrow-circle-right"></i><p>No Next Actions set.</p></div>';
-    else html += `<p style="font-size:13px;color:#6b7280;margin:0 0 12px;">Review your upcoming actions. Promote key ones to WIP for next week.</p>` +
-      next.map(t => `<div class="wr-card">
-        <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
-        <div class="wr-actions">
-          <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','promote')">Make WIP</button>
-          <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
-        </div>
-      </div>`).join('');
-  } else if (wrStep === 4) {
-    html += `<div class="form-group">
-      <label class="form-label">Weekly Reflection</label>
-      <textarea class="form-textarea" id="wrReflectionInput" rows="8" placeholder="What went well? What could be improved? What did you learn?" style="min-height:180px;">${wrReflectionText}</textarea>
-    </div>`;
-  }
-  document.getElementById('wrContent').innerHTML = html;
-}
-window.assignWRItem = async (id, itemType, engId) => {
-  try {
-    if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
-    else await updateDoc(doc(db, actionsPath(), id), { engagementId: engId || null });
-  } catch(e) { showError(e.message); }
-};
-window.wrActionUpdate = async (id, action) => {
-  try {
-    if (action === 'done') await updateDoc(doc(db, actionsPath(), id), { isCompleted: true, status: 'Completed' });
-    else if (action === 'blocked') await updateDoc(doc(db, actionsPath(), id), { status: 'Next Action' });
-    else if (action === 'promote') await updateDoc(doc(db, actionsPath(), id), { status: 'WIP' });
-    renderWRStep();
-  } catch(e) { showError(e.message); }
-};
-async function advanceWRStep() {
-  if (wrStep === 4) {
-    const reflection = document.getElementById('wrReflectionInput')?.value?.trim();
-    if (reflection) {
-      showLoading();
-      try {
-        await addDoc(collection(db, notesPath()), { text: reflection, type: 'Reflection', tags: ['weekly-review'],
-          engagementId: null, title: 'Weekly Reflection', attendees: [], hypothesisStatus: null, isConfidential: false, timestamp: serverTimestamp(), linkedActionIds: [] });
-        showToast('Weekly review complete! Reflection saved.');
-      } catch(e) { showError(e.message); } finally { hideLoading(); }
-    } else { showToast('Weekly review complete!'); }
-    wrStep = 0; renderWRStep(); navigate('dashboard'); return;
-  }
-  wrStep++;
-  renderWRStep();
-}
-
 // ─── SECTION 19: Navigation ───
 function navigate(view, engId = null) {
   currentView = view;
-  const sections = ['dashboard','engagements','engagement-detail','notes','actions','weekly-review'];
-  const sectionIds = { dashboard:'dashboardSection', engagements:'engagementsSection', 'engagement-detail':'engagementDetailSection', notes:'notesSection', actions:'actionsSection', 'weekly-review':'weeklyReviewSection' };
+  const sections = ['dashboard','engagements','engagement-detail','notes','actions'];
+  const sectionIds = { dashboard:'dashboardSection', engagements:'engagementsSection', 'engagement-detail':'engagementDetailSection', notes:'notesSection', actions:'actionsSection' };
   sections.forEach(v => { const el = document.getElementById(sectionIds[v]); if (el) el.classList.remove('visible'); });
   const active = sectionIds[view]; if (active) document.getElementById(active)?.classList.add('visible');
   // Update sidebar nav active states
@@ -1939,10 +1832,10 @@ function navigate(view, engId = null) {
     el.classList.toggle('active', engId && el.dataset.navEng === engId);
   });
   // Update breadcrumb
-  const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions', 'weekly-review':'Weekly Review' };
+  const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions' };
   document.getElementById('breadcrumbCurrent').textContent = labels[view] || view;
   // Refresh view-specific rendering
-  if (view === 'dashboard') { updateDashGreeting(); renderDashboardFocus(); renderDashboardWaiting(); renderDashboardNotes(); renderDashboardPulse(); }
+  if (view === 'dashboard') { updateDashGreeting(); renderNeedsAttention(); }
   if (view === 'engagements') renderEngagementGrid();
   if (view === 'engagement-detail' && engId) { activeEngagementId = engId; renderEngagementDetail(engId); renderSidebarEngagements(); }
   if (view === 'notes') {
@@ -1955,7 +1848,6 @@ function navigate(view, engId = null) {
     document.getElementById('pageContent').style.overflow = '';
   }
   if (view === 'actions') { renderActionsView(); renderArchivedList(); populateEngagementSelects(); }
-  if (view === 'weekly-review') renderWRStep();
   // Hash routing
   window.location.hash = '#/' + view + (engId ? '/' + engId : '');
 }
@@ -2386,10 +2278,6 @@ document.addEventListener('keydown', e => {
     showToast('Shortcuts: Ctrl+Shift+C = Quick Capture | Drag kanban cards to change status', 'success', 5000);
   }
 });
-// Weekly Review
-document.getElementById('wrNextBtn').addEventListener('click', advanceWRStep);
-document.getElementById('wrPrevBtn').addEventListener('click', () => { if(wrStep>0) { wrStep--; renderWRStep(); } });
-
 // Hash routing on load
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.replace('#/','');
