@@ -118,24 +118,74 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .kanban-col-header { padding:10px 14px; border-bottom:1px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
 .kanban-col-body { flex:1; padding:8px; overflow-y:auto; min-height:60px; }
 .kanban-col-body.drag-over { background:#eff6ff; border-radius:8px; }
-.kanban-card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin-bottom:6px; cursor:grab; transition:box-shadow .15s; font-size:12px; position:relative; }
+.kanban-card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:7px 8px 7px 11px; margin-bottom:5px; cursor:grab; transition:box-shadow .15s; font-size:12px; position:relative; }
 .kanban-card:hover { box-shadow:0 2px 6px rgba(0,0,0,.1); }
 .kanban-card.dragging { opacity:.5; }
 .kanban-card .kc-bar { position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:8px 0 0 8px; }
+.kanban-card .kc-actions { position:absolute; top:3px; right:3px; display:none; gap:2px; z-index:2; }
+.kanban-card:hover .kc-actions { display:flex; }
+.kc-actions button { background:#fff; border:1px solid #e5e7eb; border-radius:4px; width:20px; height:20px; font-size:9px; cursor:pointer; color:#6b7280; display:flex; align-items:center; justify-content:center; padding:0; transition:all .1s; }
+.kc-actions button:hover { background:#f3f4f6; color:#111827; }
+.kc-actions .kc-complete:hover { color:#16a34a; border-color:#16a34a; }
+.kc-actions .kc-delete:hover { color:#dc2626; border-color:#dc2626; }
+.kanban-card .kc-extra { display:none; font-size:10px; color:#9ca3af; margin-top:3px; padding-left:6px; }
+.kanban-card.expanded .kc-extra { display:block; }
+.kanban-card .kc-edit-form { display:flex; flex-direction:column; gap:5px; }
+.kanban-card .kc-edit-form input, .kanban-card .kc-edit-form select { font-size:11px; padding:4px 6px; border:1px solid #d1d5db; border-radius:4px; width:100%; box-sizing:border-box; }
+.kanban-card.editing { cursor:default; }
+.kanban-col-footer { padding:6px 8px; }
+.kb-add-btn { background:none; border:none; color:#9ca3af; font-size:11px; cursor:pointer; padding:4px 6px; border-radius:4px; width:100%; text-align:left; transition:all .15s; }
+.kb-add-btn:hover { color:#374151; background:#f3f4f6; }
+.kb-quick-input { width:100%; font-size:12px; padding:6px 8px; border:1px solid #d1d5db; border-radius:6px; outline:none; box-sizing:border-box; }
+.kb-quick-input:focus { border-color:#2563EB; box-shadow:0 0 0 2px rgba(37,99,235,.15); }
 
-/* ── Dashboard quadrants ── */
-.dashboard-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-@media(max-width:900px){ .dashboard-grid { grid-template-columns:1fr; } }
+/* ── Dashboard / Needs Attention ── */
 .dash-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; }
 .dash-card-header { padding:12px 16px; border-bottom:1px solid #f3f4f6; font-size:13px; font-weight:600; color:#374151; display:flex; align-items:center; gap:8px; }
-.dash-card-body { padding:12px 16px; max-height:280px; overflow-y:auto; }
-.dash-item { padding:8px 0; border-bottom:1px solid #f9fafb; display:flex; align-items:flex-start; gap:8px; }
+.dash-card-body { padding:12px 16px; max-height:320px; overflow-y:auto; }
+.dash-item { padding:8px 0; border-bottom:1px solid #f9fafb; display:flex; align-items:center; gap:8px; }
 .dash-item:last-child { border-bottom:none; }
 .dash-item-text { font-size:13px; color:#374151; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .dash-item-meta { font-size:11px; color:#9ca3af; flex-shrink:0; }
-.pulse-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
-.pulse-card .pulse-count { font-size:20px; font-weight:700; color:#1f2937; }
-.pulse-card .pulse-label { font-size:11px; color:#6b7280; }
+.na-badge { font-size:13px; font-weight:600; cursor:pointer; padding:4px 10px; border-radius:20px; transition:opacity .15s; }
+.na-badge:hover { opacity:.8; }
+.na-badge-overdue { background:#fee2e2; color:#dc2626; }
+.na-badge-stale { background:#fef3c7; color:#b45309; }
+.na-badge-unassigned { background:#f3f4f6; color:#6b7280; }
+.na-badge-dueweek { background:#dbeafe; color:#2563EB; }
+.na-actions { display:flex; gap:6px; margin-left:auto; flex-shrink:0; align-items:center; }
+.na-btn { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.na-btn-complete { background:#dcfce7; color:#15803d; }
+.na-btn-complete:hover { background:#bbf7d0; }
+.na-btn-snooze { background:#f3f4f6; color:#6b7280; }
+.na-btn-snooze:hover { background:#e5e7eb; }
+.na-btn-keep { background:#fef3c7; color:#b45309; }
+.na-btn-keep:hover { background:#fde68a; }
+.na-date-input { font-size:11px; padding:3px 6px; border:1px solid #d1d5db; border-radius:6px; }
+.na-date-input:focus { border-color:#2563EB; }
+@media(max-width:600px) { .na-actions { flex-wrap:wrap; gap:4px; } .dash-item { flex-wrap:wrap; } }
+
+/* ── Focus Timer ── */
+.timer-pill { display:none; align-items:center; gap:6px; background:#1e293b; color:#fff; padding:4px 12px 4px 8px; border-radius:20px; font-size:12px; font-weight:600; cursor:default; }
+.timer-pill.active { display:flex; }
+.timer-pill.paused { opacity:.7; }
+.timer-pill .timer-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; flex-shrink:0; }
+.timer-pill.paused .timer-dot { background:#eab308; }
+@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+.timer-pill:not(.paused) .timer-dot { animation:pulse-dot 1.5s ease-in-out infinite; }
+.timer-pill .timer-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.timer-pill .timer-time { font-variant-numeric:tabular-nums; }
+.timer-pill button { background:none; border:none; color:rgba(255,255,255,.7); cursor:pointer; padding:2px; font-size:12px; }
+.timer-pill button:hover { color:#fff; }
+.kc-actions .kc-timer:hover { color:#2563EB; border-color:#2563EB; }
+.kc-actions .kc-timer.timing { color:#22c55e; border-color:#22c55e; }
+.focus-entry { display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #f3f4f6; font-size:12px; }
+.focus-entry:last-child { border-bottom:none; }
+.focus-entry-bar { width:3px; height:24px; border-radius:2px; flex-shrink:0; }
+.focus-entry-text { flex:1; color:#374151; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.focus-entry-duration { font-weight:600; font-variant-numeric:tabular-nums; color:#111827; }
+.focus-total { display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-top:1px solid #e5e7eb; font-size:12px; font-weight:600; color:#374151; border-radius:0 0 10px 10px; }
+@media(max-width:600px) { .timer-pill .timer-name { max-width:80px; } }
 
 /* ── Forms ── */
 .form-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; transition:border .15s,box-shadow .15s; font-family:inherit; }
@@ -181,22 +231,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .qc-type-pill { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; transition:all .15s; }
 .qc-type-pill.active-note { background:#ecfdf5; color:#059669; border-color:#a7f3d0; }
 .qc-type-pill.active-action { background:#eff6ff; color:#2563EB; border-color:#93c5fd; }
-
-/* ── Weekly Review ── */
-.wr-step-indicator { display:flex; gap:8px; margin-bottom:24px; align-items:center; }
-.wr-step { width:28px; height:28px; border-radius:50%; background:#f3f4f6; border:2px solid #e5e7eb; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; color:#9ca3af; }
-.wr-step.active { background:#2563EB; border-color:#2563EB; color:#fff; }
-.wr-step.done { background:#059669; border-color:#059669; color:#fff; }
-.wr-step-line { flex:1; height:2px; background:#e5e7eb; }
-.wr-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:10px; }
-.wr-actions { display:flex; gap:6px; margin-left:auto; flex-shrink:0; }
-.btn-wr { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
-.btn-wr-done { background:#dcfce7; color:#15803d; }
-.btn-wr-done:hover { background:#bbf7d0; }
-.btn-wr-skip { background:#f3f4f6; color:#6b7280; }
-.btn-wr-skip:hover { background:#e5e7eb; }
-.btn-wr-flag { background:#fef3c7; color:#b45309; }
-.btn-wr-flag:hover { background:#fde68a; }
 
 /* ── Engagement list grid ── */
 .engagement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
@@ -412,8 +446,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
       <div class="nav-item" data-nav="engagements"><i class="fas fa-briefcase"></i>Engagements</div>
       <div class="nav-item" data-nav="notes"><i class="fas fa-sticky-note"></i>All Notes</div>
       <div class="nav-item" data-nav="actions"><i class="fas fa-check-square"></i>All Actions</div>
-      <div class="nav-section-label">Review</div>
-      <div class="nav-item" data-nav="weekly-review"><i class="fas fa-calendar-check"></i>Weekly Review</div>
     </nav>
     <footer>
       <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign out</button>
@@ -426,6 +458,13 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     <div id="topBar">
       <div id="breadcrumb">Consultant OS &rsaquo; <span id="breadcrumbCurrent">Dashboard</span></div>
       <div class="top-actions">
+        <div id="timerPill" class="timer-pill">
+          <span class="timer-dot"></span>
+          <span class="timer-name" id="timerTaskName"></span>
+          <span class="timer-time" id="timerDisplay">00:00</span>
+          <button id="timerPauseBtn" title="Pause"><i class="fas fa-pause"></i></button>
+          <button id="timerStopBtn" title="Stop & Log"><i class="fas fa-stop"></i></button>
+        </div>
         <button class="btn-icon" id="confidentialityToggle" title="Toggle Confidentiality Mode"><i class="fas fa-eye"></i></button>
         <button class="btn-capture" id="captureBtn"><i class="fas fa-plus"></i> Capture</button>
       </div>
@@ -434,37 +473,37 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     <!-- Page content -->
     <div id="pageContent">
 
-      <!-- ── DASHBOARD ── -->
+      <!-- ── DASHBOARD: NEEDS ATTENTION ── -->
       <section id="dashboardSection" class="page-section visible">
         <div style="margin-bottom:20px;">
           <h2 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 4px;" id="dashGreeting">Good morning</h2>
           <p style="font-size:13px;color:#6b7280;margin:0;" id="dashDate"></p>
         </div>
-        <div class="dashboard-grid">
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-crosshairs" style="color:#2563EB;"></i> Focus Today</div>
-            <div class="dash-card-body" id="dashFocus">
-              <div class="empty-state"><p>No active items</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Waiting For</div>
-            <div class="dash-card-body" id="dashWaiting">
-              <div class="empty-state"><p>Nothing waiting</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-file-alt" style="color:#059669;"></i> Recent Notes</div>
-            <div class="dash-card-body" id="dashNotes">
-              <div class="empty-state"><p>No recent notes</p></div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-header"><i class="fas fa-briefcase" style="color:#7c3aed;"></i> Engagement Pulse</div>
-            <div class="dash-card-body" id="dashPulse">
-              <div class="empty-state"><p>No active engagements</p></div>
-            </div>
-          </div>
+        <div id="naSummaryStrip" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:10px 16px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;"></div>
+        <div id="naAllClear" style="display:none;text-align:center;padding:48px 20px;">
+          <div style="font-size:36px;margin-bottom:8px;">✅</div>
+          <div style="font-size:16px;font-weight:600;color:#111827;">All clear</div>
+          <div style="font-size:13px;color:#6b7280;">Nothing needs your attention right now.</div>
+        </div>
+        <div id="na-section-overdue" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#dc2626;">🔴</span> Overdue</div>
+          <div class="dash-card-body" id="naOverdueBody"></div>
+        </div>
+        <div id="na-section-stale" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#eab308;">🟡</span> Stale WIP</div>
+          <div class="dash-card-body" id="naStaleBody"></div>
+        </div>
+        <div id="na-section-unassigned" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#9ca3af;">⚪</span> Unassigned</div>
+          <div class="dash-card-body" id="naUnassignedBody"></div>
+        </div>
+        <div id="na-section-dueweek" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header"><span style="color:#2563EB;">📅</span> Due This Week</div>
+          <div class="dash-card-body" id="naDueWeekBody"></div>
+        </div>
+        <div id="na-section-focus" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header">🎯 Today's Focus</div>
+          <div class="dash-card-body" id="naTodayFocusBody"></div>
         </div>
       </section>
 
@@ -651,22 +690,27 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
           <div class="kanban-col" data-status="Project">
             <div class="kanban-col-header" style="border-top:3px solid #0e7490;border-radius:10px 10px 0 0;"><i class="fas fa-folder" style="color:#0e7490;"></i> Project <span id="kc-Project" class="badge" style="background:#e0f7fa;color:#006064;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Project" data-status="Project"></div>
+            <div class="kanban-col-footer" data-status="Project"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Project"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Next Action">
             <div class="kanban-col-header" style="border-top:3px solid #16a34a;border-radius:10px 10px 0 0;"><i class="fas fa-arrow-circle-right" style="color:#16a34a;"></i> Next Action <span id="kc-Next-Action" class="badge" style="background:#dcfce7;color:#15803d;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Next-Action" data-status="Next Action"></div>
+            <div class="kanban-col-footer" data-status="Next Action"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Next Action"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="WIP">
             <div class="kanban-col-header" style="border-top:3px solid #2563EB;border-radius:10px 10px 0 0;"><i class="fas fa-star" style="color:#2563EB;"></i> WIP <span id="kc-WIP" class="badge" style="background:#dbeafe;color:#1d4ed8;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-WIP" data-status="WIP"></div>
+            <div class="kanban-col-footer" data-status="WIP"><button class="kb-add-btn" data-kb-action="quick-add" data-status="WIP"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Waiting for">
             <div class="kanban-col-header" style="border-top:3px solid #d97706;border-radius:10px 10px 0 0;"><i class="fas fa-hourglass-start" style="color:#d97706;"></i> Waiting For <span id="kc-Waiting-for" class="badge" style="background:#fef3c7;color:#b45309;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Waiting-for" data-status="Waiting for"></div>
+            <div class="kanban-col-footer" data-status="Waiting for"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Waiting for"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Agenda">
             <div class="kanban-col-header" style="border-top:3px solid #7c3aed;border-radius:10px 10px 0 0;"><i class="fas fa-calendar-alt" style="color:#7c3aed;"></i> Agenda <span id="kc-Agenda" class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto;"></span></div>
             <div class="kanban-col-body" id="kb-Agenda" data-status="Agenda"></div>
+            <div class="kanban-col-footer" data-status="Agenda"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Agenda"><i class="fas fa-plus"></i> Add</button></div>
           </div>
         </div>
         <!-- List view -->
@@ -676,24 +720,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
             <h3 style="font-size:13px;font-weight:600;color:#6b7280;margin:0 0 8px;">Archived</h3>
             <div id="archivedActionsList"></div>
           </div>
-        </div>
-      </section>
-
-      <!-- ── WEEKLY REVIEW ── -->
-      <section id="weeklyReviewSection" class="page-section">
-        <h2 style="font-size:18px;font-weight:700;color:#111827;margin:0 0 6px;">Weekly Review</h2>
-        <p style="font-size:13px;color:#6b7280;margin:0 0 24px;">A guided process to stay on top of your commitments.</p>
-        <div class="wr-step-indicator">
-          <div class="wr-step active" id="wr-step-0">1</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-1">2</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-2">3</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-3">4</div><div class="wr-step-line"></div>
-          <div class="wr-step" id="wr-step-4">5</div>
-        </div>
-        <div id="wrContent"></div>
-        <div style="display:flex;gap:8px;margin-top:20px;" id="wrNavButtons">
-          <button class="btn-secondary" id="wrPrevBtn" style="display:none;"><i class="fas fa-arrow-left"></i> Back</button>
-          <button class="btn-primary" id="wrNextBtn">Next <i class="fas fa-arrow-right"></i></button>
         </div>
       </section>
 
@@ -707,7 +733,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
   <button class="mob-tab" data-nav="engagements"><i class="fas fa-briefcase"></i><span>Engagements</span></button>
   <button class="mob-tab" data-nav="notes"><i class="fas fa-sticky-note"></i><span>Notes</span></button>
   <button class="mob-tab" data-nav="actions"><i class="fas fa-check-square"></i><span>Actions</span></button>
-  <button class="mob-tab" data-nav="weekly-review"><i class="fas fa-calendar-check"></i><span>Review</span></button>
 </nav>
 
 <!-- ══ QUICK CAPTURE MODAL ══ -->
@@ -821,7 +846,7 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, getDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── SECTION 1: Firebase Config ───
 const firebaseConfig = {
@@ -855,11 +880,17 @@ let activeActionsEngFilter = null;
 let engStatusFilter = 'all';
 let engDetailTab = 'notes';
 let pendingConfirmAction = null;
-let wrStep = 0;
-let wrReflectionText = '';
 let quickCaptureType = 'note';
 let quickCaptureEngId = null;
 let toastTimeout = null;
+// Focus timer state
+let activeTimerId = null;
+let timerStartedAt = null;
+let timerAccumulated = 0;
+let timerIntervalId = null;
+let timerIsPaused = false;
+let allTimeEntries = [];
+let timerRestored = false;
 
 // Color map
 const COLOR_MAP = {
@@ -1096,6 +1127,15 @@ async function handleLogout() {
 function engPath() { return `artifacts/${APP_ID}/users/${userId}/engagements`; }
 function notesPath() { return `artifacts/${APP_ID}/users/${userId}/journalEntries`; }
 function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
+function timeEntriesPath() { return `artifacts/${APP_ID}/users/${userId}/timeEntries`; }
+
+function formatDuration(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 
 async function seedInternalEngagements() {
   // Only seed once per user — store a flag in Firestore so deleting
@@ -1291,13 +1331,13 @@ function updateNoteFormFields() {
 }
 
 // ─── SECTION 8: Action CRUD ───
-async function saveAction(text, engId, dueDate) {
+async function saveAction(text, engId, dueDate, status) {
   if (!text.trim()) { showError('Action cannot be empty.'); return; }
   showLoading();
   try {
     await addDoc(collection(db, actionsPath()), {
-      text: text.trim(), isCompleted: false, isArchived: false, status: 'Next Action',
-      dueDate: dueDate || null, engagementId: engId || null, owner: '',
+      text: text.trim(), isCompleted: false, isArchived: false, status: status || 'Next Action',
+      description: '', dueDate: dueDate || null, engagementId: engId || null, owner: '',
       timestamp: serverTimestamp(), archivedAt: null
     });
     showToast('Action added.');
@@ -1374,6 +1414,173 @@ function handleTagKeydown(e) {
   }
 }
 
+// ─── SECTION 9b: Focus Timer ───
+function getTimerElapsed() {
+  if (timerIsPaused || !timerStartedAt) return timerAccumulated;
+  return timerAccumulated + Math.floor((Date.now() - timerStartedAt.getTime()) / 1000);
+}
+
+function tickTimer() {
+  const el = document.getElementById('timerDisplay');
+  if (el) el.textContent = formatDuration(getTimerElapsed());
+}
+
+function updateTimerPill() {
+  const pill = document.getElementById('timerPill');
+  if (!pill) return;
+  if (!activeTimerId) { pill.classList.remove('active','paused'); return; }
+  pill.classList.add('active');
+  pill.classList.toggle('paused', timerIsPaused);
+  const action = activeTodos.find(a => a.id === activeTimerId);
+  const nameEl = document.getElementById('timerTaskName');
+  if (nameEl) nameEl.textContent = action ? action.text : 'Task';
+  const pauseBtn = document.getElementById('timerPauseBtn');
+  if (pauseBtn) pauseBtn.innerHTML = timerIsPaused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+  pauseBtn.title = timerIsPaused ? 'Resume' : 'Pause';
+  tickTimer();
+}
+
+function startTimer(actionId) {
+  if (activeTimerId && activeTimerId !== actionId) stopTimer();
+  if (activeTimerId === actionId) { stopTimer(); return; }
+  activeTimerId = actionId;
+  timerStartedAt = new Date();
+  timerAccumulated = 0;
+  timerIsPaused = false;
+  timerIntervalId = setInterval(tickTimer, 1000);
+  updateTimerPill();
+  persistTimerState();
+  renderActionsView();
+  showToast('Timer started');
+}
+
+function pauseTimer() {
+  if (!activeTimerId || timerIsPaused) return;
+  timerAccumulated = getTimerElapsed();
+  timerStartedAt = null;
+  clearInterval(timerIntervalId);
+  timerIntervalId = null;
+  timerIsPaused = true;
+  updateTimerPill();
+  persistTimerState();
+}
+
+function resumeTimer() {
+  if (!activeTimerId || !timerIsPaused) return;
+  timerStartedAt = new Date();
+  timerIsPaused = false;
+  timerIntervalId = setInterval(tickTimer, 1000);
+  updateTimerPill();
+  persistTimerState();
+}
+
+async function stopTimer() {
+  if (!activeTimerId) return;
+  const totalSecs = getTimerElapsed();
+  const actionId = activeTimerId;
+  clearInterval(timerIntervalId);
+  timerIntervalId = null;
+  activeTimerId = null;
+  timerStartedAt = null;
+  timerAccumulated = 0;
+  timerIsPaused = false;
+  updateTimerPill();
+  clearTimerState();
+  renderActionsView();
+  if (totalSecs >= 5) {
+    await saveTimeEntry(actionId, totalSecs);
+    showToast(`Logged ${formatDuration(totalSecs)}`);
+  } else {
+    showToast('Timer too short, not logged');
+  }
+}
+
+function persistTimerState() {
+  localStorage.setItem('focusTimer', JSON.stringify({
+    actionId: activeTimerId,
+    startedAt: timerStartedAt?.toISOString() || null,
+    accumulated: timerAccumulated,
+    isPaused: timerIsPaused
+  }));
+}
+
+function clearTimerState() { localStorage.removeItem('focusTimer'); }
+
+function restoreTimerState() {
+  const saved = localStorage.getItem('focusTimer');
+  if (!saved) return;
+  try {
+    const s = JSON.parse(saved);
+    if (!s.actionId) { clearTimerState(); return; }
+    const action = activeTodos.find(a => a.id === s.actionId);
+    if (!action) { clearTimerState(); return; }
+    activeTimerId = s.actionId;
+    timerIsPaused = s.isPaused;
+    if (s.isPaused) {
+      timerAccumulated = s.accumulated || 0;
+      timerStartedAt = null;
+    } else {
+      timerStartedAt = s.startedAt ? new Date(s.startedAt) : new Date();
+      timerAccumulated = s.accumulated || 0;
+      timerIntervalId = setInterval(tickTimer, 1000);
+    }
+    updateTimerPill();
+  } catch(e) { clearTimerState(); }
+}
+
+async function saveTimeEntry(actionId, durationSecs) {
+  const action = activeTodos.find(a => a.id === actionId);
+  const now = new Date();
+  try {
+    await addDoc(collection(db, timeEntriesPath()), {
+      actionId,
+      actionText: action?.text || 'Unknown task',
+      engagementId: action?.engagementId || null,
+      date: todayStr(),
+      duration: durationSecs,
+      startedAt: Timestamp.fromDate(timerStartedAt || now),
+      endedAt: Timestamp.fromDate(now),
+      createdAt: serverTimestamp()
+    });
+  } catch(e) { showError('Failed to save time entry: ' + e.message); }
+}
+
+function renderTodaysFocus() {
+  const section = document.getElementById('na-section-focus');
+  const body = document.getElementById('naTodayFocusBody');
+  if (!section || !body) return;
+  // Group entries by actionId
+  const grouped = {};
+  allTimeEntries.forEach(e => {
+    if (!grouped[e.actionId]) grouped[e.actionId] = { text: e.actionText, engId: e.engagementId, total: 0 };
+    grouped[e.actionId].total += e.duration || 0;
+  });
+  const entries = Object.entries(grouped);
+  // Include active timer as live entry
+  let activeEntry = null;
+  if (activeTimerId) {
+    const elapsed = getTimerElapsed();
+    const action = activeTodos.find(a => a.id === activeTimerId);
+    activeEntry = { id: activeTimerId, text: action?.text || 'Task', engId: action?.engagementId, total: elapsed, isLive: true };
+    const existing = entries.find(([id]) => id === activeTimerId);
+    if (existing) existing[1].total += elapsed;
+    else entries.unshift([activeTimerId, { text: activeEntry.text, engId: activeEntry.engId, total: elapsed }]);
+  }
+  if (entries.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const grandTotal = entries.reduce((sum, [, e]) => sum + e.total, 0);
+  body.innerHTML = entries.map(([id, e]) => {
+    const eng = getEngagement(e.engId);
+    const hex = eng ? engColorHex(eng) : '#e5e7eb';
+    const isLive = activeTimerId === id;
+    return `<div class="focus-entry">
+      <div class="focus-entry-bar" style="background:${hex};"></div>
+      <div class="focus-entry-text">${isLive ? '<i class="fas fa-circle" style="color:#22c55e;font-size:6px;vertical-align:middle;margin-right:4px;"></i>' : ''}${(e.text||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="focus-entry-duration">${formatDuration(e.total)}</div>
+    </div>`;
+  }).join('') + `<div class="focus-total"><span>Total</span><span>${formatDuration(grandTotal)}</span></div>`;
+}
+
 // ─── SECTION 10: Firestore Listeners ───
 function setupListeners() {
   // Engagements
@@ -1382,7 +1589,7 @@ function setupListeners() {
     renderSidebarEngagements();
     populateEngagementSelects();
     renderEngagementGrid();
-    renderDashboardPulse();
+    if (currentView === 'dashboard') renderNeedsAttention();
   });
   // Notes
   onSnapshot(query(collection(db, notesPath()), orderBy('timestamp','desc')), snap => {
@@ -1398,7 +1605,7 @@ function setupListeners() {
       selectedNoteId = null;
     }
     renderNotesList();
-    renderDashboardNotes();
+    if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
   });
   // Active actions
@@ -1413,9 +1620,15 @@ function setupListeners() {
       return (a.timestamp?.toDate?.()?.getTime()||0) - (b.timestamp?.toDate?.()?.getTime()||0);
     });
     renderActionsView();
-    renderDashboardFocus();
-    renderDashboardWaiting();
+    if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
+    // Restore timer once after first todos load
+    if (!timerRestored) { timerRestored = true; restoreTimerState(); }
+  });
+  // Time entries (today only)
+  onSnapshot(query(collection(db, timeEntriesPath()), where('date', '==', todayStr())), snap => {
+    allTimeEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (currentView === 'dashboard') renderTodaysFocus();
   });
   // Archived actions
   onSnapshot(query(collection(db, actionsPath()), where('isArchived','==',true)), snap => {
@@ -1447,73 +1660,106 @@ function populateEngagementSelects() {
   }
 }
 
-// ─── SECTION 12: Render – Dashboard ───
-function renderDashboardFocus() {
-  const el = document.getElementById('dashFocus');
-  const items = activeTodos.filter(t => ['Next Action','WIP'].includes(t.status) && !t.isCompleted).slice(0, 6);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No active items — great job!</p></div>'; return; }
-  el.innerHTML = items.map(t => {
-    const eng = getEngagement(t.engagementId);
-    const due = formatDueDate(t.dueDate);
-    return `<div class="dash-item">
-      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
-      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
-      ${due ? `<span class="dash-item-meta ${due.isOverdue ? 'overdue-text' : ''}">${due.text}</span>` : ''}
-    </div>`;
-  }).join('');
-}
-function renderDashboardWaiting() {
-  const el = document.getElementById('dashWaiting');
-  const items = activeTodos.filter(t => t.status === 'Waiting for' && !t.isArchived);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>Nothing waiting</p></div>'; return; }
-  el.innerHTML = items.map(t => {
-    const eng = getEngagement(t.engagementId);
-    return `<div class="dash-item">
-      <div class="action-text blur-sensitive" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.text}</div>
-      ${t.owner ? `<span class="dash-item-meta">${t.owner}</span>` : ''}
-      ${eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;"></span>` : ''}
-    </div>`;
-  }).join('');
-}
-function renderDashboardNotes() {
-  const el = document.getElementById('dashNotes');
-  const items = allNotes.slice(0, 5);
-  if (!items.length) { el.innerHTML = '<div class="empty-state"><p>No recent notes</p></div>'; return; }
-  el.innerHTML = items.map(n => {
-    const eng = getEngagement(n.engagementId);
-    return `<div class="dash-item">
-      <div style="flex:1;min-width:0;">
-        <div class="blur-sensitive" style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.title || n.text.substring(0,60)}</div>
-        <div style="font-size:11px;color:#9ca3af;">${formatTs(n.timestamp)}${eng ? ' · '+eng.name : ''}</div>
-      </div>
-      <span class="badge badge-${(n.type||'note').toLowerCase().replace(' ','')} ">${n.type||'Note'}</span>
-    </div>`;
-  }).join('');
-}
-function renderDashboardPulse() {
-  const el = document.getElementById('dashPulse');
-  const active = allEngagements.filter(e => e.status === 'Active');
-  if (!active.length) { el.innerHTML = '<div class="empty-state"><p>No active engagements</p></div>'; return; }
-  el.innerHTML = active.map(e => {
-    const count = activeTodos.filter(t => t.engagementId === e.id && !t.isCompleted && !t.isArchived).length;
-    return `<div class="pulse-card" style="border-left:4px solid ${engColorHex(e)};">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.name}</div>
-        <div style="font-size:11px;color:#6b7280;">${e.clientName || ''}</div>
-      </div>
-      <div style="text-align:right;">
-        <div class="pulse-count">${count}</div>
-        <div class="pulse-label">open actions</div>
-      </div>
-    </div>`;
-  }).join('');
-}
+// ─── SECTION 12: Render – Dashboard (Needs Attention) ───
 function updateDashGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('dashGreeting').textContent = greet;
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
+function getItemAge(item) {
+  const ts = item.updatedAt || item.timestamp;
+  if (!ts) return Infinity;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+function todayStr() { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+function weekFromNowStr() { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+7); return d.toISOString().slice(0,10); }
+
+function renderNeedsAttention() {
+  const today = todayStr();
+  const weekEnd = weekFromNowStr();
+  const active = activeTodos.filter(t => !t.isCompleted && !t.isArchived);
+
+  const overdue = active.filter(t => t.dueDate && t.dueDate < today);
+  const staleWip = active.filter(t => t.status === 'WIP' && getItemAge(t) >= 5);
+  const unassignedActions = active.filter(t => !t.engagementId);
+  const unassignedNotes = allNotes.filter(n => !n.engagementId);
+  const unassigned = [...unassignedNotes.map(n => ({...n, _type:'note'})), ...unassignedActions.map(a => ({...a, _type:'action'}))];
+  const dueWeek = active.filter(t => t.dueDate && t.dueDate >= today && t.dueDate <= weekEnd);
+
+  const counts = { overdue: overdue.length, stale: staleWip.length, unassigned: unassigned.length, dueweek: dueWeek.length };
+  const total = counts.overdue + counts.stale + counts.unassigned + counts.dueweek;
+
+  const strip = document.getElementById('naSummaryStrip');
+  strip.innerHTML = [
+    counts.overdue ? `<span class="na-badge na-badge-overdue" onclick="document.getElementById('na-section-overdue').scrollIntoView({behavior:'smooth'})">${counts.overdue} overdue</span>` : '',
+    counts.stale ? `<span class="na-badge na-badge-stale" onclick="document.getElementById('na-section-stale').scrollIntoView({behavior:'smooth'})">${counts.stale} stale</span>` : '',
+    counts.unassigned ? `<span class="na-badge na-badge-unassigned" onclick="document.getElementById('na-section-unassigned').scrollIntoView({behavior:'smooth'})">${counts.unassigned} unassigned</span>` : '',
+    counts.dueweek ? `<span class="na-badge na-badge-dueweek" onclick="document.getElementById('na-section-dueweek').scrollIntoView({behavior:'smooth'})">${counts.dueweek} due this week</span>` : '',
+  ].filter(Boolean).join(' <span style="color:#d1d5db;">·</span> ');
+  strip.style.display = total > 0 ? 'flex' : 'none';
+  document.getElementById('naAllClear').style.display = total === 0 ? 'block' : 'none';
+
+  renderNASection('na-section-overdue', 'naOverdueBody', overdue, 'overdue');
+  renderNASection('na-section-stale', 'naStaleBody', staleWip, 'stale');
+  renderNASection('na-section-unassigned', 'naUnassignedBody', unassigned, 'unassigned');
+  renderNASection('na-section-dueweek', 'naDueWeekBody', dueWeek, 'dueweek');
+}
+
+function renderNASection(sectionId, bodyId, items, type) {
+  const section = document.getElementById(sectionId);
+  const body = document.getElementById(bodyId);
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  body.innerHTML = items.map(item => {
+    const eng = getEngagement(item.engagementId);
+    const engDot = eng ? `<span style="width:8px;height:8px;border-radius:50%;background:${engColorHex(eng)};flex-shrink:0;display:inline-block;" title="${eng.name}"></span>` : '';
+    const due = formatDueDate(item.dueDate);
+    const dueBadge = due ? `<span class="dash-item-meta ${due.isOverdue ? 'overdue-text' : ''}">${due.text}</span>` : '';
+    const itemLabel = item._type === 'note' ? `<span class="badge badge-${(item.type||'note').toLowerCase()}" style="margin-right:6px;">${item.type||'Note'}</span>` : '';
+    let actions = '';
+    if (type === 'overdue') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <input type="date" class="na-date-input" onchange="naReschedule('${item.id}', this.value)" title="Reschedule">
+        <button class="na-btn na-btn-snooze" onclick="naSnooze('${item.id}')" title="Snooze 3 days">+3d</button>
+      </div>`;
+    } else if (type === 'stale') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <button class="na-btn na-btn-keep" onclick="naKeepWip('${item.id}')">Keep</button>
+        <button class="na-btn na-btn-snooze" onclick="naMoveToNext('${item.id}')">→ Next</button>
+      </div>`;
+    } else if (type === 'unassigned') {
+      const engOpts = `<option value="">Assign…</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+      const itemType = item._type || 'action';
+      actions = `<div class="na-actions"><select class="form-select" style="font-size:11px;padding:4px 8px;max-width:160px;" onchange="naAssign('${item.id}','${itemType}',this.value)">${engOpts}</select></div>`;
+    } else if (type === 'dueweek') {
+      actions = `<div class="na-actions">
+        <button class="na-btn na-btn-complete" onclick="naComplete('${item.id}')" title="Complete"><i class="fas fa-check"></i></button>
+        <input type="date" class="na-date-input" onchange="naReschedule('${item.id}', this.value)" title="Reschedule">
+      </div>`;
+    }
+    return `<div class="dash-item">${itemLabel}<div class="dash-item-text blur-sensitive">${item.title || item.text}</div>${engDot} ${dueBadge} ${actions}</div>`;
+  }).join('');
+}
+
+window.naComplete = async (id) => { await updateAction(id, { isCompleted: true, status: 'Completed' }); showToast('Completed'); };
+window.naReschedule = async (id, dateStr) => { if (!dateStr) return; await updateAction(id, { dueDate: dateStr }); showToast('Rescheduled'); };
+window.naSnooze = async (id) => {
+  const d = new Date(); d.setDate(d.getDate() + 3);
+  await updateAction(id, { dueDate: d.toISOString().slice(0,10) }); showToast('Snoozed 3 days');
+};
+window.naKeepWip = async (id) => { await updateAction(id, {}); showToast('Marked as active'); };
+window.naMoveToNext = async (id) => { await updateAction(id, { status: 'Next Action' }); showToast('Moved to Next Action'); };
+window.naAssign = async (id, itemType, engId) => {
+  try {
+    if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
+    else await updateAction(id, { engagementId: engId || null });
+    showToast('Assigned');
+  } catch(e) { showError(e.message); }
+};
 
 // ─── SECTION 13: Render – Engagements ───
 function renderEngagementGrid() {
@@ -1658,6 +1904,7 @@ function renderActionCard(t, compact = false) {
     </div>
     <div class="action-card-body">
       <div class="action-text blur-sensitive ${t.isCompleted ? 'completed-text' : ''}">${t.text}</div>
+      ${t.description ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.3;">${t.description.length > 80 ? (t.description.substring(0,80).replace(/</g,'&lt;').replace(/>/g,'&gt;'))+'…' : (t.description||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
         <span class="${spClass(t.status)}">${t.status}</span>
         ${due ? `<span style="font-size:11px;${due.isOverdue ? 'color:#dc2626;font-weight:600;' : 'color:#6b7280;'}"><i class="far fa-calendar-alt"></i> ${due.text}${due.isOverdue ? ' ⚠' : ''}</span>` : ''}
@@ -1690,9 +1937,16 @@ function renderKanban() {
       const due = formatDueDate(t.dueDate);
       return `<div class="kanban-card" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
         <div class="kc-bar" style="background:${hex};"></div>
+        <div class="kc-actions">
+          <button class="kc-timer ${activeTimerId === t.id ? 'timing' : ''}" data-kb-action="timer" data-id="${t.id}" title="${activeTimerId === t.id ? 'Stop timer' : 'Start timer'}"><i class="fas ${activeTimerId === t.id ? 'fa-stop-circle' : 'fa-play-circle'}"></i></button>
+          <button class="kc-complete" data-kb-action="complete" data-id="${t.id}" title="Complete"><i class="fas fa-check"></i></button>
+          <button data-kb-action="edit" data-id="${t.id}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="kc-delete" data-kb-action="delete" data-id="${t.id}" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
         <div style="padding-left:6px;font-size:12px;color:#374151;line-height:1.4;" class="blur-sensitive">${t.text}</div>
-        ${due ? `<div style="font-size:10px;margin-top:4px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
-        ${eng ? `<div style="font-size:10px;color:#9ca3af;margin-top:2px;display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</div>` : ''}
+        ${t.description ? `<div style="font-size:10px;color:#9ca3af;padding-left:6px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;" title="${(t.description||'').replace(/"/g,'&quot;')}">${t.description.length > 60 ? t.description.substring(0,60)+'…' : t.description}</div>` : ''}
+        ${due ? `<div style="font-size:10px;margin-top:3px;padding-left:6px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
+        <div class="kc-extra">${t.description ? `<div style="font-size:11px;color:#6b7280;margin-bottom:4px;white-space:pre-wrap;line-height:1.4;">${(t.description||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}${eng ? `<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}${t.owner ? `<span style="margin-left:${eng ? '6px' : '0'};"> ${t.owner}</span>` : ''}</div>
       </div>`;
     }).join('');
   });
@@ -1737,6 +1991,7 @@ function openEditActionInline(id) {
     <div class="engagement-bar" style="background:${eng ? engColorHex(eng) : '#e5e7eb'};"></div>
     <div style="padding-left:8px;flex:1;display:flex;flex-direction:column;gap:6px;">
       <input type="text" class="form-input" id="editActionText_${id}" value="${t.text.replace(/"/g,'&quot;')}" style="font-size:13px;">
+      <textarea class="form-input" id="editActionDesc_${id}" placeholder="Details (optional)" style="font-size:12px;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select class="form-select" id="editActionStatus_${id}" style="flex:1;font-size:12px;">
           ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
@@ -1784,119 +2039,11 @@ async function submitQuickCapture() {
   closeQuickCapture();
 }
 
-// ─── SECTION 18: Weekly Review ───
-const WR_STEPS = [
-  { title: 'Inbox Review', desc: 'Assign unassigned notes and actions to an engagement.' },
-  { title: 'WIP Check', desc: 'Review items in progress. Mark done or flag as blocked.' },
-  { title: 'Waiting For Check', desc: 'Review what you\'re waiting on. Got it? Still waiting? Blocked?' },
-  { title: 'Plan Next Week', desc: 'Review your Next Action items and prioritize.' },
-  { title: 'Weekly Reflection', desc: 'A moment to reflect on the week.' }
-];
-function renderWRStep() {
-  for (let i = 0; i < 5; i++) {
-    const el = document.getElementById(`wr-step-${i}`);
-    el.className = 'wr-step ' + (i < wrStep ? 'done' : i === wrStep ? 'active' : '');
-  }
-  const step = WR_STEPS[wrStep];
-  const prevBtn = document.getElementById('wrPrevBtn');
-  const nextBtn = document.getElementById('wrNextBtn');
-  prevBtn.style.display = wrStep > 0 ? 'inline-flex' : 'none';
-  nextBtn.textContent = wrStep === 4 ? 'Complete Review' : 'Next';
-  nextBtn.innerHTML = wrStep === 4 ? '<i class="fas fa-check"></i> Complete Review' : 'Next <i class="fas fa-arrow-right"></i>';
-  let html = `<div style="margin-bottom:16px;"><h3 style="font-size:16px;font-weight:700;color:#111827;margin:0 0 4px;">${step.title}</h3><p style="font-size:13px;color:#6b7280;margin:0;">${step.desc}</p></div>`;
-  if (wrStep === 0) {
-    const inbox = [...allNotes.filter(n => !n.engagementId), ...activeTodos.filter(t => !t.engagementId)];
-    if (!inbox.length) html += '<div class="empty-state"><i class="fas fa-inbox"></i><p>Inbox is clear!</p></div>';
-    else html += inbox.map(item => {
-      const isNote = !!item.text && item.type !== undefined;
-      const engOpts = `<option value="">Unassigned</option>` + allEngagements.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-      return `<div class="wr-card">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${isNote ? (item.type||'Note') : 'Action'}</div>
-          <div style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" class="blur-sensitive">${item.text}</div>
-        </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
-          <select class="form-select" style="font-size:11px;padding:4px 8px;" onchange="assignWRItem('${item.id}','${isNote?'note':'action'}',this.value)">${engOpts}</select>
-        </div>
-      </div>`;
-    }).join('');
-  } else if (wrStep === 1) {
-    const wip = activeTodos.filter(t => t.status === 'WIP');
-    if (!wip.length) html += '<div class="empty-state"><i class="fas fa-star"></i><p>No WIP items!</p></div>';
-    else html += wip.map(t => `<div class="wr-card">
-      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
-      <div class="wr-actions">
-        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Done</button>
-        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
-        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
-      </div>
-    </div>`).join('');
-  } else if (wrStep === 2) {
-    const waiting = activeTodos.filter(t => t.status === 'Waiting for');
-    if (!waiting.length) html += '<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Nothing in Waiting For!</p></div>';
-    else html += waiting.map(t => `<div class="wr-card">
-      <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div>${t.owner ? `<div style="font-size:11px;color:#6b7280;">${t.owner}</div>` : ''}</div>
-      <div class="wr-actions">
-        <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','done')">Got it</button>
-        <button class="btn-wr btn-wr-flag" onclick="wrActionUpdate('${t.id}','blocked')">Blocked</button>
-        <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Still waiting</button>
-      </div>
-    </div>`).join('');
-  } else if (wrStep === 3) {
-    const next = activeTodos.filter(t => t.status === 'Next Action' && !t.isCompleted);
-    if (!next.length) html += '<div class="empty-state"><i class="fas fa-arrow-circle-right"></i><p>No Next Actions set.</p></div>';
-    else html += `<p style="font-size:13px;color:#6b7280;margin:0 0 12px;">Review your upcoming actions. Promote key ones to WIP for next week.</p>` +
-      next.map(t => `<div class="wr-card">
-        <div style="flex:1;min-width:0;"><div class="blur-sensitive" style="font-size:13px;color:#374151;">${t.text}</div></div>
-        <div class="wr-actions">
-          <button class="btn-wr btn-wr-done" onclick="wrActionUpdate('${t.id}','promote')">Make WIP</button>
-          <button class="btn-wr btn-wr-skip" onclick="wrActionUpdate('${t.id}','skip')">Keep</button>
-        </div>
-      </div>`).join('');
-  } else if (wrStep === 4) {
-    html += `<div class="form-group">
-      <label class="form-label">Weekly Reflection</label>
-      <textarea class="form-textarea" id="wrReflectionInput" rows="8" placeholder="What went well? What could be improved? What did you learn?" style="min-height:180px;">${wrReflectionText}</textarea>
-    </div>`;
-  }
-  document.getElementById('wrContent').innerHTML = html;
-}
-window.assignWRItem = async (id, itemType, engId) => {
-  try {
-    if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
-    else await updateDoc(doc(db, actionsPath(), id), { engagementId: engId || null });
-  } catch(e) { showError(e.message); }
-};
-window.wrActionUpdate = async (id, action) => {
-  try {
-    if (action === 'done') await updateDoc(doc(db, actionsPath(), id), { isCompleted: true, status: 'Completed' });
-    else if (action === 'blocked') await updateDoc(doc(db, actionsPath(), id), { status: 'Next Action' });
-    else if (action === 'promote') await updateDoc(doc(db, actionsPath(), id), { status: 'WIP' });
-    renderWRStep();
-  } catch(e) { showError(e.message); }
-};
-async function advanceWRStep() {
-  if (wrStep === 4) {
-    const reflection = document.getElementById('wrReflectionInput')?.value?.trim();
-    if (reflection) {
-      showLoading();
-      try {
-        await addDoc(collection(db, notesPath()), { text: reflection, type: 'Reflection', tags: ['weekly-review'],
-          engagementId: null, title: 'Weekly Reflection', attendees: [], hypothesisStatus: null, isConfidential: false, timestamp: serverTimestamp(), linkedActionIds: [] });
-        showToast('Weekly review complete! Reflection saved.');
-      } catch(e) { showError(e.message); } finally { hideLoading(); }
-    } else { showToast('Weekly review complete!'); }
-    wrStep = 0; renderWRStep(); navigate('dashboard'); return;
-  }
-  wrStep++;
-  renderWRStep();
-}
-
 // ─── SECTION 19: Navigation ───
 function navigate(view, engId = null) {
   currentView = view;
-  const sections = ['dashboard','engagements','engagement-detail','notes','actions','weekly-review'];
-  const sectionIds = { dashboard:'dashboardSection', engagements:'engagementsSection', 'engagement-detail':'engagementDetailSection', notes:'notesSection', actions:'actionsSection', 'weekly-review':'weeklyReviewSection' };
+  const sections = ['dashboard','engagements','engagement-detail','notes','actions'];
+  const sectionIds = { dashboard:'dashboardSection', engagements:'engagementsSection', 'engagement-detail':'engagementDetailSection', notes:'notesSection', actions:'actionsSection' };
   sections.forEach(v => { const el = document.getElementById(sectionIds[v]); if (el) el.classList.remove('visible'); });
   const active = sectionIds[view]; if (active) document.getElementById(active)?.classList.add('visible');
   // Update sidebar nav active states
@@ -1910,10 +2057,10 @@ function navigate(view, engId = null) {
     el.classList.toggle('active', engId && el.dataset.navEng === engId);
   });
   // Update breadcrumb
-  const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions', 'weekly-review':'Weekly Review' };
+  const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions' };
   document.getElementById('breadcrumbCurrent').textContent = labels[view] || view;
   // Refresh view-specific rendering
-  if (view === 'dashboard') { updateDashGreeting(); renderDashboardFocus(); renderDashboardWaiting(); renderDashboardNotes(); renderDashboardPulse(); }
+  if (view === 'dashboard') { updateDashGreeting(); renderNeedsAttention(); renderTodaysFocus(); }
   if (view === 'engagements') renderEngagementGrid();
   if (view === 'engagement-detail' && engId) { activeEngagementId = engId; renderEngagementDetail(engId); renderSidebarEngagements(); }
   if (view === 'notes') {
@@ -1926,7 +2073,6 @@ function navigate(view, engId = null) {
     document.getElementById('pageContent').style.overflow = '';
   }
   if (view === 'actions') { renderActionsView(); renderArchivedList(); populateEngagementSelects(); }
-  if (view === 'weekly-review') renderWRStep();
   // Hash routing
   window.location.hash = '#/' + view + (engId ? '/' + engId : '');
 }
@@ -2179,11 +2325,12 @@ function handleActionsClick(e) {
   if (saveBtn) {
     const id = saveBtn.dataset.id;
     const text = document.getElementById(`editActionText_${id}`)?.value;
+    const desc = document.getElementById(`editActionDesc_${id}`)?.value || '';
     const status = document.getElementById(`editActionStatus_${id}`)?.value;
     const due = document.getElementById(`editActionDue_${id}`)?.value;
     const owner = document.getElementById(`editActionOwner_${id}`)?.value;
     const eng = document.getElementById(`editActionEng_${id}`)?.value;
-    updateAction(id, { text: text||'', status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
+    updateAction(id, { text: text||'', description: desc, status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
     editingActionId = null;
   }
   if (cancelBtn) renderActionsView();
@@ -2224,6 +2371,93 @@ document.getElementById('kanbanView').addEventListener('drop', async e => {
     showToast(`Moved to ${newStatus}`);
   }
 });
+
+// Kanban card click actions (complete, edit, delete, expand)
+document.getElementById('kanbanView').addEventListener('click', e => {
+  const actionBtn = e.target.closest('[data-kb-action]');
+  if (actionBtn) {
+    e.stopPropagation();
+    const id = actionBtn.dataset.id;
+    const action = actionBtn.dataset.kbAction;
+    if (action === 'timer') {
+      startTimer(id);
+      return;
+    } else if (action === 'complete') {
+      if (activeTimerId === id) stopTimer();
+      updateAction(id, { isCompleted: true, status: 'Completed' });
+      showToast('Action completed!');
+    } else if (action === 'delete') {
+      showConfirm('Delete this action?', () => deleteAction(id));
+    } else if (action === 'edit') {
+      openKanbanEditInline(id);
+    } else if (action === 'save-edit') {
+      const text = document.getElementById(`kbEditText_${id}`)?.value;
+      const description = document.getElementById(`kbEditDesc_${id}`)?.value || '';
+      const status = document.getElementById(`kbEditStatus_${id}`)?.value;
+      const due = document.getElementById(`kbEditDue_${id}`)?.value;
+      const eng = document.getElementById(`kbEditEng_${id}`)?.value;
+      updateAction(id, { text: text||'', description, status: status||'Next Action', dueDate: due||null, engagementId: eng||null });
+    } else if (action === 'cancel-edit') {
+      renderKanban();
+    } else if (action === 'quick-add') {
+      const qaStatus = actionBtn.dataset.status;
+      const footer = actionBtn.closest('.kanban-col-footer');
+      footer.innerHTML = `<input type="text" class="kb-quick-input" data-status="${qaStatus}" placeholder="Add a task…" autofocus>`;
+      const input = footer.querySelector('.kb-quick-input');
+      input.focus();
+      input.addEventListener('keydown', async ev => {
+        if (ev.key === 'Enter' && input.value.trim()) {
+          ev.preventDefault();
+          const txt = input.value.trim();
+          input.value = '';
+          await saveAction(txt, null, null, qaStatus);
+          input.focus();
+        }
+        if (ev.key === 'Escape') {
+          footer.innerHTML = `<button class="kb-add-btn" data-kb-action="quick-add" data-status="${qaStatus}"><i class="fas fa-plus"></i> Add</button>`;
+        }
+      });
+      input.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (document.activeElement !== input) {
+            footer.innerHTML = `<button class="kb-add-btn" data-kb-action="quick-add" data-status="${qaStatus}"><i class="fas fa-plus"></i> Add</button>`;
+          }
+        }, 150);
+      });
+    }
+    return;
+  }
+  const card = e.target.closest('.kanban-card');
+  if (card && !card.classList.contains('editing')) {
+    card.classList.toggle('expanded');
+  }
+});
+
+function openKanbanEditInline(id) {
+  const t = activeTodos.find(a => a.id === id); if (!t) return;
+  const card = document.querySelector(`.kanban-card[data-todo-id="${id}"]`); if (!card) return;
+  card.setAttribute('draggable', 'false');
+  card.classList.add('editing');
+  const engOpts = `<option value="">—</option>` + allEngagements.map(e =>
+    `<option value="${e.id}" ${e.id === t.engagementId ? 'selected' : ''}>${e.name}</option>`
+  ).join('');
+  card.innerHTML = `<div class="kc-edit-form">
+    <input type="text" id="kbEditText_${id}" value="${t.text.replace(/"/g,'&quot;')}" placeholder="Action text">
+    <textarea id="kbEditDesc_${id}" placeholder="Details (optional)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;width:100%;box-sizing:border-box;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:4px;">
+      <select id="kbEditStatus_${id}" style="flex:1;">
+        ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input type="date" id="kbEditDue_${id}" value="${t.dueDate||''}" style="flex:1;">
+    </div>
+    <select id="kbEditEng_${id}">${engOpts}</select>
+    <div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-secondary btn-sm" data-kb-action="cancel-edit" data-id="${id}" style="font-size:10px;padding:3px 8px;">Cancel</button>
+      <button class="btn-primary btn-sm" data-kb-action="save-edit" data-id="${id}" style="font-size:10px;padding:3px 8px;"><i class="fas fa-check"></i> Save</button>
+    </div>
+  </div>`;
+  document.getElementById(`kbEditText_${id}`)?.focus();
+}
 
 // Actions engagement filter pills
 document.getElementById('actionsEngFilter').addEventListener('click', e => {
@@ -2273,10 +2507,6 @@ document.addEventListener('keydown', e => {
     showToast('Shortcuts: Ctrl+Shift+C = Quick Capture | Drag kanban cards to change status', 'success', 5000);
   }
 });
-// Weekly Review
-document.getElementById('wrNextBtn').addEventListener('click', advanceWRStep);
-document.getElementById('wrPrevBtn').addEventListener('click', () => { if(wrStep>0) { wrStep--; renderWRStep(); } });
-
 // Hash routing on load
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.replace('#/','');
@@ -2308,6 +2538,13 @@ easyMDE.codemirror.addKeyMap({
 if (typeof marked !== 'undefined') {
   marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 }
+
+// Timer pill controls
+document.getElementById('timerPauseBtn').addEventListener('click', () => {
+  if (timerIsPaused) resumeTimer(); else pauseTimer();
+});
+document.getElementById('timerStopBtn').addEventListener('click', () => stopTimer());
+window.addEventListener('beforeunload', () => { if (activeTimerId) persistTimerState(); });
 
 // Start app
 window.onload = initApp;
