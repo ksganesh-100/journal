@@ -165,6 +165,28 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .na-date-input:focus { border-color:#2563EB; }
 @media(max-width:600px) { .na-actions { flex-wrap:wrap; gap:4px; } .dash-item { flex-wrap:wrap; } }
 
+/* ── Focus Timer ── */
+.timer-pill { display:none; align-items:center; gap:6px; background:#1e293b; color:#fff; padding:4px 12px 4px 8px; border-radius:20px; font-size:12px; font-weight:600; cursor:default; }
+.timer-pill.active { display:flex; }
+.timer-pill.paused { opacity:.7; }
+.timer-pill .timer-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; flex-shrink:0; }
+.timer-pill.paused .timer-dot { background:#eab308; }
+@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+.timer-pill:not(.paused) .timer-dot { animation:pulse-dot 1.5s ease-in-out infinite; }
+.timer-pill .timer-name { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.timer-pill .timer-time { font-variant-numeric:tabular-nums; }
+.timer-pill button { background:none; border:none; color:rgba(255,255,255,.7); cursor:pointer; padding:2px; font-size:12px; }
+.timer-pill button:hover { color:#fff; }
+.kc-actions .kc-timer:hover { color:#2563EB; border-color:#2563EB; }
+.kc-actions .kc-timer.timing { color:#22c55e; border-color:#22c55e; }
+.focus-entry { display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #f3f4f6; font-size:12px; }
+.focus-entry:last-child { border-bottom:none; }
+.focus-entry-bar { width:3px; height:24px; border-radius:2px; flex-shrink:0; }
+.focus-entry-text { flex:1; color:#374151; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.focus-entry-duration { font-weight:600; font-variant-numeric:tabular-nums; color:#111827; }
+.focus-total { display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-top:1px solid #e5e7eb; font-size:12px; font-weight:600; color:#374151; border-radius:0 0 10px 10px; }
+@media(max-width:600px) { .timer-pill .timer-name { max-width:80px; } }
+
 /* ── Forms ── */
 .form-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; transition:border .15s,box-shadow .15s; font-family:inherit; }
 .form-input:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
@@ -436,6 +458,13 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     <div id="topBar">
       <div id="breadcrumb">Consultant OS &rsaquo; <span id="breadcrumbCurrent">Dashboard</span></div>
       <div class="top-actions">
+        <div id="timerPill" class="timer-pill">
+          <span class="timer-dot"></span>
+          <span class="timer-name" id="timerTaskName"></span>
+          <span class="timer-time" id="timerDisplay">00:00</span>
+          <button id="timerPauseBtn" title="Pause"><i class="fas fa-pause"></i></button>
+          <button id="timerStopBtn" title="Stop & Log"><i class="fas fa-stop"></i></button>
+        </div>
         <button class="btn-icon" id="confidentialityToggle" title="Toggle Confidentiality Mode"><i class="fas fa-eye"></i></button>
         <button class="btn-capture" id="captureBtn"><i class="fas fa-plus"></i> Capture</button>
       </div>
@@ -471,6 +500,10 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
         <div id="na-section-dueweek" class="dash-card" style="margin-bottom:16px;display:none;">
           <div class="dash-card-header"><span style="color:#2563EB;">📅</span> Due This Week</div>
           <div class="dash-card-body" id="naDueWeekBody"></div>
+        </div>
+        <div id="na-section-focus" class="dash-card" style="margin-bottom:16px;display:none;">
+          <div class="dash-card-header">🎯 Today's Focus</div>
+          <div class="dash-card-body" id="naTodayFocusBody"></div>
         </div>
       </section>
 
@@ -813,7 +846,7 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, where, writeBatch, getDocs, getDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── SECTION 1: Firebase Config ───
 const firebaseConfig = {
@@ -850,6 +883,14 @@ let pendingConfirmAction = null;
 let quickCaptureType = 'note';
 let quickCaptureEngId = null;
 let toastTimeout = null;
+// Focus timer state
+let activeTimerId = null;
+let timerStartedAt = null;
+let timerAccumulated = 0;
+let timerIntervalId = null;
+let timerIsPaused = false;
+let allTimeEntries = [];
+let timerRestored = false;
 
 // Color map
 const COLOR_MAP = {
@@ -1086,6 +1127,15 @@ async function handleLogout() {
 function engPath() { return `artifacts/${APP_ID}/users/${userId}/engagements`; }
 function notesPath() { return `artifacts/${APP_ID}/users/${userId}/journalEntries`; }
 function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
+function timeEntriesPath() { return `artifacts/${APP_ID}/users/${userId}/timeEntries`; }
+
+function formatDuration(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 
 async function seedInternalEngagements() {
   // Only seed once per user — store a flag in Firestore so deleting
@@ -1364,6 +1414,173 @@ function handleTagKeydown(e) {
   }
 }
 
+// ─── SECTION 9b: Focus Timer ───
+function getTimerElapsed() {
+  if (timerIsPaused || !timerStartedAt) return timerAccumulated;
+  return timerAccumulated + Math.floor((Date.now() - timerStartedAt.getTime()) / 1000);
+}
+
+function tickTimer() {
+  const el = document.getElementById('timerDisplay');
+  if (el) el.textContent = formatDuration(getTimerElapsed());
+}
+
+function updateTimerPill() {
+  const pill = document.getElementById('timerPill');
+  if (!pill) return;
+  if (!activeTimerId) { pill.classList.remove('active','paused'); return; }
+  pill.classList.add('active');
+  pill.classList.toggle('paused', timerIsPaused);
+  const action = activeTodos.find(a => a.id === activeTimerId);
+  const nameEl = document.getElementById('timerTaskName');
+  if (nameEl) nameEl.textContent = action ? action.text : 'Task';
+  const pauseBtn = document.getElementById('timerPauseBtn');
+  if (pauseBtn) pauseBtn.innerHTML = timerIsPaused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+  pauseBtn.title = timerIsPaused ? 'Resume' : 'Pause';
+  tickTimer();
+}
+
+function startTimer(actionId) {
+  if (activeTimerId && activeTimerId !== actionId) stopTimer();
+  if (activeTimerId === actionId) { stopTimer(); return; }
+  activeTimerId = actionId;
+  timerStartedAt = new Date();
+  timerAccumulated = 0;
+  timerIsPaused = false;
+  timerIntervalId = setInterval(tickTimer, 1000);
+  updateTimerPill();
+  persistTimerState();
+  renderActionsView();
+  showToast('Timer started');
+}
+
+function pauseTimer() {
+  if (!activeTimerId || timerIsPaused) return;
+  timerAccumulated = getTimerElapsed();
+  timerStartedAt = null;
+  clearInterval(timerIntervalId);
+  timerIntervalId = null;
+  timerIsPaused = true;
+  updateTimerPill();
+  persistTimerState();
+}
+
+function resumeTimer() {
+  if (!activeTimerId || !timerIsPaused) return;
+  timerStartedAt = new Date();
+  timerIsPaused = false;
+  timerIntervalId = setInterval(tickTimer, 1000);
+  updateTimerPill();
+  persistTimerState();
+}
+
+async function stopTimer() {
+  if (!activeTimerId) return;
+  const totalSecs = getTimerElapsed();
+  const actionId = activeTimerId;
+  clearInterval(timerIntervalId);
+  timerIntervalId = null;
+  activeTimerId = null;
+  timerStartedAt = null;
+  timerAccumulated = 0;
+  timerIsPaused = false;
+  updateTimerPill();
+  clearTimerState();
+  renderActionsView();
+  if (totalSecs >= 5) {
+    await saveTimeEntry(actionId, totalSecs);
+    showToast(`Logged ${formatDuration(totalSecs)}`);
+  } else {
+    showToast('Timer too short, not logged');
+  }
+}
+
+function persistTimerState() {
+  localStorage.setItem('focusTimer', JSON.stringify({
+    actionId: activeTimerId,
+    startedAt: timerStartedAt?.toISOString() || null,
+    accumulated: timerAccumulated,
+    isPaused: timerIsPaused
+  }));
+}
+
+function clearTimerState() { localStorage.removeItem('focusTimer'); }
+
+function restoreTimerState() {
+  const saved = localStorage.getItem('focusTimer');
+  if (!saved) return;
+  try {
+    const s = JSON.parse(saved);
+    if (!s.actionId) { clearTimerState(); return; }
+    const action = activeTodos.find(a => a.id === s.actionId);
+    if (!action) { clearTimerState(); return; }
+    activeTimerId = s.actionId;
+    timerIsPaused = s.isPaused;
+    if (s.isPaused) {
+      timerAccumulated = s.accumulated || 0;
+      timerStartedAt = null;
+    } else {
+      timerStartedAt = s.startedAt ? new Date(s.startedAt) : new Date();
+      timerAccumulated = s.accumulated || 0;
+      timerIntervalId = setInterval(tickTimer, 1000);
+    }
+    updateTimerPill();
+  } catch(e) { clearTimerState(); }
+}
+
+async function saveTimeEntry(actionId, durationSecs) {
+  const action = activeTodos.find(a => a.id === actionId);
+  const now = new Date();
+  try {
+    await addDoc(collection(db, timeEntriesPath()), {
+      actionId,
+      actionText: action?.text || 'Unknown task',
+      engagementId: action?.engagementId || null,
+      date: todayStr(),
+      duration: durationSecs,
+      startedAt: Timestamp.fromDate(timerStartedAt || now),
+      endedAt: Timestamp.fromDate(now),
+      createdAt: serverTimestamp()
+    });
+  } catch(e) { showError('Failed to save time entry: ' + e.message); }
+}
+
+function renderTodaysFocus() {
+  const section = document.getElementById('na-section-focus');
+  const body = document.getElementById('naTodayFocusBody');
+  if (!section || !body) return;
+  // Group entries by actionId
+  const grouped = {};
+  allTimeEntries.forEach(e => {
+    if (!grouped[e.actionId]) grouped[e.actionId] = { text: e.actionText, engId: e.engagementId, total: 0 };
+    grouped[e.actionId].total += e.duration || 0;
+  });
+  const entries = Object.entries(grouped);
+  // Include active timer as live entry
+  let activeEntry = null;
+  if (activeTimerId) {
+    const elapsed = getTimerElapsed();
+    const action = activeTodos.find(a => a.id === activeTimerId);
+    activeEntry = { id: activeTimerId, text: action?.text || 'Task', engId: action?.engagementId, total: elapsed, isLive: true };
+    const existing = entries.find(([id]) => id === activeTimerId);
+    if (existing) existing[1].total += elapsed;
+    else entries.unshift([activeTimerId, { text: activeEntry.text, engId: activeEntry.engId, total: elapsed }]);
+  }
+  if (entries.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const grandTotal = entries.reduce((sum, [, e]) => sum + e.total, 0);
+  body.innerHTML = entries.map(([id, e]) => {
+    const eng = getEngagement(e.engId);
+    const hex = eng ? engColorHex(eng) : '#e5e7eb';
+    const isLive = activeTimerId === id;
+    return `<div class="focus-entry">
+      <div class="focus-entry-bar" style="background:${hex};"></div>
+      <div class="focus-entry-text">${isLive ? '<i class="fas fa-circle" style="color:#22c55e;font-size:6px;vertical-align:middle;margin-right:4px;"></i>' : ''}${(e.text||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="focus-entry-duration">${formatDuration(e.total)}</div>
+    </div>`;
+  }).join('') + `<div class="focus-total"><span>Total</span><span>${formatDuration(grandTotal)}</span></div>`;
+}
+
 // ─── SECTION 10: Firestore Listeners ───
 function setupListeners() {
   // Engagements
@@ -1405,6 +1622,13 @@ function setupListeners() {
     renderActionsView();
     if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
+    // Restore timer once after first todos load
+    if (!timerRestored) { timerRestored = true; restoreTimerState(); }
+  });
+  // Time entries (today only)
+  onSnapshot(query(collection(db, timeEntriesPath()), where('date', '==', todayStr())), snap => {
+    allTimeEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (currentView === 'dashboard') renderTodaysFocus();
   });
   // Archived actions
   onSnapshot(query(collection(db, actionsPath()), where('isArchived','==',true)), snap => {
@@ -1714,6 +1938,7 @@ function renderKanban() {
       return `<div class="kanban-card" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
         <div class="kc-bar" style="background:${hex};"></div>
         <div class="kc-actions">
+          <button class="kc-timer ${activeTimerId === t.id ? 'timing' : ''}" data-kb-action="timer" data-id="${t.id}" title="${activeTimerId === t.id ? 'Stop timer' : 'Start timer'}"><i class="fas ${activeTimerId === t.id ? 'fa-stop-circle' : 'fa-play-circle'}"></i></button>
           <button class="kc-complete" data-kb-action="complete" data-id="${t.id}" title="Complete"><i class="fas fa-check"></i></button>
           <button data-kb-action="edit" data-id="${t.id}" title="Edit"><i class="fas fa-pen"></i></button>
           <button class="kc-delete" data-kb-action="delete" data-id="${t.id}" title="Delete"><i class="fas fa-trash"></i></button>
@@ -1835,7 +2060,7 @@ function navigate(view, engId = null) {
   const labels = { dashboard:'Dashboard', engagements:'Engagements', 'engagement-detail':'Engagements', notes:'Notes', actions:'Actions' };
   document.getElementById('breadcrumbCurrent').textContent = labels[view] || view;
   // Refresh view-specific rendering
-  if (view === 'dashboard') { updateDashGreeting(); renderNeedsAttention(); }
+  if (view === 'dashboard') { updateDashGreeting(); renderNeedsAttention(); renderTodaysFocus(); }
   if (view === 'engagements') renderEngagementGrid();
   if (view === 'engagement-detail' && engId) { activeEngagementId = engId; renderEngagementDetail(engId); renderSidebarEngagements(); }
   if (view === 'notes') {
@@ -2154,7 +2379,11 @@ document.getElementById('kanbanView').addEventListener('click', e => {
     e.stopPropagation();
     const id = actionBtn.dataset.id;
     const action = actionBtn.dataset.kbAction;
-    if (action === 'complete') {
+    if (action === 'timer') {
+      startTimer(id);
+      return;
+    } else if (action === 'complete') {
+      if (activeTimerId === id) stopTimer();
       updateAction(id, { isCompleted: true, status: 'Completed' });
       showToast('Action completed!');
     } else if (action === 'delete') {
@@ -2309,6 +2538,13 @@ easyMDE.codemirror.addKeyMap({
 if (typeof marked !== 'undefined') {
   marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 }
+
+// Timer pill controls
+document.getElementById('timerPauseBtn').addEventListener('click', () => {
+  if (timerIsPaused) resumeTimer(); else pauseTimer();
+});
+document.getElementById('timerStopBtn').addEventListener('click', () => stopTimer());
+window.addEventListener('beforeunload', () => { if (activeTimerId) persistTimerState(); });
 
 // Start app
 window.onload = initApp;
