@@ -1128,6 +1128,15 @@ function notesPath() { return `artifacts/${APP_ID}/users/${userId}/journalEntrie
 function actionsPath() { return `artifacts/${APP_ID}/users/${userId}/todos`; }
 function timeEntriesPath() { return `artifacts/${APP_ID}/users/${userId}/timeEntries`; }
 
+async function migrateStatusNames() {
+  const legacyMap = { 'Project': 'Recurring Tasks', 'Next Action': 'Backlog', 'WIP': 'Today' };
+  const toMigrate = activeTodos.filter(t => legacyMap[t.status]);
+  if (!toMigrate.length) return;
+  const batch = writeBatch(db);
+  toMigrate.forEach(t => batch.update(doc(db, actionsPath(), t.id), { status: legacyMap[t.status] }));
+  await batch.commit();
+}
+
 function formatDuration(secs) {
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
@@ -1622,7 +1631,7 @@ function setupListeners() {
     if (currentView === 'dashboard') renderNeedsAttention();
     if (activeEngagementId) renderEngagementDetail(activeEngagementId);
     // Restore timer once after first todos load
-    if (!timerRestored) { timerRestored = true; restoreTimerState(); }
+    if (!timerRestored) { timerRestored = true; restoreTimerState(); migrateStatusNames(); }
   });
   // Time entries (today only)
   onSnapshot(query(collection(db, timeEntriesPath()), where('date', '==', todayStr())), snap => {
