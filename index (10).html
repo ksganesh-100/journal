@@ -441,7 +441,6 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
     </div>
     <nav id="sidebarNav">
       <div class="nav-item active" data-nav="dashboard"><i class="fas fa-th-large"></i>Dashboard</div>
-      <div class="nav-item" data-nav="capture"><i class="fas fa-bolt"></i>Quick Capture</div>
       <div class="nav-section-label">Work</div>
       <div class="nav-item" data-nav="engagements"><i class="fas fa-briefcase"></i>Engagements</div>
       <div class="nav-item" data-nav="notes"><i class="fas fa-sticky-note"></i>All Notes</div>
@@ -687,20 +686,20 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
         <div id="actionsEngFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
         <!-- Kanban view -->
         <div id="kanbanView" class="kanban-board">
-          <div class="kanban-col" data-status="Project">
-            <div class="kanban-col-header" style="border-top:3px solid #0e7490;border-radius:10px 10px 0 0;"><i class="fas fa-folder" style="color:#0e7490;"></i> Project <span id="kc-Project" class="badge" style="background:#e0f7fa;color:#006064;margin-left:auto;"></span></div>
-            <div class="kanban-col-body" id="kb-Project" data-status="Project"></div>
-            <div class="kanban-col-footer" data-status="Project"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Project"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="kanban-col" data-status="Recurring Tasks">
+            <div class="kanban-col-header" style="border-top:3px solid #0e7490;border-radius:10px 10px 0 0;"><i class="fas fa-redo" style="color:#0e7490;"></i> Recurring Tasks <span id="kc-Recurring-Tasks" class="badge" style="background:#e0f7fa;color:#006064;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Recurring-Tasks" data-status="Recurring Tasks"></div>
+            <div class="kanban-col-footer" data-status="Recurring Tasks"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Recurring Tasks"><i class="fas fa-plus"></i> Add</button></div>
           </div>
-          <div class="kanban-col" data-status="Next Action">
-            <div class="kanban-col-header" style="border-top:3px solid #16a34a;border-radius:10px 10px 0 0;"><i class="fas fa-arrow-circle-right" style="color:#16a34a;"></i> Next Action <span id="kc-Next-Action" class="badge" style="background:#dcfce7;color:#15803d;margin-left:auto;"></span></div>
-            <div class="kanban-col-body" id="kb-Next-Action" data-status="Next Action"></div>
-            <div class="kanban-col-footer" data-status="Next Action"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Next Action"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="kanban-col" data-status="Backlog">
+            <div class="kanban-col-header" style="border-top:3px solid #16a34a;border-radius:10px 10px 0 0;"><i class="fas fa-layer-group" style="color:#16a34a;"></i> Backlog <span id="kc-Backlog" class="badge" style="background:#dcfce7;color:#15803d;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Backlog" data-status="Backlog"></div>
+            <div class="kanban-col-footer" data-status="Backlog"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Backlog"><i class="fas fa-plus"></i> Add</button></div>
           </div>
-          <div class="kanban-col" data-status="WIP">
-            <div class="kanban-col-header" style="border-top:3px solid #2563EB;border-radius:10px 10px 0 0;"><i class="fas fa-star" style="color:#2563EB;"></i> WIP <span id="kc-WIP" class="badge" style="background:#dbeafe;color:#1d4ed8;margin-left:auto;"></span></div>
-            <div class="kanban-col-body" id="kb-WIP" data-status="WIP"></div>
-            <div class="kanban-col-footer" data-status="WIP"><button class="kb-add-btn" data-kb-action="quick-add" data-status="WIP"><i class="fas fa-plus"></i> Add</button></div>
+          <div class="kanban-col" data-status="Today">
+            <div class="kanban-col-header" style="border-top:3px solid #2563EB;border-radius:10px 10px 0 0;"><i class="fas fa-star" style="color:#2563EB;"></i> Today <span id="kc-Today" class="badge" style="background:#dbeafe;color:#1d4ed8;margin-left:auto;"></span></div>
+            <div class="kanban-col-body" id="kb-Today" data-status="Today"></div>
+            <div class="kanban-col-footer" data-status="Today"><button class="kb-add-btn" data-kb-action="quick-add" data-status="Today"><i class="fas fa-plus"></i> Add</button></div>
           </div>
           <div class="kanban-col" data-status="Waiting for">
             <div class="kanban-col-header" style="border-top:3px solid #d97706;border-radius:10px 10px 0 0;"><i class="fas fa-hourglass-start" style="color:#d97706;"></i> Waiting For <span id="kc-Waiting-for" class="badge" style="background:#fef3c7;color:#b45309;margin-left:auto;"></span></div>
@@ -1250,7 +1249,7 @@ async function saveNote() {
             const actionText = line.replace(/^-\s*\[\s*\]\s+/, '').trim();
             if (actionText) {
               const aRef = doc(collection(db, actionsPath()));
-              batch.set(aRef, { text: actionText, isCompleted: false, isArchived: false, status: 'Next Action',
+              batch.set(aRef, { text: actionText, isCompleted: false, isArchived: false, status: 'Backlog',
                 dueDate: null, engagementId: engId, sourceNoteId: newDoc.id, owner: '', timestamp: serverTimestamp() });
               actionIds.push(aRef.id);
             }
@@ -1336,7 +1335,7 @@ async function saveAction(text, engId, dueDate, status) {
   showLoading();
   try {
     await addDoc(collection(db, actionsPath()), {
-      text: text.trim(), isCompleted: false, isArchived: false, status: status || 'Next Action',
+      text: text.trim(), isCompleted: false, isArchived: false, status: status || 'Backlog',
       description: '', dueDate: dueDate || null, engagementId: engId || null, owner: '',
       timestamp: serverTimestamp(), archivedAt: null
     });
@@ -1612,7 +1611,7 @@ function setupListeners() {
   onSnapshot(query(collection(db, actionsPath()), where('isArchived','==',false)), snap => {
     activeTodos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     activeTodos.sort((a,b) => {
-      const order = {'Project':1,'Next Action':2,'WIP':3,'Waiting for':4,'Agenda':5,'Completed':6};
+      const order = {'Recurring Tasks':1,'Backlog':2,'Today':3,'Waiting for':4,'Agenda':5,'Completed':6};
       const diff = (order[a.status]||9) - (order[b.status]||9); if (diff) return diff;
       const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
       const db2 = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
@@ -1682,7 +1681,7 @@ function renderNeedsAttention() {
   const active = activeTodos.filter(t => !t.isCompleted && !t.isArchived);
 
   const overdue = active.filter(t => t.dueDate && t.dueDate < today);
-  const staleWip = active.filter(t => t.status === 'WIP' && getItemAge(t) >= 5);
+  const staleWip = active.filter(t => t.status === 'Today' && getItemAge(t) >= 5);
   const unassignedActions = active.filter(t => !t.engagementId);
   const unassignedNotes = allNotes.filter(n => !n.engagementId);
   const unassigned = [...unassignedNotes.map(n => ({...n, _type:'note'})), ...unassignedActions.map(a => ({...a, _type:'action'}))];
@@ -1752,7 +1751,7 @@ window.naSnooze = async (id) => {
   await updateAction(id, { dueDate: d.toISOString().slice(0,10) }); showToast('Snoozed 3 days');
 };
 window.naKeepWip = async (id) => { await updateAction(id, {}); showToast('Marked as active'); };
-window.naMoveToNext = async (id) => { await updateAction(id, { status: 'Next Action' }); showToast('Moved to Next Action'); };
+window.naMoveToNext = async (id) => { await updateAction(id, { status: 'Backlog' }); showToast('Moved to Backlog'); };
 window.naAssign = async (id, itemType, engId) => {
   try {
     if (itemType === 'note') await updateDoc(doc(db, notesPath(), id), { engagementId: engId || null });
@@ -1890,7 +1889,7 @@ function renderNotesList() {
 
 // ─── SECTION 15: Render – Actions ───
 function spClass(status) {
-  const m = { Project:'sp-project', 'Next Action':'sp-next', WIP:'sp-wip', 'Waiting for':'sp-waiting', Agenda:'sp-agenda', Completed:'sp-completed' };
+  const m = { 'Recurring Tasks':'sp-project', Backlog:'sp-next', Today:'sp-wip', 'Waiting for':'sp-waiting', Agenda:'sp-agenda', Completed:'sp-completed' };
   return 'status-pill ' + (m[status] || 'sp-next');
 }
 function renderActionCard(t, compact = false) {
@@ -1920,7 +1919,7 @@ function renderActionCard(t, compact = false) {
 }
 
 function renderKanban() {
-  const statuses = ['Project', 'Next Action', 'WIP', 'Waiting for', 'Agenda'];
+  const statuses = ['Recurring Tasks', 'Backlog', 'Today', 'Waiting for', 'Agenda'];
   let filtered = activeTodos;
   if (activeActionsEngFilter) filtered = filtered.filter(t => t.engagementId === activeActionsEngFilter);
   statuses.forEach(status => {
@@ -1994,7 +1993,7 @@ function openEditActionInline(id) {
       <textarea class="form-input" id="editActionDesc_${id}" placeholder="Details (optional)" style="font-size:12px;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select class="form-select" id="editActionStatus_${id}" style="flex:1;font-size:12px;">
-          ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
+          ${['Recurring Tasks','Backlog','Today','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
         </select>
         <input type="date" class="form-input" id="editActionDue_${id}" value="${t.dueDate||''}" style="flex:1;font-size:12px;">
         <input type="text" class="form-input" id="editActionOwner_${id}" value="${t.owner||''}" placeholder="Owner" style="flex:1;font-size:12px;">
@@ -2261,7 +2260,7 @@ document.getElementById('engDetailActions').addEventListener('click', e => {
   const cb = e.target.closest('[data-action="toggle-action"]');
   if (editBtn) { navigate('actions'); openEditActionInline(editBtn.dataset.id); }
   if (delBtn) showConfirm('Delete this action?', () => deleteAction(delBtn.dataset.id));
-  if (cb) { const t = activeTodos.find(x => x.id === cb.dataset.id); if(t) updateAction(t.id, { isCompleted: !t.isCompleted, status: !t.isCompleted ? 'Completed' : 'Next Action' }); }
+  if (cb) { const t = activeTodos.find(x => x.id === cb.dataset.id); if(t) updateAction(t.id, { isCompleted: !t.isCompleted, status: !t.isCompleted ? 'Completed' : 'Backlog' }); }
 });
 
 // Tags
@@ -2320,7 +2319,7 @@ function handleActionsClick(e) {
   if (delBtn) showConfirm('Delete this action?', () => deleteAction(delBtn.dataset.id));
   if (cb) {
     const newCompleted = cb.dataset.completed !== 'true';
-    updateAction(cb.dataset.id, { isCompleted: newCompleted, status: newCompleted ? 'Completed' : 'Next Action' });
+    updateAction(cb.dataset.id, { isCompleted: newCompleted, status: newCompleted ? 'Completed' : 'Backlog' });
   }
   if (saveBtn) {
     const id = saveBtn.dataset.id;
@@ -2330,7 +2329,7 @@ function handleActionsClick(e) {
     const due = document.getElementById(`editActionDue_${id}`)?.value;
     const owner = document.getElementById(`editActionOwner_${id}`)?.value;
     const eng = document.getElementById(`editActionEng_${id}`)?.value;
-    updateAction(id, { text: text||'', description: desc, status: status||'Next Action', dueDate: due||null, owner: owner||'', engagementId: eng||null });
+    updateAction(id, { text: text||'', description: desc, status: status||'Backlog', dueDate: due||null, owner: owner||'', engagementId: eng||null });
     editingActionId = null;
   }
   if (cancelBtn) renderActionsView();
@@ -2396,7 +2395,7 @@ document.getElementById('kanbanView').addEventListener('click', e => {
       const status = document.getElementById(`kbEditStatus_${id}`)?.value;
       const due = document.getElementById(`kbEditDue_${id}`)?.value;
       const eng = document.getElementById(`kbEditEng_${id}`)?.value;
-      updateAction(id, { text: text||'', description, status: status||'Next Action', dueDate: due||null, engagementId: eng||null });
+      updateAction(id, { text: text||'', description, status: status||'Backlog', dueDate: due||null, engagementId: eng||null });
     } else if (action === 'cancel-edit') {
       renderKanban();
     } else if (action === 'quick-add') {
@@ -2446,7 +2445,7 @@ function openKanbanEditInline(id) {
     <textarea id="kbEditDesc_${id}" placeholder="Details (optional)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;width:100%;box-sizing:border-box;resize:vertical;min-height:36px;max-height:100px;">${(t.description||'').replace(/</g,'&lt;')}</textarea>
     <div style="display:flex;gap:4px;">
       <select id="kbEditStatus_${id}" style="flex:1;">
-        ${['Project','Next Action','WIP','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
+        ${['Recurring Tasks','Backlog','Today','Waiting for','Agenda'].map(s => `<option value="${s}" ${s===t.status?'selected':''}>${s}</option>`).join('')}
       </select>
       <input type="date" id="kbEditDue_${id}" value="${t.dueDate||''}" style="flex:1;">
     </div>
