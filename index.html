@@ -187,6 +187,14 @@ body.confidential-mode .blur-sensitive { filter:blur(5px); transition:filter .2s
 .focus-total { display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-top:1px solid #e5e7eb; font-size:12px; font-weight:600; color:#374151; border-radius:0 0 10px 10px; }
 @media(max-width:600px) { .timer-pill .timer-name { max-width:80px; } }
 
+/* ── Kanban deadline urgency ── */
+.kc-deadline-today { border-top:3px solid #f59e0b !important; }
+.kc-deadline-overdue { border-top:3px solid #dc2626 !important; }
+.kc-due-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 7px; border-radius:10px; font-size:10px; font-weight:600; margin-top:3px; }
+.kc-due-badge.due-future { background:#f3f4f6; color:#6b7280; }
+.kc-due-badge.due-today { background:#fef3c7; color:#b45309; }
+.kc-due-badge.due-overdue { background:#fee2e2; color:#dc2626; }
+
 /* ── Forms ── */
 .form-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; color:#111827; outline:none; transition:border .15s,box-shadow .15s; font-family:inherit; }
 .form-input:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
@@ -992,7 +1000,7 @@ function formatDueDate(s) {
   if (isNaN(d.getTime())) return null;
   const today = new Date(); today.setHours(0,0,0,0);
   const due = new Date(d); due.setHours(0,0,0,0);
-  return { text: d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), isOverdue: due < today };
+  return { text: d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), isOverdue: due < today, isDueToday: due.getTime() === today.getTime(), daysOverdue: due < today ? Math.floor((today - due) / 86400000) : 0 };
 }
 function autolink(text) {
   return text.replace(/(https?:\/\/[^\s<>"'()]+|www\.[^\s<>"'()]+)(?=[.,;!?'")\s]|$)/g, m => {
@@ -1943,7 +1951,9 @@ function renderKanban() {
       const eng = getEngagement(t.engagementId);
       const hex = eng ? engColorHex(eng) : '#e5e7eb';
       const due = formatDueDate(t.dueDate);
-      return `<div class="kanban-card" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
+      const urgencyClass = due ? (due.isOverdue ? 'kc-deadline-overdue' : due.isDueToday ? 'kc-deadline-today' : '') : '';
+      const dueBadge = due ? `<div style="padding-left:6px;"><span class="kc-due-badge ${due.isOverdue ? 'due-overdue' : due.isDueToday ? 'due-today' : 'due-future'}">${due.isOverdue ? `<i class="fas fa-exclamation-triangle"></i> ${due.daysOverdue}d ago` : due.isDueToday ? `<i class="far fa-calendar-alt"></i> Today` : `<i class="far fa-calendar-alt"></i> ${due.text}`}</span></div>` : '';
+      return `<div class="kanban-card ${urgencyClass}" draggable="true" data-todo-id="${t.id}" data-status="${t.status}">
         <div class="kc-bar" style="background:${hex};"></div>
         <div class="kc-actions">
           <button class="kc-timer ${activeTimerId === t.id ? 'timing' : ''}" data-kb-action="timer" data-id="${t.id}" title="${activeTimerId === t.id ? 'Stop timer' : 'Start timer'}"><i class="fas ${activeTimerId === t.id ? 'fa-stop-circle' : 'fa-play-circle'}"></i></button>
@@ -1953,7 +1963,7 @@ function renderKanban() {
         </div>
         <div style="padding-left:6px;font-size:12px;color:#374151;line-height:1.4;" class="blur-sensitive">${t.text}</div>
         ${t.description ? `<div style="font-size:10px;color:#9ca3af;padding-left:6px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;" title="${(t.description||'').replace(/"/g,'&quot;')}">${t.description.length > 60 ? t.description.substring(0,60)+'…' : t.description}</div>` : ''}
-        ${due ? `<div style="font-size:10px;margin-top:3px;padding-left:6px;${due.isOverdue ? 'color:#dc2626;' : 'color:#9ca3af;'}"><i class="far fa-calendar-alt"></i> ${due.text}</div>` : ''}
+        ${dueBadge}
         <div class="kc-extra">${t.description ? `<div style="font-size:11px;color:#6b7280;margin-bottom:4px;white-space:pre-wrap;line-height:1.4;">${(t.description||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}${eng ? `<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:${hex};display:inline-block;"></span>${eng.name}</span>` : ''}${t.owner ? `<span style="margin-left:${eng ? '6px' : '0'};"> ${t.owner}</span>` : ''}</div>
       </div>`;
     }).join('');
